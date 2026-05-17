@@ -208,3 +208,9 @@ All significant code, logic, and UI changes must be logged here chronologically.
 ### [2026-05-17] UX/UI Refactor - Inventario Barra Responsivo
 - **TabInventario.jsx**: Se migraron los inputs numéricos a type='text' con inputMode='decimal' interceptando el cambio para convertir las comas a puntos, permitiendo así al usuario usar su teclado de preferencia y validando siempre el ingreso.
 - **Mobile Responsiveness**: Se modificó el layout (Action Bar y Tabla de SKUs) utilizando propiedades fluidas y breakpoints sm: para que la aplicación sea 100% usable desde un dispositivo móvil sin desbordes horizontales.
+
+### [2026-05-17] Hotfix - Importador CSV Passline (Separadores)
+- **WorkdaysNightChief.jsx**: Se actualizó el parser de archivos CSV (handleMembersCsv y handleGeneralCsv) para soportar de manera dinámica tanto coma (,) como punto y coma (;) como separadores. Además, ahora se limpian las comillas residuales en la fila de cabeceras (headers) para prevenir el error 'No se encontró la columna Estado del eticket' cuando Passline exporta con comillas y punto y coma.
+
+### [2026-05-17] Fix - Passline Ingresos (Break Even)
+- **WorkdaysBreakEven.jsx / useNightReport.js**: Se modificó la consulta a stg_passline_tickets para eliminar el filtro .ilike('estado_ticket', '%validada%'). A partir de ahora, el cálculo de ingresos por Passline General suma **todos los tickets vendidos** independientemente de si fueron validados (escaneados en puerta) o no, reflejando el ingreso económico real de la plataforma.

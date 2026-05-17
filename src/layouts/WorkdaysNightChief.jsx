@@ -295,15 +295,17 @@ export default function WorkdaysNightChief({ globalDate, setGlobalDate }) {
       const text = e.target.result;
       const lines = text.split('\n').filter(l => l.trim());
       if (lines.length < 2) return;
-      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      const sep = lines[0].includes(';') ? ';' : ',';
+      const headers = lines[0].split(sep).map(h => h.replace(/^"|"$/g, '').trim().toLowerCase());
       const statusIdx = headers.indexOf('estado del eticket');
       if (statusIdx === -1) { alert('No se encontró la columna "Estado del eticket" en el CSV.'); return; }
       
       let total = 0, validated = 0;
       const dbRows = [];
+      const regex = new RegExp(`(".*?"|[^${sep}]*)${sep}?`, 'g');
       for (let i = 1; i < lines.length; i++) {
-        // Handle CSV fields with commas inside quotes
-        const row = lines[i].match(/(".*?"|[^,]*),?/g)?.map(f => f.replace(/,$/, '').replace(/^"|"$/g, '').trim()) || [];
+        // Handle CSV fields with separators inside quotes
+        const row = lines[i].match(regex)?.map(f => f.replace(new RegExp(`${sep}$`), '').replace(/^"|"$/g, '').trim()) || [];
         if (row.length <= statusIdx) continue;
         const estado = row[statusIdx];
         if (!estado) continue;
@@ -359,7 +361,8 @@ export default function WorkdaysNightChief({ globalDate, setGlobalDate }) {
       const text = e.target.result;
       const lines = text.split('\n').filter(l => l.trim());
       if (lines.length < 2) return;
-      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      const sep = lines[0].includes(';') ? ';' : ',';
+      const headers = lines[0].split(sep).map(h => h.replace(/^"|"$/g, '').trim().toLowerCase());
       const tipoIdx = headers.indexOf('tipo');
       const statusIdx = headers.indexOf('estado del eticket');
       const totalIdx = headers.indexOf('total');
@@ -367,8 +370,9 @@ export default function WorkdaysNightChief({ globalDate, setGlobalDate }) {
 
       const groups = {};
       const dbRows = [];
+      const regex = new RegExp(`(".*?"|[^${sep}]*)${sep}?`, 'g');
       for (let i = 1; i < lines.length; i++) {
-        const row = lines[i].match(/(".*?"|[^,]*),?/g)?.map(f => f.replace(/,$/, '').replace(/^"|"$/g, '').trim()) || [];
+        const row = lines[i].match(regex)?.map(f => f.replace(new RegExp(`${sep}$`), '').replace(/^"|"$/g, '').trim()) || [];
         if (row.length <= Math.max(tipoIdx, statusIdx)) continue;
         const tipo = row[tipoIdx];
         const estado = row[statusIdx];

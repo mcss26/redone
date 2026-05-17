@@ -187,7 +187,6 @@ export default function WorkdaysBreakEven({ globalDate, setGlobalDate }) {
             .select('estado_ticket, total_raw')
             .eq('operational_date', dateStr)
             .neq('tipo_ticket', 'MEMBER')
-            .ilike('estado_ticket', '%validada%')
             .range(from, from + limit - 1);
             
           if (chunk && chunk.length > 0) {
