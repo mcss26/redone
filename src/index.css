@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-bg: #0A0A0A;
+  --color-brand-surface: #121212;
+  --color-brand-border: #222222;
+  --color-brand-text: #F3F4F6;
+  --color-brand-muted: #888888;
+  --color-brand-success: #10B981;
+  --color-brand-error: #EF4444;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  background-color: var(--color-brand-bg);
+  color: var(--color-brand-text);
+}
+
+/* Clean, modern scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-brand-border);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brand-muted);
+}
