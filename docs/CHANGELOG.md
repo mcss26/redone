@@ -204,3 +204,7 @@ All significant code, logic, and UI changes must be logged here chronologically.
 
 ### [2026-05-16] Hard Reset de Base de Datos
 - **Purga de Operaciones**: Se ejecutÛ un `TRUNCATE TABLE work_days CASCADE;` y `TRUNCATE TABLE consumption_reports CASCADE;` para eliminar todo el historial de jornadas operativas (incluyendo sus dependencias en cascada: cierres de caja, nÛminas, stock en barra, pagos, etc.) de manera que se pueda probar la ingesta y el c·lculo del reporte en un entorno limpio y en cero.
+
+### [2026-05-17] UX/UI Refactor - Inventario Barra Responsivo
+- **TabInventario.jsx**: Se migraron los inputs num√©ricos a type='text' con inputMode='decimal' interceptando el cambio para convertir las comas a puntos, permitiendo as√≠ al usuario usar su teclado de preferencia y validando siempre el ingreso.
+- **Mobile Responsiveness**: Se modific√≥ el layout (Action Bar y Tabla de SKUs) utilizando propiedades fluidas y breakpoints sm: para que la aplicaci√≥n sea 100% usable desde un dispositivo m√≥vil sin desbordes horizontales.

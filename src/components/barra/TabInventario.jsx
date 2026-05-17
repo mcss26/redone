@@ -67,11 +67,17 @@ const TabInventario = ({ workDayId }) => {
   };
 
   const handleOpeningChange = (id, value) => {
-    setOpeningInputs(prev => ({ ...prev, [id]: value }));
+    const val = value.replace(',', '.');
+    if (val === '' || /^\d*\.?\d*$/.test(val)) {
+      setOpeningInputs(prev => ({ ...prev, [id]: val }));
+    }
   };
 
   const handleClosingChange = (id, value) => {
-    setClosingInputs(prev => ({ ...prev, [id]: value }));
+    const val = value.replace(',', '.');
+    if (val === '' || /^\d*\.?\d*$/.test(val)) {
+      setClosingInputs(prev => ({ ...prev, [id]: val }));
+    }
   };
 
   const handleSave = async () => {
@@ -152,8 +158,8 @@ const TabInventario = ({ workDayId }) => {
     <div className="flex flex-col h-full relative">
       
       {/* ACTION BAR */}
-      <div className="shrink-0 flex items-center justify-between p-6 pb-2">
-        <div className="relative w-96">
+      <div className="shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 sm:p-6 pb-2">
+        <div className="relative w-full sm:w-96">
           <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-muted" />
           <input 
             type="text" 
@@ -167,7 +173,7 @@ const TabInventario = ({ workDayId }) => {
         <button 
           onClick={handleSave}
           disabled={isSaving}
-          className="flex items-center gap-2 bg-brand-text text-brand-bg px-6 py-3 rounded-xl text-xs font-extrabold uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50"
+          className="flex items-center justify-center w-full sm:w-auto gap-2 bg-brand-text text-brand-bg px-6 py-3 rounded-xl text-xs font-extrabold uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50"
         >
           <Save size={16} />
           {isSaving ? 'GUARDANDO...' : 'GUARDAR CAMBIOS'}
@@ -175,14 +181,14 @@ const TabInventario = ({ workDayId }) => {
       </div>
 
       {/* DATA TABLE */}
-      <div className="flex-1 overflow-auto p-6 pt-4">
-        <div className="bg-brand-surface/10 border border-brand-border/30 rounded-2xl overflow-hidden">
+      <div className="flex-1 overflow-auto p-4 sm:p-6 pt-4">
+        <div className="bg-brand-surface/10 border border-brand-border/30 rounded-2xl overflow-hidden min-w-[320px]">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-brand-border/30 bg-brand-surface/40">
-                <th className="py-4 px-6 text-[10px] font-extrabold text-brand-muted uppercase tracking-[0.2em] w-1/2">Producto</th>
-                <th className="py-4 px-6 text-[10px] font-extrabold text-brand-text uppercase tracking-[0.2em] w-1/4 text-center">Físico Inicio</th>
-                <th className="py-4 px-6 text-[10px] font-extrabold text-brand-text uppercase tracking-[0.2em] w-1/4 text-center">Físico Cierre</th>
+                <th className="py-4 px-3 sm:px-6 text-[10px] font-extrabold text-brand-muted uppercase tracking-[0.1em] sm:tracking-[0.2em] w-1/2">Producto</th>
+                <th className="py-4 px-2 sm:px-6 text-[10px] font-extrabold text-brand-text uppercase tracking-[0.1em] sm:tracking-[0.2em] w-1/4 text-center">Inicio</th>
+                <th className="py-4 px-2 sm:px-6 text-[10px] font-extrabold text-brand-text uppercase tracking-[0.1em] sm:tracking-[0.2em] w-1/4 text-center">Cierre</th>
               </tr>
             </thead>
             <tbody>
@@ -201,25 +207,25 @@ const TabInventario = ({ workDayId }) => {
               ) : (
                 filteredSkus.map((sku) => (
                   <tr key={sku.id} className="border-b border-brand-border/10 hover:bg-brand-surface/20 transition-colors group">
-                    <td className="py-3 px-6 text-sm font-bold text-brand-text truncate">{sku.nombre}</td>
-                    <td className="py-2 px-6 text-center">
+                    <td className="py-3 px-3 sm:px-6 text-xs sm:text-sm font-bold text-brand-text break-words">{sku.nombre}</td>
+                    <td className="py-2 px-2 sm:px-6 text-center">
                       <input
-                        type="number"
-                        min="0"
+                        type="text"
+                        inputMode="decimal"
                         placeholder="-"
                         value={openingInputs[sku.id] !== undefined ? openingInputs[sku.id] : ''}
                         onChange={(e) => handleOpeningChange(sku.id, e.target.value)}
-                        className="w-24 bg-brand-surface/30 border border-brand-border/50 text-brand-text text-sm font-mono font-bold text-center rounded-lg px-3 py-2 focus:outline-none focus:border-brand-text/50 transition-colors placeholder:text-brand-muted/30"
+                        className="w-14 sm:w-24 bg-brand-surface/30 border border-brand-border/50 text-brand-text text-sm font-mono font-bold text-center rounded-lg px-1 sm:px-3 py-2 focus:outline-none focus:border-brand-text/50 transition-colors placeholder:text-brand-muted/30 mx-auto"
                       />
                     </td>
-                    <td className="py-2 px-6 text-center">
+                    <td className="py-2 px-2 sm:px-6 text-center">
                       <input
-                        type="number"
-                        min="0"
+                        type="text"
+                        inputMode="decimal"
                         placeholder="-"
                         value={closingInputs[sku.id] !== undefined ? closingInputs[sku.id] : ''}
                         onChange={(e) => handleClosingChange(sku.id, e.target.value)}
-                        className="w-24 bg-brand-surface/30 border border-brand-border/50 text-brand-text text-sm font-mono font-bold text-center rounded-lg px-3 py-2 focus:outline-none focus:border-brand-text/50 transition-colors placeholder:text-brand-muted/30"
+                        className="w-14 sm:w-24 bg-brand-surface/30 border border-brand-border/50 text-brand-text text-sm font-mono font-bold text-center rounded-lg px-1 sm:px-3 py-2 focus:outline-none focus:border-brand-text/50 transition-colors placeholder:text-brand-muted/30 mx-auto"
                       />
                     </td>
                   </tr>
