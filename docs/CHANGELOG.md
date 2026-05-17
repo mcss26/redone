@@ -214,3 +214,6 @@ All significant code, logic, and UI changes must be logged here chronologically.
 
 ### [2026-05-17] Fix - Passline Ingresos (Break Even)
 - **WorkdaysBreakEven.jsx / useNightReport.js**: Se modificó la consulta a stg_passline_tickets para eliminar el filtro .ilike('estado_ticket', '%validada%'). A partir de ahora, el cálculo de ingresos por Passline General suma **todos los tickets vendidos** independientemente de si fueron validados (escaneados en puerta) o no, reflejando el ingreso económico real de la plataforma.
+
+### [2026-05-17] Hotfix - Importador CSV GBOL (Comillas)
+- **gbolService.js**: Se replico el algoritmo de parseo CSV avanzado utilizado en Passline para limpiar las dobles comillas residuales tanto en las cabeceras como en los valores de los registros exportados por el sistema de Facturacion Electronica de GBOL. Esto soluciona los fallos de inyeccion al subir el CSV en Night Chief.

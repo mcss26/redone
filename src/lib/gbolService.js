@@ -268,11 +268,14 @@ export const GbolService = {
                     if (headerIdx === -1) throw new Error("No se encontraron los encabezados en el CSV.");
                     
                     const delimiter = lines[headerIdx].includes(';') ? ';' : ',';
-                    const headers = lines[headerIdx].split(delimiter).map(h => h.trim().toLowerCase());
+                    const headers = lines[headerIdx].split(delimiter).map(h => h.replace(/^"|"$/g, '').trim().toLowerCase());
                     
                     const records = [];
+                    const regex = new RegExp(`(".*?"|[^${delimiter}]*)${delimiter}?`, 'g');
                     for (let i = headerIdx + 1; i < lines.length; i++) {
-                        const values = lines[i].split(delimiter).map(v => v.trim());
+                        const values = lines[i].match(regex)?.map(f => f.replace(new RegExp(`${delimiter}$`), '').replace(/^"|"$/g, '').trim()) || [];
+                        if (values.length < Math.max(2, headers.length / 2)) continue;
+
                         const row = {};
                         headers.forEach((h, idx) => { row[h] = values[idx]; });
                         
