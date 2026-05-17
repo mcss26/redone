@@ -217,3 +217,6 @@ All significant code, logic, and UI changes must be logged here chronologically.
 
 ### [2026-05-17] Hotfix - Importador CSV GBOL (Comillas)
 - **gbolService.js**: Se replico el algoritmo de parseo CSV avanzado utilizado en Passline para limpiar las dobles comillas residuales tanto en las cabeceras como en los valores de los registros exportados por el sistema de Facturacion Electronica de GBOL. Esto soluciona los fallos de inyeccion al subir el CSV en Night Chief.
+
+### [2026-05-17] Hard Reset de Base de Datos (Pruebas)
+- **Purga de Operaciones**: Se ejecuto un TRUNCATE TABLE work_days CASCADE; y las sentencias equivalentes para consumption_reports, revenue_reports, import_gbol_facturacion y stg_passline_tickets. Esto elimina todo el historial operativo y financiero para iniciar las pruebas del entorno limpio y en cero.
