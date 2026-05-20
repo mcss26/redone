@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
+import { fetchAll } from '../../lib/queryHelper';
 import { ArrowLeft, TrendingUp, TrendingDown, DollarSign, Package, AlertTriangle, CheckCircle2, Lock, Upload, Loader2, Save, Plus, X, Copy } from 'lucide-react';
 import dayjs from 'dayjs';
 
@@ -96,7 +97,7 @@ export default function NightReportModule({ onNavigate }) {
         supabase.from('night_cash_closing').select('diff_cash, diff_digital, system_cash, system_digital').eq('work_day_id', wdId),
         supabase.from('opening_costs').select('status, amount, title, template_id').eq('work_day_id', wdId),
         supabase.from('staff_plan').select('quantity_approved, staff_roles(base_rate)').eq('work_day_id', wdId),
-        supabase.from('stg_passline_tickets').select('total_raw, tipo_ticket').eq('operational_date', selectedWorkDay.work_date),
+        fetchAll(supabase.from('stg_passline_tickets').select('total_raw, tipo_ticket').eq('operational_date', selectedWorkDay.work_date)),
         supabase.from('financial_adjustments').select('*').eq('work_day_id', wdId)
       ]);
 

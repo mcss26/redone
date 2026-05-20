@@ -158,6 +158,108 @@ Added explicit 'IGUALAR SISTEMA' button in NightOpsModule instead of automatic p
 **Decisión**: Eliminar la tabla de Inversión en Insumos y en su lugar detallar 'Costos Pagados' en tres filas precisas: Costos Recurrentes (provenientes de un template_id), Costos Ad-Hoc (sin template), e Insumos Pagados (identificados por título automático).
 **Consecuencias**: El P&L queda mucho más limpio y no hay código o vistas fantasma sin relevancia financiera final.
 
+# DECISIONS.md (COMPRESSED)
+
+## [2026-05-18] - Annual Report Live Aggregation
+
+**Contexto**: El usuario solicito un reporte anual vivo.
+**Decisión**: Reutilizar la arquitectura del reporte mensual (MonthlyReportModule) y aplicarla a nivel anual (AnnualReportModule). No se crearan tablas de agregacion intermedias (mes a mes) para mantener la Single Source of Truth y la precision de las jornadas cerradas/abiertas.
+**Consecuencias**: Garantiza que un cambio retroactivo en enero impacte de inmediato en el balance anual. Requirio un pequeno ajuste para agrupar por aÃ±os en vez de meses.
+
+## D15. Passline CSV Deduplication [2026-05-17]
+
+Deduplicate by `ID ticket` (entities) and `ID Compra` (revenue). Passline duplicates `Total` per ticket row in same purchase.
+
+## D1. Pivot: Landing Ã¢â€ â€™ ERP [2026-05-09]
+
+Internal OS/ERP for nightclub. Manages stock, sales, roles.
+
+## D2. Role-Based Architecture [2026-05-09]
+
+Roles: Admin (full), Accounting (payments), Operative (daily). Auth+RLS via Supabase.
+
+## D3. Aesthetic: Functional Brutalism [2026-05-09]
+
+Monochromatic dark. NO RED in UI. NO AI glowing/gradients. Green=success, Red=error only. Font: Plus Jakarta Sans. BG: `#0A0A0A`. Corners: `rounded-xl`/`rounded-2xl`.
+
+## D4. Config Consolidation [2026-05-09]
+
+Merged `MasterCategorias` + `MasterPOS` Ã¢â€ â€™ single `Configuraciones` 50/50 split-view.
+
+## D5. Supabase Auth Layer [2026-05-09]
+
+Global Auth wrapper (`Login.jsx`). RLS blocks anon queries Ã¢â€ â€™ organic auth required.
+
+## D6. Admin Shell: Top Bar [2026-05-09]
+
+Top Bar + Sub-Nav Dropdown replaces sidebar. Maximizes horizontal space.
+
+## D7. Operations Dashboard [2026-05-09]
+
+Separated ingestion (CSV) from visualization. KPIs = interactive table filters.
+
+## D8. Status Indicators [2026-05-09]
+
+Glowing dots (`w-2 h-2 rounded-full`) instead of pill badges. Green=active, Red=inactive.
+
+## D9. Workdays Module [2026-05-09]
+
+- State: `ACTIVE` Ã¢â€ â€™ `CLOSED` only. No `PENDING` on master record.
+- Use `base_rate` from `master_staff_roles` (not deprecated `base_salary`).
+- UUIDs via `gen_random_uuid()`.
+- Explicit "COSTO TOTAL PROYECTADO" KPI.
+
+## D10. Workdays Persistence [2026-05-09]
+
+- Staff Ã¢â€ â€™ `work_day_staff_planning` (not obsolete `staff_assignments`).
+- Opening costs Ã¢â€ â€™ query `finance_opening_cost_defs`, export to `finance_payments` as `PENDING`.
+- Convocation Ã¢â€ â€™ `staff_convocations`.
+- Payroll Ã¢â€ â€™ invoke `admin_generate_workday_accruals`.
+
+## D11. Profile Access & RLS Gap [2026-05-10]
+
+`anon` writes on `profiles` bounded by `WITH CHECK (is_auth_user = false)`. Operatives need writes without auth session.
+
+## D12. Data Engine Frontend [2026-05-16]
+
+Migrated SQL views Ã¢â€ â€™ frontend `useNightReport.js` in-memory engine. Promise.all atomic tables. Instant date switching. Live Health Score + Bar Diffs.
+
+## D13. Admin Pagos RPCs [2026-05-17]
+
+Payment queue via RPCs (`admin_approve_payment`, `admin_mark_payment_done`, `admin_undo_payment_done`). Bulk = `Promise.all` client-side loop.
+
+## D14. Rollback Admin Pagos [2026-05-17]
+
+Module removed entirely. Too much transactional friction for SPA.
+
+## D15. V2 "Redone" Pivot [2026-05-17]
+
+Complete redesign. New Supabase project (vabekvkijcvbyqvrxrss). 20 tables. No RLS, no triggers, no views, no functions. Week cycle Mar-Lun. 4 roles: Operativo, Admin, Contador, Viewer. English columns. Text CHECK constraints (no ENUMs). Frontend-computed reports. Code in `src/`, `lib/`, `db/` (flattened from `ready-to-go/` in Step 1.1).
+
+## D16. V2 SKU Catalog [2026-05-17]
+
+`skus` table: text CHECK for categories ('bebida','insumo'Ã¢â‚¬Â¦). FK to `suppliers`.
+
+## D17. V2 One-Step Stock [2026-05-17]
+
+Removed `ReceivingModule.jsx` and two-step verification. Approval = Delivery = Cost assumed. Dropped `received_qty`, `receipt_status`, `received_at` from `stock_requests`.
+
+## D18. NightOps Replicate System Button [2026-05-17]
+
+Added explicit 'IGUALAR SISTEMA' button in NightOpsModule instead of automatic population to reduce operation friction while preventing false positives on physical cash counts.
+
+### [D19] Reemplazo de Eficiencia de Barra por Stock Aprobado
+
+**Contexto**: El flujo de auditoría de insumos requería comparar importaciones de CSV con el consumo físico, pero el nuevo flujo V2 centraliza esto al aprobar solicitudes de stock y pasarlas a `opening_costs`.
+**Decisión**: Se elimina la tabla de 'Eficiencia de Barra' y se reemplaza por 'Inversión en Insumos (Stock Aprobado)' en NightReportModule, mostrando los items aprobados (cantidad y costo) directamente desde `stock_requests`.
+**Consecuencias**: Se elimina la dependencia de CSVs de consumo para esta vista, alineando el reporte con la inversión real aprobada por proveedores.
+
+### [D20] Desglose de Costos Pagados en lugar de Tablas Redundantes
+
+**Contexto**: Mostrar los items aprobados desde \stock_requests\ en una tabla separada duplicaba visualmente la inversión que ya estaba consolidada y pagada en el panel de Egresos.
+**Decisión**: Eliminar la tabla de Inversión en Insumos y en su lugar detallar 'Costos Pagados' en tres filas precisas: Costos Recurrentes (provenientes de un template_id), Costos Ad-Hoc (sin template), e Insumos Pagados (identificados por título automático).
+**Consecuencias**: El P&L queda mucho más limpio y no hay código o vistas fantasma sin relevancia financiera final.
+
 ### [D21] Dependency Cleanup & Production Polish [2026-05-18]
 
 **Contexto**: Se requería preparar el build de producción V2.
@@ -169,6 +271,12 @@ Added explicit 'IGUALAR SISTEMA' button in NightOpsModule instead of automatic p
 **Contexto**: El reporte mensual presentaba demasiada densidad de columnas (carga cognitiva alta), dependía de tablas legacy ('night_sales') y no lograba separar los gastos reales de la provisión impositiva.
 **Decisión**: Simplificar la tabla a 5 columnas clave. Aislar los impuestos en un KPI propio 'Pasivo Impositivo'. Incorporar gráficos Brutalistas nativos (CSS/SVG) para evitar sobrecargar el package.json con librerías externas de charting. Consultar también jornadas 'open' para permitir proyecciones en tiempo real.
 **Consecuencias**: Mejor lectura gerencial y proyección inmediata de impuestos a retener. El módulo ahora refleja el mismo P&L estricto que NightReportModule.
+
+### [D23] Supabase Limits Mitigation (Zero Aggregation Protection) [2026-05-20]
+
+**Contexto**: La arquitectura V2 eliminó las vistas SQL para el cálculo financiero (Zero Aggregation Tables), moviendo toda la carga matemática de P&L al frontend. Esto provocó que reportes de múltiples días (Annual, Monthly) y noches con alta rotación chocaran contra el límite nativo de 1000 filas de la PostgREST API de Supabase, truncando silenciosamente los montos financieros reales.
+**Decisión**: Implementar un Helper centralizado de capa de datos (`fetchAll()`) en `lib/queryHelper.js`. Este helper encapsula la lógica recursiva/iterativa de `.range()` para asegurar la descarga del 100% de la tabla solicitada antes de retornar la promesa a los módulos.
+**Consecuencias**: Se mantiene el paradigma de calcular todo en memoria desde el cliente garantizando precisión matemática al centavo, a expensas de un ligero overhead de iteración de red en el Reporte Anual. Es una protección indispensable para `stg_passline_tickets`, `import_gbol_facturacion`, `night_cash_closing` y `opening_costs`.
 
 ### --- SOURCE: DECISIONS_legacy_backup.md --- ###
 

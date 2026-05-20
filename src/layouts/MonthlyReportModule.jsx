@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
+import { fetchAll } from '../../lib/queryHelper';
 import { ArrowLeft, Calendar, DollarSign, Activity, FileText, AlertTriangle } from 'lucide-react';
 import dayjs from 'dayjs';
 
@@ -86,11 +87,11 @@ export default function MonthlyReportModule({ onNavigate }) {
       const wdDates = wds.map(w => w.work_date);
 
       const [closingRes, passlineRes, costsRes, staffRes, adjRes] = await Promise.all([
-        supabase.from('night_cash_closing').select('work_day_id, system_cash, system_digital, diff_cash, diff_digital').in('work_day_id', wdIds),
-        supabase.from('stg_passline_tickets').select('operational_date, total_raw, tipo_ticket').in('operational_date', wdDates),
-        supabase.from('opening_costs').select('work_day_id, amount, status, template_id, title').in('status', ['paid', 'approved']).in('work_day_id', wdIds),
-        supabase.from('staff_plan').select('work_day_id, quantity_approved, staff_roles(base_rate)').in('work_day_id', wdIds),
-        supabase.from('financial_adjustments').select('work_day_id, amount, type, category').in('work_day_id', wdIds)
+        fetchAll(supabase.from('night_cash_closing').select('work_day_id, system_cash, system_digital, diff_cash, diff_digital').in('work_day_id', wdIds)),
+        fetchAll(supabase.from('stg_passline_tickets').select('operational_date, total_raw, tipo_ticket').in('operational_date', wdDates)),
+        fetchAll(supabase.from('opening_costs').select('work_day_id, amount, status, template_id, title').in('status', ['paid', 'approved']).in('work_day_id', wdIds)),
+        fetchAll(supabase.from('staff_plan').select('work_day_id, quantity_approved, staff_roles(base_rate)').in('work_day_id', wdIds)),
+        fetchAll(supabase.from('financial_adjustments').select('work_day_id, amount, type, category').in('work_day_id', wdIds))
       ]);
 
       if (closingRes.error) throw closingRes.error;

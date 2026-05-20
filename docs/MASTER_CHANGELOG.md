@@ -139,6 +139,14 @@
 
 # Midnight Club OS - Redone V2 Changelog
 
+## [2.17.0] - 2026-05-20
+
+### Fase 3: Code Quality (Step 3.2 - Supabase Limits Mitigation)
+- **Supabase Limits Mitigation**: Detectada vulnerabilidad crítica arquitectónica donde los reportes agregados (Night, Monthly, Annual) sufrían truncamiento de datos en tablas con más de 1000 filas (ej. `stg_passline_tickets`, `night_cash_closing`, `opening_costs`) debido al límite nativo `.range()` de Supabase (PostgREST API).
+- **lib/queryHelper.js**: Implementado patrón de diseño de capa de acceso a datos para mitigar truncamientos de red. Creada utilidad centralizada `fetchAll(queryBuilder)` que abstrae bucles iterativos seguros mediante `.range()` secuenciales, consolidando todas las páginas en memoria para un cálculo de P&L perfecto desde el frontend.
+- **Reportes Financieros**: Refactorizados `NightReportModule`, `MonthlyReportModule` y `AnnualReportModule` inyectando el helper `fetchAll()` en sus respectivos `Promise.all` agregadores. Esto garantiza precisión matemática a largo plazo para cálculos contables sin necesidad de recurrir a vistas SQL (alineado con la decisión arquitectónica V2 de *Zero Aggregation Tables*).
+- **lib/gbolService.js**: Incorporado uso de `fetchAll()` en la función `populateSystemAmounts` para `import_gbol_facturacion`, blindando la persistencia de caja física incluso si la exportación del POS GBOL en una sola jornada superase los 1000 comprobantes.
+
 ## [2.16.0] - 2026-05-18
 
 ### UX/UI Polish: Cinematic Login
