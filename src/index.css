@@ -2,12 +2,15 @@
 
 @theme {
   --color-brand-bg: #0A0A0A;
-  --color-brand-surface: #121212;
-  --color-brand-border: #222222;
-  --color-brand-text: #F3F4F6;
-  --color-brand-muted: #888888;
-  --color-brand-success: #10B981;
+  --color-brand-surface: #111111;
+  --color-brand-card: #1A1A1A;
+  --color-brand-border: #2A2A2A;
+  --color-brand-text: #E5E5E5;
+  --color-brand-muted: #737373;
+  --color-brand-success: #22C55E;
+  --color-brand-warning: #F59E0B;
   --color-brand-error: #EF4444;
+  --color-brand-accent: #3B82F6;
 }
 
 body {
@@ -17,18 +20,54 @@ body {
   color: var(--color-brand-text);
 }
 
-/* Clean, modern scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* Monospace for data */
+.font-mono {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
+
+/* Clean scrollbars */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-brand-border); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-brand-muted); }
+
+/* Smooth transitions globally */
+* { transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* Custom Animations */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
-::-webkit-scrollbar-thumb {
-  background: var(--color-brand-border);
-  border-radius: 10px;
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-brand-muted);
+
+@keyframes slow-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+.animate-fade-in {
+  animation: fade-in 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-slide-up {
+  animation: slide-up 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-slow-pulse {
+  animation: slow-pulse 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Stagger delays */
+.delay-100 { animation-delay: 100ms; opacity: 0; }
+.delay-300 { animation-delay: 300ms; opacity: 0; }
+.delay-500 { animation-delay: 500ms; opacity: 0; }
+.delay-700 { animation-delay: 700ms; opacity: 0; }

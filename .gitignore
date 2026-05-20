@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Environment (real credentials)
+.env.local
+.env.*.local
+
+# Build output
+dist/
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Supabase CLI cache
+supabase/.temp/
