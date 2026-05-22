@@ -997,3 +997,6 @@ ame, prioritizing ID matches for perfect mapping accuracy without relying strict
 
 ### 2026-05-19: WorkDaysModule Cleanup
 - **UI**: Removed the redundant 'ASIST.' column from the main table in \WorkDaysModule.jsx\, updating table colSpans and simplifying the data presentation for a cleaner UI.
+
+### Hotfix: Vite Base Path
+- **vite.config.js**: Changed base path from '/redone/' to '/' to resolve black screen rendering error when accessing root URL in local dev environment.
