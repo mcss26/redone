@@ -278,6 +278,15 @@ Added explicit 'IGUALAR SISTEMA' button in NightOpsModule instead of automatic p
 **Decisión**: Implementar un Helper centralizado de capa de datos (`fetchAll()`) en `lib/queryHelper.js`. Este helper encapsula la lógica recursiva/iterativa de `.range()` para asegurar la descarga del 100% de la tabla solicitada antes de retornar la promesa a los módulos.
 **Consecuencias**: Se mantiene el paradigma de calcular todo en memoria desde el cliente garantizando precisión matemática al centavo, a expensas de un ligero overhead de iteración de red en el Reporte Anual. Es una protección indispensable para `stg_passline_tickets`, `import_gbol_facturacion`, `night_cash_closing` y `opening_costs`.
 
+### [D24] GitHub Pages Deployment Pipeline (Zero-Build Fallback Fix) [2026-06-05]
+
+**Contexto**: El despliegue automático mediante `.github/workflows/deploy.yml` resultaba en una pantalla en blanco porque GitHub Pages estaba configurado por defecto para servir la rama `master` en crudo, y `vite.config.js` usaba la ruta base `/`. Además, un Error 521 (CORS/Failed to fetch) bloqueaba el renderizado debido a que el proyecto de Supabase había entrado en pausa por inactividad.
+**Decisión**: 
+1. Cambiar la configuración de Vite a `base: '/redone/'` para mapear los assets correctamente bajo el nombre del repositorio.
+2. Forzar la configuración del repositorio en GitHub (Settings -> Pages -> Source) a **"GitHub Actions"** para evitar que se sirva el código no compilado (`/src/main.jsx`).
+3. Instaurar como regla que ante un Error 521 o error de CORS abrupto en un entorno que antes funcionaba, el primer paso de diagnóstico es verificar si el servidor de base de datos gratuito de Supabase fue puesto en "Pause".
+**Consecuencias**: Garantiza que el código servido provenga de la carpeta `./dist` generada por `npm run build` durante el pipeline, en lugar del código fuente original. Permite la integración continua real y resuelve los errores de tipo MIME por imports no procesados.
+
 ### --- SOURCE: DECISIONS_legacy_backup.md --- ###
 
 # Midnight Club OS - Decision Log
