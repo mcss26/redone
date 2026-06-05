@@ -141,6 +141,9 @@
 
 ## [2.17.0] - 2026-05-20
 
+### Fase 4: Polish & Deploy Readiness (GitHub Pages Fix)
+- **vite.config.js**: Corregido el `base: '/'` a `base: '/redone/'` para solucionar los errores de `404 Not Found` en la importación de assets estáticos (JS/CSS) y la pantalla en blanco durante el despliegue en GitHub Pages.
+
 ### Fase 3: Code Quality (Step 3.2 - Supabase Limits Mitigation)
 - **Supabase Limits Mitigation**: Detectada vulnerabilidad crítica arquitectónica donde los reportes agregados (Night, Monthly, Annual) sufrían truncamiento de datos en tablas con más de 1000 filas (ej. `stg_passline_tickets`, `night_cash_closing`, `opening_costs`) debido al límite nativo `.range()` de Supabase (PostgREST API).
 - **lib/queryHelper.js**: Implementado patrón de diseño de capa de acceso a datos para mitigar truncamientos de red. Creada utilidad centralizada `fetchAll(queryBuilder)` que abstrae bucles iterativos seguros mediante `.range()` secuenciales, consolidando todas las páginas en memoria para un cálculo de P&L perfecto desde el frontend.
