@@ -5,20 +5,7 @@ import dayjs from 'dayjs';
 
 const MODULE_MAP = [
   {
-    phase: 'MASTERS',
-    modules: [
-      { id: 'profiles',       label: 'EQUIPO' },
-      { id: 'suppliers',      label: 'PROVEEDORES' },
-      { id: 'sku',            label: 'CATÁLOGO SKU' },
-      { id: 'staff_roles',    label: 'TARIFARIO STAFF' },
-      { id: 'cost_templates', label: 'MASTER COSTOS (VAR)' },
-      { id: 'fixed_cost_templates', label: 'MASTER ESTRUCTURA' },
-      { id: 'pos_terminals',  label: 'TERMINALES POS' },
-      { id: 'master_vouchers',label: 'TIPOS COMPROBANTE' },
-    ]
-  },
-  {
-    phase: 'PLANIFICACIÓN',
+    phase: 'WORKDAYS',
     modules: [
       { id: 'work_days',       label: 'JORNADAS' },
       { id: 'opening_costs',   label: 'COSTOS APERTURA' },
@@ -27,14 +14,14 @@ const MODULE_MAP = [
     ]
   },
   {
-    phase: 'EJECUCIÓN',
+    phase: 'PAGOS',
     modules: [
       { id: 'payments',       label: 'PAGOS VARIABLES' },
       { id: 'fixed_costs',    label: 'GASTOS FIJOS' },
     ]
   },
   {
-    phase: 'LA NOCHE',
+    phase: 'NIGHT CHIEF',
     modules: [
       { id: 'bar_inventory',  label: 'INVENTARIO BARRA' },
       { id: 'workday',        label: 'OPERACIÓN NOCTURNA' },
@@ -46,6 +33,19 @@ const MODULE_MAP = [
       { id: 'night_report',   label: 'AUDITORÍA JORNADA' },
       { id: 'monthly_report', label: 'REPORTE MENSUAL' },
       { id: 'annual_report',  label: 'AUDITORÍA ANUAL' },
+    ]
+  },
+  {
+    phase: 'MASTERS',
+    modules: [
+      { id: 'profiles',       label: 'EQUIPO' },
+      { id: 'suppliers',      label: 'PROVEEDORES' },
+      { id: 'sku',            label: 'CATÁLOGO SKU' },
+      { id: 'staff_roles',    label: 'TARIFARIO STAFF' },
+      { id: 'cost_templates', label: 'MASTER COSTOS (VAR)' },
+      { id: 'fixed_cost_templates', label: 'MASTER ESTRUCTURA' },
+      { id: 'pos_terminals',  label: 'TERMINALES POS' },
+      { id: 'master_vouchers',label: 'TIPOS COMPROBANTE' },
     ]
   },
 ];
