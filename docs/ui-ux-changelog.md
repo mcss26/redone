@@ -25,3 +25,8 @@
 - **Modules:** `ProfilesModule`, `SuppliersModule`, `StaffRolesModule`, `CostTemplatesModule`, `FixedCostTemplatesModule`, `PosTerminalsModule`, `MasterVouchersModule`
 - **Action:** Executed an automated "Container Purge" by removing all `bg-brand-surface border border-brand-border rounded-2xl` wrappers around tables. Converted all Slide-Over inputs to `bg-transparent border-b`. Replaced all `rounded-xl` save buttons with the solid edge-to-edge Block Button pattern (`flex-1 bg-brand-text text-brand-bg`).
 - **Reason:** To strictly enforce the Functional Brutalism design system (Rules 24 and 26) established by the Golden Standards (`OpeningCostsModule` and `StockRequestsModule`) across all 7 Master views, ensuring 100% aesthetic homogeneity.
+
+### Mass Header Alignment: Masters Modules
+- **Modules:** `ProfilesModule`, `SuppliersModule`, `StaffRolesModule`, `CostTemplatesModule`, `FixedCostTemplatesModule`, `PosTerminalsModule`, `MasterVouchersModule`
+- **Action:** Removed the explicit `< VOLVER` (`<ArrowLeft>`) button from the headers and aligned the structure with the "Catálogo SKU" (`SkuModule.jsx`) Golden Standard. Replaced large, pill-shaped solid add buttons (`+ NUEVO`) with textual ghost buttons and unified header layouts (e.g. `flex items-end justify-between mb-4`) without descriptive subtitles.
+- **Reason:** To strictly enforce the top bar navigation policy ("No Back Button Policy" in `frontend-rules.md`) and achieve pixel-perfect layout alignment from the tables upward across all Master modules, adopting the exact minimalist aesthetics of the Sku Catalog.

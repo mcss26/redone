@@ -124,34 +124,30 @@ export default function StaffRolesModule({ onNavigate }) {
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto p-6 md:p-8">
         
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <button onClick={() => onNavigate('index')} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer">
-              <ArrowLeft size={16} />
-            </button>
-            <div>
-              <h2 className="text-xs font-extrabold tracking-[0.3em] uppercase text-brand-muted">TARIFARIO STAFF</h2>
-              <p className="text-[10px] text-brand-muted/40 tracking-wide mt-0.5">{roles.length} roles registrados</p>
-            </div>
+        {/* Actions & Title (Above Table) */}
+        <div className="flex items-end justify-between mb-4">
+          <div className="flex flex-col">
+            <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">
+              TARIFARIO STAFF
+            </h2>
           </div>
-          <div className="flex gap-3">
+
+          <div className="flex items-center gap-6">
             <div className="relative">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-muted" />
+              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-muted/50" />
               <input 
                 type="text" 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar rol..." 
-                className="pl-10 pr-4 py-2.5 rounded-xl bg-brand-surface border border-brand-border text-xs font-semibold focus:outline-none focus:border-brand-text focus:ring-1 focus:ring-brand-text/50 placeholder:text-brand-muted text-brand-text w-64 transition-all"
+                className="pl-8 pr-0 py-1 bg-transparent border-b border-brand-border/50 text-[10px] font-semibold tracking-[0.1em] focus:outline-none focus:border-brand-muted placeholder:text-brand-muted/30 text-brand-text w-48 transition-all"
               />
             </div>
             <button
               onClick={openCreate}
-              className="flex items-center gap-2 bg-brand-text text-brand-bg px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors cursor-pointer"
+              className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer flex items-center justify-end gap-2 text-[10px] font-bold tracking-[0.2em] uppercase"
             >
-              <DollarSign size={13} />
-              NUEVO
+              + NUEVO
             </button>
           </div>
         </div>

@@ -121,24 +121,22 @@ export default function FixedCostTemplatesModule({ onNavigate }) {
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto p-6 md:p-8">
         
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <button onClick={() => onNavigate('index')} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer">
-              <ArrowLeft size={16} />
-            </button>
-            <div>
-              <h2 className="text-xs font-extrabold tracking-[0.3em] uppercase text-brand-muted">MASTER DE ESTRUCTURA</h2>
-              <p className="text-[10px] text-brand-muted/40 tracking-wide mt-0.5">Gastos Fijos Mensuales (Auto-Poblados)</p>
-            </div>
+        {/* Actions & Title (Above Table) */}
+        <div className="flex items-end justify-between mb-4">
+          <div className="flex flex-col">
+            <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">
+              MASTER DE ESTRUCTURA
+            </h2>
           </div>
-          <button
-            onClick={openCreate}
-            className="flex items-center gap-2 bg-brand-text text-brand-bg px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors cursor-pointer"
-          >
-            <ClipboardList size={13} />
-            NUEVO
-          </button>
+
+          <div className="flex items-center gap-6">
+            <button
+              onClick={openCreate}
+              className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer flex items-center justify-end gap-2 text-[10px] font-bold tracking-[0.2em] uppercase"
+            >
+              + NUEVO
+            </button>
+          </div>
         </div>
 
         {/* Table */}
