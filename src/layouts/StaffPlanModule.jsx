@@ -26,7 +26,7 @@ export default function StaffPlanModule({ onNavigate }) {
     const fetchInit = async () => {
       try {
         const [wdRes, rolesRes] = await Promise.all([
-          supabase.from('work_days').select('*').in('status', ['open', 'closed']).order('work_date', { ascending: false }),
+          supabase.from('work_days').select('*').eq('status', 'open').order('work_date', { ascending: false }),
           supabase.from('staff_roles').select('id, name, base_rate, default_quantity').eq('active', true).order('name')
         ]);
         

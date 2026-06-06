@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './layouts/Login';
 import AdminIndex from './layouts/AdminIndex';
 import OperativoIndex from './layouts/OperativoIndex';
+import ContadorIndex from './layouts/ContadorIndex';
 import ProfilesModule from './layouts/ProfilesModule';
 import SuppliersModule from './layouts/SuppliersModule';
 import SkuModule from './layouts/SkuModule';
@@ -64,6 +65,9 @@ function AppShell() {
     if (activeView === 'index') {
       if (user.role === 'operativo') {
         return <OperativoIndex onNavigate={handleNavigation} />;
+      }
+      if (user.role === 'contador') {
+        return <ContadorIndex onNavigate={handleNavigation} />;
       }
       return <AdminIndex onNavigate={handleNavigation} />;
     }

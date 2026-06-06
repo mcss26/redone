@@ -3,12 +3,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import dayjs from 'dayjs';
 
-export default function OperativoIndex({ onNavigate }) {
+export default function ContadorIndex({ onNavigate }) {
   const { user } = useAuth();
-
-  // KPI State
   const [activeDay, setActiveDay] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isReportesOpen, setIsReportesOpen] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -16,7 +15,7 @@ export default function OperativoIndex({ onNavigate }) {
     const fetchActiveDay = async () => {
       try {
         if (isMounted) setIsLoading(true);
-        // 1. Obtener jornada activa
+        // Obtener jornada activa
         const { data: wdData, error: wdErr } = await supabase
           .from('work_days')
           .select('id, work_date, event_name')
@@ -46,15 +45,18 @@ export default function OperativoIndex({ onNavigate }) {
     };
   }, []);
 
-  // Extraemos el primer nombre del usuario, fallback a CRISTIAN
-  const firstName = user?.full_name ? user.full_name.split(' ')[0].toUpperCase() : 'CRISTIAN';
+  // Extraemos el primer nombre del usuario, fallback a CONTADOR
+  const firstName = user?.full_name ? user.full_name.split(' ')[0].toUpperCase() : 'CONTADOR';
 
-  const MODULES = [
-    { id: 'work_days',      label: 'WORKDAYS' },
-    { id: 'opening_costs',  label: 'COSTOS DE APERTURA' },
-    { id: 'stock_requests', label: 'PEDIDOS' },
-    { id: 'staff_plan',     label: 'STAFF' },
-    { id: 'sku',            label: 'CONFIG' },
+  const PRIMARY_MODULES = [
+    { id: 'payments',    label: 'PAGOS VARIABLES' },
+    { id: 'fixed_costs', label: 'GASTOS FIJOS' },
+  ];
+
+  const REPORT_MODULES = [
+    { id: 'night_report',   label: 'REPORTE DE NOCHE' },
+    { id: 'monthly_report', label: 'REPORTE MENSUAL' },
+    { id: 'annual_report',  label: 'REPORTE ANUAL' },
   ];
 
   return (
@@ -63,7 +65,7 @@ export default function OperativoIndex({ onNavigate }) {
         
         {/* Subtítulo de Rol */}
         <span className="text-[8px] md:text-[10px] font-bold tracking-[0.4em] uppercase text-brand-muted mb-4 text-center animate-fade-in">
-          OPERATIVO Y LOGISTICA - MIDNIGHT CLUB
+          ADMINISTRACION Y FINANZAS - MIDNIGHT CLUB
         </span>
 
         {/* Header - Nombre Grande */}
@@ -71,28 +73,60 @@ export default function OperativoIndex({ onNavigate }) {
           {firstName}
         </h1>
 
-        {/* Menú de Módulos (Smart Tabs) */}
-        <div className="flex flex-col md:flex-row flex-wrap items-center justify-center gap-6 md:gap-8 animate-fade-in delay-100">
-          {MODULES.map((mod, idx) => (
-            <React.Fragment key={mod.id}>
-              <button
-                onClick={() => onNavigate(mod.id)}
-                className="text-xs md:text-sm font-bold tracking-[0.3em] uppercase transition-colors duration-200 cursor-pointer text-brand-muted hover:text-brand-text"
-              >
-                {mod.label}
-              </button>
-              {/* Separador (Pleca) excepto en el último ítem */}
-              {idx < MODULES.length - 1 && (
+        {/* Menú de Módulos */}
+        <div className="flex flex-col items-center gap-6 animate-fade-in delay-100">
+          
+          <div className="flex flex-col md:flex-row flex-wrap items-center justify-center gap-6 md:gap-8">
+            {PRIMARY_MODULES.map((mod, idx) => (
+              <React.Fragment key={mod.id}>
+                <button
+                  onClick={() => onNavigate(mod.id)}
+                  className="text-xs md:text-sm font-bold tracking-[0.3em] uppercase transition-colors duration-200 cursor-pointer text-brand-muted hover:text-brand-text"
+                >
+                  {mod.label}
+                </button>
                 <span className="hidden md:inline-block text-brand-border/30">
                   |
                 </span>
-              )}
-            </React.Fragment>
-          ))}
+              </React.Fragment>
+            ))}
+            
+            {/* Botón Desplegable Reportes */}
+            <button
+              onClick={() => setIsReportesOpen(!isReportesOpen)}
+              className={`text-xs md:text-sm font-bold tracking-[0.3em] uppercase transition-colors duration-200 cursor-pointer flex items-center gap-2 ${isReportesOpen ? 'text-brand-text' : 'text-brand-muted hover:text-brand-text'}`}
+            >
+              REPORTES
+              <span className={`text-[8px] transform transition-transform duration-300 ${isReportesOpen ? 'rotate-180' : ''}`}>▼</span>
+            </button>
+          </div>
+
+          {/* Sub-menú de Reportes (Inline) */}
+          {isReportesOpen && (
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 mt-2 animate-fade-in">
+              {REPORT_MODULES.map((mod, idx) => (
+                <React.Fragment key={mod.id}>
+                  <button
+                    onClick={() => onNavigate(mod.id)}
+                    className="text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase transition-colors duration-200 cursor-pointer text-brand-muted/70 hover:text-brand-text"
+                  >
+                    {mod.label}
+                  </button>
+                  {idx < REPORT_MODULES.length - 1 && (
+                    <span className="hidden md:inline-block text-brand-border/20 text-xs">
+                      ·
+                    </span>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          )}
+
         </div>
 
       </div>
-      {/* Footer Ticker (Data Line Simplificada) */}
+
+      {/* Footer Ticker (Data Line) */}
       <div className="fixed bottom-0 left-0 w-full py-4 bg-brand-bg border-t border-brand-border/30 flex justify-center z-40">
         <div className="text-[9px] md:text-[10px] font-bold tracking-[0.2em] md:tracking-[0.3em] uppercase flex flex-wrap items-center justify-center gap-3 px-4 text-center animate-fade-in">
           {isLoading ? (
@@ -114,4 +148,3 @@ export default function OperativoIndex({ onNavigate }) {
     </div>
   );
 }
-

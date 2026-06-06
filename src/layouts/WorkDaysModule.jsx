@@ -187,7 +187,7 @@ export default function WorkDaysModule({ onNavigate }) {
         {/* Actions & Title (Above Table) */}
         <div className="flex items-end justify-between mb-4">
           <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">
-            PLANIFICACIÓN DE EVENTO
+            APERTURA DE EVENTOS
           </h2>
 
           <button

@@ -27,7 +27,7 @@ export default function OpeningCostsModule({ onNavigate }) {
     const fetchInit = async () => {
       try {
         const [wdRes, supRes] = await Promise.all([
-          supabase.from('work_days').select('*').in('status', ['open', 'closed']).order('work_date', { ascending: false }),
+          supabase.from('work_days').select('*').eq('status', 'open').order('work_date', { ascending: false }),
           supabase.from('suppliers').select('id, name').eq('active', true).order('name')
         ]);
         
@@ -178,7 +178,7 @@ export default function OpeningCostsModule({ onNavigate }) {
         {/* Actions & Title (Above Table) */}
         <div className="flex items-end justify-between mb-4">
           <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">
-            PLANIFICACIÓN OPERATIVA
+            PROYECCIÓN DE COSTOS RECURRENTES
           </h2>
 
           <div className="flex items-center gap-6">

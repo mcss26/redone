@@ -27,7 +27,7 @@ export default function StockRequestsModule({ onNavigate }) {
     const fetchInit = async () => {
       try {
         const [wdRes, skusRes, supRes] = await Promise.all([
-          supabase.from('work_days').select('*').in('status', ['open', 'closed']).order('work_date', { ascending: false }),
+          supabase.from('work_days').select('*').eq('status', 'open').order('work_date', { ascending: false }),
           supabase.from('skus').select('id, name, unit, category, cost, supplier_id').eq('active', true).order('name'),
           supabase.from('suppliers').select('id, name').eq('active', true).order('name')
         ]);
@@ -228,7 +228,7 @@ export default function StockRequestsModule({ onNavigate }) {
         {/* Actions & Title (Above Table) */}
         <div className="flex items-end justify-between mb-4">
           <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">
-            PLANIFICACIÓN OPERATIVA
+            SOLICITUD DE MERCADERÍA
           </h2>
 
           <div className="flex items-center gap-6">
