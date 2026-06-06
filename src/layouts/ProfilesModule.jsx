@@ -131,7 +131,7 @@ export default function ProfilesModule({ onNavigate }) {
         </div>
 
         {/* Table */}
-        <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden">
+        <div className="">
           <table className="w-full">
             <thead>
               <tr className="border-b border-brand-border">
@@ -205,7 +205,7 @@ export default function ProfilesModule({ onNavigate }) {
                   type="text"
                   value={form.full_name}
                   onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
+                  className="w-full bg-transparent border-b border-brand-border/50 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
                   autoFocus
                 />
               </div>
@@ -218,10 +218,10 @@ export default function ProfilesModule({ onNavigate }) {
                     <button
                       key={r}
                       onClick={() => setForm({ ...form, role: r })}
-                      className={`px-3 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all cursor-pointer ${
+                      className={`px-3 py-2 text-[10px] font-bold uppercase tracking-widest border-b transition-all cursor-pointer ${
                         form.role === r
-                          ? 'bg-brand-text text-brand-bg border-brand-text'
-                          : 'bg-brand-surface text-brand-muted border-brand-border hover:border-brand-muted'
+                          ? 'border-brand-text text-brand-text'
+                          : 'border-brand-border/50 text-brand-muted hover:border-brand-muted'
                       }`}
                     >
                       {r}
@@ -237,7 +237,7 @@ export default function ProfilesModule({ onNavigate }) {
                   type="text"
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
+                  className="w-full bg-transparent border-b border-brand-border/50 py-2 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
                   placeholder="Opcional"
                 />
               </div>
@@ -250,18 +250,18 @@ export default function ProfilesModule({ onNavigate }) {
                   inputMode="numeric"
                   value={form.pin}
                   onChange={(e) => setForm({ ...form, pin: e.target.value.replace(/\D/g, '').slice(0, 6) })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text font-mono tracking-[0.5em] text-center focus:outline-none focus:border-brand-muted transition-colors"
+                  className="w-full bg-transparent border-b border-brand-border/50 py-2 text-sm text-brand-text font-mono tracking-[0.5em] focus:outline-none focus:border-brand-muted transition-colors"
                   placeholder="4-6 dígitos"
                 />
               </div>
             </div>
 
             {/* Panel Footer */}
-            <div className="px-6 py-4 border-t border-brand-border">
+            <div className="border-t border-brand-border shrink-0 flex">
               <button
                 onClick={handleSave}
                 disabled={saving || !form.full_name.trim()}
-                className="w-full flex items-center justify-center gap-2 bg-brand-text text-brand-bg rounded-xl py-3 text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 bg-brand-text text-brand-bg py-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
               >
                 <Save size={13} />
                 {saving ? 'GUARDANDO...' : 'GUARDAR'}

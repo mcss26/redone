@@ -152,7 +152,7 @@ export default function PosTerminalsModule({ onNavigate }) {
         </div>
 
         {/* Table */}
-        <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden max-w-4xl">
+        <div className="max-w-4xl">
           <table className="w-full whitespace-nowrap">
             <thead>
               <tr className="border-b border-brand-border">
@@ -215,7 +215,7 @@ export default function PosTerminalsModule({ onNavigate }) {
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value.toUpperCase() })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
+                  className="w-full bg-transparent border-b border-brand-border/50 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
                   placeholder="Ej: CAJA 1, BARRA VIP"
                   autoFocus
                 />
@@ -227,7 +227,7 @@ export default function PosTerminalsModule({ onNavigate }) {
                   type="text"
                   value={form.terminal_id}
                   onChange={(e) => setForm({ ...form, terminal_id: e.target.value.toUpperCase() })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
+                  className="w-full bg-transparent border-b border-brand-border/50 py-2 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
                   placeholder="Ej: MP-T12345"
                 />
               </div>
@@ -235,12 +235,12 @@ export default function PosTerminalsModule({ onNavigate }) {
             </div>
 
             {/* Panel Footer */}
-            <div className="px-6 py-4 border-t border-brand-border shrink-0 flex gap-3">
+            <div className="border-t border-brand-border shrink-0 flex">
               {slideOver !== 'create' && (
                 <button
                   onClick={handleDelete}
                   disabled={saving}
-                  className="flex items-center justify-center bg-brand-surface border border-brand-error/30 text-brand-error rounded-xl px-4 py-3 hover:bg-brand-error hover:text-white transition-colors disabled:opacity-30 cursor-pointer"
+                  className="flex items-center justify-center bg-brand-error text-white px-6 hover:bg-red-600 transition-colors disabled:opacity-30 cursor-pointer"
                   title="Eliminar Terminal"
                 >
                   <Trash2 size={16} />
@@ -249,7 +249,7 @@ export default function PosTerminalsModule({ onNavigate }) {
               <button
                 onClick={handleSave}
                 disabled={saving || !form.name.trim()}
-                className="flex-1 flex items-center justify-center gap-2 bg-brand-text text-brand-bg rounded-xl py-3 text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 bg-brand-text text-brand-bg py-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
               >
                 {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
                 {saving ? 'GUARDANDO...' : 'GUARDAR'}

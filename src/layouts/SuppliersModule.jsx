@@ -175,7 +175,7 @@ export default function SuppliersModule({ onNavigate }) {
         </div>
 
         {/* Table */}
-        <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden">
+        <div className="">
           <div className="overflow-x-auto">
             <table className="w-full whitespace-nowrap">
               <thead>
@@ -252,7 +252,7 @@ export default function SuppliersModule({ onNavigate }) {
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
+                  className="w-full bg-transparent border-b border-brand-border/50 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
                   autoFocus
                 />
               </div>
@@ -263,7 +263,7 @@ export default function SuppliersModule({ onNavigate }) {
                   type="text"
                   value={form.tax_id}
                   onChange={(e) => setForm({ ...form, tax_id: e.target.value })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
+                  className="w-full bg-transparent border-b border-brand-border/50 py-2 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
                   placeholder="Ej: 30-12345678-9"
                 />
               </div>
@@ -275,7 +275,7 @@ export default function SuppliersModule({ onNavigate }) {
                     type="text"
                     value={form.contact_name}
                     onChange={(e) => setForm({ ...form, contact_name: e.target.value })}
-                    className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
+                    className="w-full bg-transparent border-b border-brand-border/50 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
                     placeholder="Nombre"
                   />
                 </div>
@@ -285,7 +285,7 @@ export default function SuppliersModule({ onNavigate }) {
                     type="text"
                     value={form.contact_phone}
                     onChange={(e) => setForm({ ...form, contact_phone: e.target.value })}
-                    className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
+                    className="w-full bg-transparent border-b border-brand-border/50 py-2 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
                     placeholder="+54 9 11..."
                   />
                 </div>
@@ -297,7 +297,7 @@ export default function SuppliersModule({ onNavigate }) {
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
+                  className="w-full bg-transparent border-b border-brand-border/50 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
                   placeholder="contacto@empresa.com"
                 />
               </div>
@@ -309,7 +309,7 @@ export default function SuppliersModule({ onNavigate }) {
                     type="text"
                     value={form.bank_name}
                     onChange={(e) => setForm({ ...form, bank_name: e.target.value })}
-                    className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
+                    className="w-full bg-transparent border-b border-brand-border/50 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
                     placeholder="Galicia, etc."
                   />
                 </div>
@@ -319,7 +319,7 @@ export default function SuppliersModule({ onNavigate }) {
                     type="text"
                     value={form.bank_alias}
                     onChange={(e) => setForm({ ...form, bank_alias: e.target.value })}
-                    className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
+                    className="w-full bg-transparent border-b border-brand-border/50 py-2 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
                     placeholder="EMPRESA.PAGOS"
                   />
                 </div>
@@ -330,7 +330,7 @@ export default function SuppliersModule({ onNavigate }) {
                 <textarea
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors resize-none h-20"
+                  className="w-full bg-transparent border-b border-brand-border/50 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors resize-none h-20"
                   placeholder="Condiciones, días de visita..."
                 />
               </div>
@@ -338,12 +338,12 @@ export default function SuppliersModule({ onNavigate }) {
             </div>
 
             {/* Panel Footer */}
-            <div className="px-6 py-4 border-t border-brand-border shrink-0 flex gap-3">
+            <div className="border-t border-brand-border shrink-0 flex">
               {slideOver !== 'create' && (
                 <button
                   onClick={handleDelete}
                   disabled={saving}
-                  className="flex items-center justify-center bg-brand-surface border border-brand-error/30 text-brand-error rounded-xl px-4 py-3 hover:bg-brand-error hover:text-white transition-colors disabled:opacity-30 cursor-pointer"
+                  className="flex items-center justify-center bg-brand-error text-white px-6 hover:bg-red-600 transition-colors disabled:opacity-30 cursor-pointer"
                   title="Eliminar Proveedor"
                 >
                   <Trash2 size={16} />
@@ -352,7 +352,7 @@ export default function SuppliersModule({ onNavigate }) {
               <button
                 onClick={handleSave}
                 disabled={saving || !form.name.trim()}
-                className="flex-1 flex items-center justify-center gap-2 bg-brand-text text-brand-bg rounded-xl py-3 text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 bg-brand-text text-brand-bg py-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
               >
                 {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
                 {saving ? 'GUARDANDO...' : 'GUARDAR'}

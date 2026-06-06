@@ -1,82 +1,59 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { 
-  Users, Package, Truck, DollarSign, CalendarDays, 
-  ClipboardList, CreditCard, PackageCheck, 
-  BarChart3, TrendingUp, PlayCircle, Eye, Settings
-} from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import dayjs from 'dayjs';
 
 const MODULE_MAP = [
   {
     phase: 'MASTERS',
-    description: 'Datos base del sistema',
-    color: 'brand-muted',
     modules: [
-      { id: 'profiles',       label: 'Equipo',            icon: Users,         status: 'live' },
-      { id: 'suppliers',      label: 'Proveedores',       icon: Truck,         status: 'live' },
-      { id: 'sku',            label: 'Catálogo SKU',      icon: Package,       status: 'live' },
-      { id: 'staff_roles',    label: 'Tarifario Staff',   icon: DollarSign,    status: 'live' },
-      { id: 'cost_templates', label: 'Master de Costos (Var)', icon: Settings,      status: 'live' },
-      { id: 'fixed_cost_templates', label: 'Master de Estructura', icon: Settings,      status: 'live' },
-      { id: 'pos_terminals',  label: 'Terminales POS',    icon: CreditCard,    status: 'live' },
-      { id: 'master_vouchers',label: 'Tipos Comprobante', icon: ClipboardList, status: 'live' },
+      { id: 'profiles',       label: 'EQUIPO' },
+      { id: 'suppliers',      label: 'PROVEEDORES' },
+      { id: 'sku',            label: 'CATÁLOGO SKU' },
+      { id: 'staff_roles',    label: 'TARIFARIO STAFF' },
+      { id: 'cost_templates', label: 'MASTER COSTOS (VAR)' },
+      { id: 'fixed_cost_templates', label: 'MASTER ESTRUCTURA' },
+      { id: 'pos_terminals',  label: 'TERMINALES POS' },
+      { id: 'master_vouchers',label: 'TIPOS COMPROBANTE' },
     ]
   },
   {
     phase: 'PLANIFICACIÓN',
-    description: 'Mar–Mié: Operativo propone, Admin aprueba',
-    color: 'brand-accent',
     modules: [
-      { id: 'work_days',       label: 'Jornadas',          icon: CalendarDays,  status: 'live' },
-      { id: 'opening_costs',   label: 'Costos Apertura',   icon: DollarSign,    status: 'live' },
-      { id: 'staff_plan',      label: 'Plan Staff',        icon: Users,         status: 'live' },
-      { id: 'stock_requests',  label: 'Solicitud Stock',   icon: Package,       status: 'live' },
+      { id: 'work_days',       label: 'JORNADAS' },
+      { id: 'opening_costs',   label: 'COSTOS APERTURA' },
+      { id: 'staff_plan',      label: 'PLAN STAFF' },
+      { id: 'stock_requests',  label: 'SOLICITUD STOCK' },
     ]
   },
   {
     phase: 'EJECUCIÓN',
-    description: 'Mié–Vie: Contador paga, Operativo recibe',
-    color: 'brand-warning',
     modules: [
-      { id: 'payments',       label: 'Pagos Variables',    icon: CreditCard,    status: 'live' },
-      { id: 'fixed_costs',    label: 'Gastos Fijos',       icon: DollarSign,    status: 'live' },
+      { id: 'payments',       label: 'PAGOS VARIABLES' },
+      { id: 'fixed_costs',    label: 'GASTOS FIJOS' },
     ]
   },
   {
     phase: 'LA NOCHE',
-    description: 'Sáb: Work Day en vivo',
-    color: 'brand-success',
     modules: [
-      { id: 'bar_inventory',  label: 'Inventario Barra',   icon: PackageCheck,  status: 'live' },
-      { id: 'workday',        label: 'Operación Nocturna', icon: PlayCircle,    status: 'live' },
+      { id: 'bar_inventory',  label: 'INVENTARIO BARRA' },
+      { id: 'workday',        label: 'OPERACIÓN NOCTURNA' },
     ]
   },
   {
     phase: 'REPORTES',
-    description: 'Lun + Mensual: Cierre y análisis',
-    color: 'brand-error',
     modules: [
-      { id: 'night_report',   label: 'Auditoría Jornada', icon: ClipboardList, status: 'live' },
-      { id: 'monthly_report', label: 'Reporte Mensual',  icon: TrendingUp,    status: 'live' },
-      { id: 'annual_report',  label: 'Auditoría Anual',   icon: BarChart3,     status: 'live' },
+      { id: 'night_report',   label: 'AUDITORÍA JORNADA' },
+      { id: 'monthly_report', label: 'REPORTE MENSUAL' },
+      { id: 'annual_report',  label: 'AUDITORÍA ANUAL' },
     ]
   },
 ];
 
-const STATUS_DOT = {
-  live:    'bg-brand-success',
-  wip:     'bg-brand-warning',
-  pending: 'bg-brand-border',
-};
-
-const STATUS_LABEL = {
-  live:    'LIVE',
-  wip:     'WIP',
-  pending: '—',
-};
-
 export default function AdminIndex({ onNavigate }) {
-  const { canAccess, canMutate, isReadOnly } = useAuth();
+  const { user, canAccess } = useAuth();
+  const [activeDay, setActiveDay] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Filter MODULE_MAP: only show phases that have at least one accessible module
   const filteredMap = useMemo(() => {
@@ -88,88 +65,138 @@ export default function AdminIndex({ onNavigate }) {
       .filter((phase) => phase.modules.length > 0);
   }, [canAccess]);
 
+  const [activePhase, setActivePhase] = useState(filteredMap.length > 0 ? filteredMap[0].phase : '');
+
+  // Synchronize phase selection if filteredMap updates
+  useEffect(() => {
+    if (filteredMap.length > 0 && !filteredMap.find(p => p.phase === activePhase)) {
+      setActivePhase(filteredMap[0].phase);
+    }
+  }, [filteredMap, activePhase]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchActiveDay = async () => {
+      try {
+        if (isMounted) setIsLoading(true);
+        const { data: wdData, error: wdErr } = await supabase
+          .from('work_days')
+          .select('id, work_date, event_name')
+          .eq('status', 'open')
+          .order('work_date', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (wdErr && wdErr.code !== 'PGRST116') throw wdErr;
+
+        if (wdData) {
+          if (isMounted) setActiveDay(wdData);
+        } else {
+          if (isMounted) setActiveDay(null);
+        }
+      } catch (err) {
+        console.error("Error fetching active day:", err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    fetchActiveDay();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const firstName = user?.full_name ? user.full_name.split(' ')[0].toUpperCase() : 'ADMINISTRADOR';
+
+  const activePhaseData = filteredMap.find(p => p.phase === activePhase);
+
   return (
-    <div className="h-full overflow-y-auto p-6 md:p-10">
-      
-      {/* Header */}
-      <div className="mb-10">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xs font-extrabold tracking-[0.4em] uppercase text-brand-muted">
-            MIDNIGHT CLUB OS
-          </h1>
-          {isReadOnly && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-warning/10 border border-brand-warning/20">
-              <Eye size={10} className="text-brand-warning" />
-              <span className="text-[8px] font-bold tracking-widest uppercase text-brand-warning">SOLO LECTURA</span>
-            </span>
+    <div className="h-full relative overflow-y-auto p-6 md:p-10 pt-24 md:pt-32 flex flex-col items-center">
+      <div className="w-full max-w-5xl flex flex-col items-center">
+        
+        {/* Subtítulo de Rol */}
+        <span className="text-[8px] md:text-[10px] font-bold tracking-[0.4em] uppercase text-brand-muted mb-4 text-center animate-fade-in">
+          SISTEMA GLOBAL - MIDNIGHT CLUB
+        </span>
+
+        {/* Header - Nombre Grande */}
+        <h1 className="text-6xl md:text-[8rem] leading-none font-extrabold tracking-[0.1em] uppercase text-brand-text mb-16 text-center animate-fade-in">
+          {firstName}
+        </h1>
+
+        {/* Menú de Módulos (Tier 1 & 2) */}
+        <div className="flex flex-col items-center gap-6 animate-fade-in delay-100 w-full">
+          
+          {/* Tier 1: Phases */}
+          <div className="flex flex-col md:flex-row flex-wrap items-center justify-center gap-6 md:gap-8">
+            {filteredMap.map((phase, idx) => (
+              <React.Fragment key={phase.phase}>
+                <button
+                  onClick={() => setActivePhase(phase.phase)}
+                  className={`text-xs md:text-sm font-bold tracking-[0.3em] uppercase transition-colors duration-200 cursor-pointer ${
+                    activePhase === phase.phase ? 'text-brand-text' : 'text-brand-muted hover:text-brand-text'
+                  }`}
+                >
+                  {phase.phase}
+                </button>
+                {idx < filteredMap.length - 1 && (
+                  <span className="hidden md:inline-block text-brand-border/30">
+                    |
+                  </span>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+
+          {/* Tier 2: Modules of Active Phase */}
+          {activePhaseData && (
+            <div className="flex flex-col md:flex-row flex-wrap items-center justify-center gap-4 md:gap-6 mt-4 animate-fade-in">
+              {activePhaseData.modules.map((mod, idx) => (
+                <React.Fragment key={mod.id}>
+                  <button
+                    onClick={() => onNavigate(mod.id)}
+                    className="text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase transition-colors duration-200 cursor-pointer text-brand-muted/70 hover:text-brand-text"
+                  >
+                    {mod.label}
+                  </button>
+                  {idx < activePhaseData.modules.length - 1 && (
+                    <span className="hidden md:inline-block text-brand-border/20 text-xs">
+                      ·
+                    </span>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
           )}
-        </div>
-        <div className="mt-1 text-[10px] tracking-[0.3em] uppercase text-brand-muted/40">
-          MÓDULOS DEL SISTEMA · V2 REDONE
+
         </div>
       </div>
 
-      {/* Phase Grid */}
-      <div className="space-y-8">
-        {filteredMap.map((phase) => (
-          <div key={phase.phase}>
-            
-            {/* Phase Header */}
-            <div className="flex items-center gap-3 mb-3">
-              <div className={`w-1.5 h-1.5 rounded-full bg-${phase.color}`} />
-              <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-brand-muted">
-                {phase.phase}
-              </span>
-              <span className="text-[10px] text-brand-muted/40 tracking-wide">
-                {phase.description}
-              </span>
-            </div>
-
-            {/* Module Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-              {phase.modules.map((mod) => {
-                const Icon = mod.icon;
-                const isLive = mod.status === 'live';
-                const readOnly = !canMutate(mod.id);
-                return (
-                  <button
-                    key={mod.id}
-                    onClick={() => isLive && onNavigate(mod.id)}
-                    className={`group relative flex flex-col items-start gap-3 p-4 rounded-xl border transition-all duration-200 cursor-pointer ${
-                      isLive
-                        ? 'bg-brand-surface border-brand-border hover:border-brand-muted hover:bg-brand-card'
-                        : 'bg-brand-bg border-brand-border/30 opacity-40 cursor-not-allowed'
-                    }`}
-                    disabled={!isLive}
-                  >
-                    {/* Status dot + read-only indicator */}
-                    <div className="absolute top-3 right-3 flex items-center gap-1.5">
-                      {readOnly && isLive && (
-                        <Eye size={8} className="text-brand-muted/50" />
-                      )}
-                      <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[mod.status]}`} />
-                      <span className="text-[8px] font-bold tracking-widest text-brand-muted/50 uppercase">
-                        {STATUS_LABEL[mod.status]}
-                      </span>
-                    </div>
-
-                    <Icon size={16} className={`${isLive ? 'text-brand-text' : 'text-brand-muted/30'}`} />
-                    
-                    <span className={`text-[11px] font-semibold tracking-wide ${
-                      isLive ? 'text-brand-text' : 'text-brand-muted/30'
-                    }`}>
-                      {mod.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+      {/* Footer Ticker (Data Line) */}
+      <div className="fixed bottom-0 left-0 w-full py-4 bg-brand-bg border-t border-brand-border/30 flex justify-center z-40">
+        <div className="text-[9px] md:text-[10px] font-bold tracking-[0.2em] md:tracking-[0.3em] uppercase flex flex-wrap items-center justify-center gap-3 px-4 text-center animate-fade-in">
+          {isLoading ? (
+             <span className="text-brand-muted/50">SINCRONIZANDO JORNADA...</span>
+          ) : activeDay ? (
+            <>
+              <span className="text-brand-text">JORNADA ACTIVA:</span>
+              <span className="text-brand-muted">{dayjs(activeDay.work_date).format('DD/MM')} - {activeDay.event_name}</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-brand-success shadow-[0_0_6px_rgba(74,222,128,0.5)] mx-1" />
+            </>
+          ) : (
+             <>
+              <span className="text-brand-muted">SIN JORNADA ACTIVA</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-brand-border/30 mx-1" />
+             </>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-// Export the module map so App.jsx can use it for routing validation
+// Export the module map so App.jsx can use it for routing validation if needed
 export { MODULE_MAP };
