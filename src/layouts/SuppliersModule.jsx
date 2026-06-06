@@ -181,6 +181,7 @@ export default function SuppliersModule({ onNavigate }) {
               <thead>
                 <tr className="border-b border-brand-border">
                   <th className="text-left text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3">NOMBRE</th>
+                  <th className="text-left text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3">CUIT</th>
                   <th className="text-left text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3">BANCO</th>
                   <th className="text-left text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3">CONTACTO</th>
                   <th className="text-left text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3">ALIAS / CBU</th>
@@ -191,18 +192,19 @@ export default function SuppliersModule({ onNavigate }) {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-12 text-brand-muted">
+                    <td colSpan={7} className="text-center py-12 text-brand-muted">
                       <Loader2 size={32} className="animate-spin mx-auto mb-4 text-brand-text" />
                       <div className="uppercase tracking-widest text-xs font-bold">Cargando proveedores...</div>
                     </td>
                   </tr>
                 ) : error ? (
-                  <tr><td colSpan={6} className="text-center py-12 text-brand-error text-xs font-bold uppercase tracking-widest">Error de conexión: {error}</td></tr>
+                  <tr><td colSpan={7} className="text-center py-12 text-brand-error text-xs font-bold uppercase tracking-widest">Error de conexión: {error}</td></tr>
                 ) : filteredSuppliers.length === 0 ? (
-                  <tr><td colSpan={6} className="text-center py-12 text-brand-muted/50 text-xs italic">No se encontraron proveedores.</td></tr>
+                  <tr><td colSpan={7} className="text-center py-12 text-brand-muted/50 text-xs italic">No se encontraron proveedores.</td></tr>
                 ) : filteredSuppliers.map((s) => (
                   <tr key={s.id} className="border-b border-brand-border/30 hover:bg-brand-card/50 transition-colors">
                     <td className="px-5 py-3.5 text-sm font-semibold text-brand-text">{s.name}</td>
+                    <td className="px-5 py-3.5 text-xs text-brand-muted font-mono">{s.tax_id || '—'}</td>
                     <td className="px-5 py-3.5 text-xs text-brand-muted font-mono">{s.bank_name || '—'}</td>
                     <td className="px-5 py-3.5 text-xs text-brand-muted">
                       <div>{s.contact_name || '—'}</div>
