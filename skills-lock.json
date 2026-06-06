@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "context-compressor": {
+      "source": "toonight/get-shit-done-for-antigravity",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/context-compressor/SKILL.md",
+      "computedHash": "0c94f2ed604b4b370e741b019fd2a8cfc7fe7b061077cebfb11cb9d0f8a261fe"
+    }
+  }
+}

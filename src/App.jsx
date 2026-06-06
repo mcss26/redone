@@ -11,6 +11,7 @@ import MasterVouchersModule from './layouts/MasterVouchersModule';
 import BarInventoryModule from './layouts/BarInventoryModule';
 import StaffRolesModule from './layouts/StaffRolesModule';
 import CostTemplatesModule from './layouts/CostTemplatesModule';
+import FixedCostTemplatesModule from './layouts/FixedCostTemplatesModule';
 import PosTerminalsModule from './layouts/PosTerminalsModule';
 import WorkDaysModule from './layouts/WorkDaysModule';
 import OpeningCostsModule from './layouts/OpeningCostsModule';
@@ -48,6 +49,7 @@ function AppShell() {
     bar_inventory:  BarInventoryModule,
     staff_roles:    StaffRolesModule,
     cost_templates: CostTemplatesModule,
+    fixed_cost_templates: FixedCostTemplatesModule,
     pos_terminals:  PosTerminalsModule,
     work_days:      WorkDaysModule,
     opening_costs:  OpeningCostsModule,
@@ -112,6 +114,29 @@ function AppShell() {
               { id: 'stock_requests', label: 'PEDIDOS' },
               { id: 'staff_plan', label: 'STAFF' },
               { id: 'sku', label: 'CONFIG' },
+            ].map(mod => (
+              <button
+                key={mod.id}
+                onClick={() => handleNavigation(mod.id)}
+                className={`text-[9px] font-bold tracking-[0.2em] uppercase transition-colors cursor-pointer ${
+                  activeView === mod.id ? 'text-brand-text' : 'text-brand-muted hover:text-brand-text'
+                }`}
+              >
+                {mod.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Center: Contador Sub-Nav */}
+        {activeView !== 'index' && ['payments', 'fixed_costs', 'night_report', 'monthly_report', 'annual_report'].includes(activeView) && (
+          <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-6 animate-fade-in">
+            {[
+              { id: 'payments', label: 'P. VARIABLES' },
+              { id: 'fixed_costs', label: 'GASTOS FIJOS' },
+              { id: 'night_report', label: 'R. NOCHE' },
+              { id: 'monthly_report', label: 'R. MENSUAL' },
+              { id: 'annual_report', label: 'R. ANUAL' },
             ].map(mod => (
               <button
                 key={mod.id}

@@ -224,8 +224,7 @@ export default function StaffPlanModule({ onNavigate }) {
             <thead>
               <tr className="border-b border-brand-border">
                 <th className="text-left text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3">ROL</th>
-                <th className="text-center text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3 w-32">SOLICITADOS</th>
-                <th className="text-center text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3 w-32">APROBADOS</th>
+                <th className="text-center text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3 w-32">CANT.</th>
                 <th className="text-right text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3 w-32">COSTO</th>
                 <th className="text-center text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3 w-28">ESTADO</th>
                 <th className="text-right text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3 w-20"></th>
@@ -235,9 +234,9 @@ export default function StaffPlanModule({ onNavigate }) {
               {loading ? (
                 <tr><td colSpan={5} className="text-center py-12 text-brand-muted text-xs">Cargando...</td></tr>
               ) : !selectedWorkDayId ? (
-                <tr><td colSpan={6} className="text-center py-12 text-brand-muted/50 text-xs italic">Seleccione una jornada.</td></tr>
+                <tr><td colSpan={5} className="text-center py-12 text-brand-muted/50 text-xs italic">Seleccione una jornada.</td></tr>
               ) : staffPlans.length === 0 ? (
-                <tr><td colSpan={6} className="text-center py-12 text-brand-muted/50 text-xs italic">No hay roles solicitados.</td></tr>
+                <tr><td colSpan={5} className="text-center py-12 text-brand-muted/50 text-xs italic">No hay roles solicitados.</td></tr>
               ) : staffPlans.map((p) => (
                 <tr key={p.id} className="border-b border-brand-border/30 hover:bg-brand-card/50 transition-colors">
                   <td className="px-5 py-3.5">
@@ -248,10 +247,7 @@ export default function StaffPlanModule({ onNavigate }) {
                     </div>
                   </td>
                   <td className="px-5 py-3.5 text-center font-mono text-brand-text text-sm">
-                    {p.quantity_requested}
-                  </td>
-                  <td className="px-5 py-3.5 text-center font-mono text-sm">
-                    {p.status === 'approved' ? <span className="text-brand-success">{p.quantity_approved}</span> : <span className="text-brand-muted/50">—</span>}
+                    {p.status === 'approved' ? p.quantity_approved : p.quantity_requested}
                   </td>
                   <td className="px-5 py-3.5 text-right font-mono text-brand-text text-sm">
                     {formatCurrency(

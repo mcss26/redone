@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { 
   Users, Package, Truck, DollarSign, CalendarDays, 
   ClipboardList, CreditCard, PackageCheck, 
-  BarChart3, TrendingUp, PlayCircle, Eye
+  BarChart3, TrendingUp, PlayCircle, Eye, Settings
 } from 'lucide-react';
 
 const MODULE_MAP = [
@@ -16,7 +16,8 @@ const MODULE_MAP = [
       { id: 'suppliers',      label: 'Proveedores',       icon: Truck,         status: 'live' },
       { id: 'sku',            label: 'Catálogo SKU',      icon: Package,       status: 'live' },
       { id: 'staff_roles',    label: 'Tarifario Staff',   icon: DollarSign,    status: 'live' },
-      { id: 'cost_templates', label: 'Plantillas Costos', icon: ClipboardList, status: 'live' },
+      { id: 'cost_templates', label: 'Master de Costos (Var)', icon: Settings,      status: 'live' },
+      { id: 'fixed_cost_templates', label: 'Master de Estructura', icon: Settings,      status: 'live' },
       { id: 'pos_terminals',  label: 'Terminales POS',    icon: CreditCard,    status: 'live' },
       { id: 'master_vouchers',label: 'Tipos Comprobante', icon: ClipboardList, status: 'live' },
     ]

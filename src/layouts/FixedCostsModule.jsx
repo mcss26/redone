@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { Plus, X, Save, ArrowLeft, Pencil, DollarSign, CheckCircle2, Trash2, Loader2, Calendar } from 'lucide-react';
+import { Plus, X, Save, Pencil, Calendar, CheckCircle2, Trash2, Loader2 } from 'lucide-react';
 import dayjs from 'dayjs';
 
-export default function FixedCostsModule({ onNavigate }) {
+export default function FixedCostsModule() {
+  const { canMutate } = useAuth();
+  const hasMutateAccess = canMutate('fixed_costs');
+
   const [months, setMonths] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState('');
   const [costs, setCosts] = useState([]);
@@ -20,7 +24,7 @@ export default function FixedCostsModule({ onNavigate }) {
     setTimeout(() => setFlashColor(''), 150);
   };
 
-  // Generar lista de meses (ultimos 6 meses y proximos 2)
+  // Generar lista de meses
   useEffect(() => {
     const generateMonths = () => {
       const generated = [];
@@ -35,25 +39,27 @@ export default function FixedCostsModule({ onNavigate }) {
     generateMonths();
   }, []);
 
-  const fetchInit = useCallback(async () => {
-    try {
-      const { data, error } = await supabase.from('suppliers').select('id, name').eq('active', true).order('name');
-      if (error) throw error;
-      setSuppliers(data || []);
-    } catch (err) {
-      console.error('Error fetching suppliers:', err);
-    }
+  // Fetch initial suppliers
+  useEffect(() => {
+    let isMounted = true;
+    const fetchInit = async () => {
+      try {
+        const { data, error } = await supabase.from('suppliers').select('id, name').eq('active', true).order('name');
+        if (error) throw error;
+        if (isMounted) setSuppliers(data || []);
+      } catch (err) {
+        console.error('Error fetching suppliers:', err);
+      }
+    };
+    fetchInit();
+    return () => { isMounted = false; };
   }, []);
 
-  useEffect(() => {
-    fetchInit();
-  }, [fetchInit]);
-
   // Fetch costs when month changes
-  const fetchCosts = useCallback(async () => {
+  const fetchCosts = useCallback(async (silent = false) => {
     if (!selectedMonth) return;
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const { data, error } = await supabase
         .from('monthly_fixed_costs')
         .select(`*, suppliers ( name )`)
@@ -65,13 +71,59 @@ export default function FixedCostsModule({ onNavigate }) {
       console.error('Error fetching costs:', err);
       triggerFlash('error');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [selectedMonth]);
 
   useEffect(() => {
-    fetchCosts();
-  }, [fetchCosts]);
+    let isMounted = true;
+    const load = async () => {
+      if (!selectedMonth) return;
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('monthly_fixed_costs')
+          .select(`*, suppliers ( name )`)
+          .eq('billing_month', selectedMonth)
+          .order('created_at', { ascending: true });
+        if (error) throw error;
+        
+        // Auto-poblado silencioso
+        if (data.length === 0) {
+          const { data: masters } = await supabase.from('fixed_cost_templates').select('*').eq('active', true);
+          if (masters && masters.length > 0) {
+            const payload = masters.map(m => ({
+              billing_month: selectedMonth,
+              title: m.title,
+              amount: m.default_amount,
+              supplier_id: m.supplier_id,
+              status: 'pending'
+            }));
+            const { error: insertError } = await supabase.from('monthly_fixed_costs').insert(payload);
+            
+            if (!insertError) {
+              const { data: refetched } = await supabase
+                .from('monthly_fixed_costs')
+                .select(`*, suppliers ( name )`)
+                .eq('billing_month', selectedMonth)
+                .order('created_at', { ascending: true });
+              if (isMounted) setCosts(refetched || []);
+              return;
+            }
+          }
+        }
+        
+        if (isMounted) setCosts(data || []);
+      } catch (err) {
+        console.error('Error fetching costs:', err);
+        if (isMounted) triggerFlash('error');
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { isMounted = false; };
+  }, [selectedMonth]);
 
   const openCreate = () => {
     if (!selectedMonth) return;
@@ -109,7 +161,7 @@ export default function FixedCostsModule({ onNavigate }) {
 
       triggerFlash('success');
       setSlideOver(null);
-      fetchCosts();
+      fetchCosts(true);
     } catch (err) {
       console.error('Error saving cost:', err);
       triggerFlash('error');
@@ -124,7 +176,7 @@ export default function FixedCostsModule({ onNavigate }) {
       const { error } = await supabase.from('monthly_fixed_costs').delete().eq('id', id);
       if (error) throw error;
       triggerFlash('success');
-      fetchCosts();
+      fetchCosts(true);
     } catch (err) {
       console.error('Error deleting cost:', err);
       triggerFlash('error');
@@ -136,7 +188,7 @@ export default function FixedCostsModule({ onNavigate }) {
       const { error } = await supabase.from('monthly_fixed_costs').update({ status: 'paid' }).eq('id', id);
       if (error) throw error;
       triggerFlash('success');
-      fetchCosts();
+      fetchCosts(true);
     } catch (err) {
       console.error('Error updating cost status:', err);
       triggerFlash('error');
@@ -161,119 +213,118 @@ export default function FixedCostsModule({ onNavigate }) {
 
       <div className="flex-1 overflow-y-auto p-6 md:p-8">
         
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <button onClick={() => onNavigate('index')} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer">
-              <ArrowLeft size={16} />
-            </button>
-            <div>
-              <h2 className="text-xs font-extrabold tracking-[0.3em] uppercase text-brand-muted">ESTRUCTURA Y OVERHEADS</h2>
-              <p className="text-[10px] text-brand-muted/40 tracking-wide mt-0.5">Costos Fijos Mensuales</p>
-            </div>
-          </div>
+        {/* Actions & Title (Above Table) */}
+        <div className="flex items-end justify-between mb-4">
+          <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">
+            ESTRUCTURA Y OVERHEADS
+          </h2>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
             {/* Month Selector */}
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="bg-brand-surface border border-brand-border rounded-xl px-4 py-2 text-xs font-bold text-brand-text focus:outline-none appearance-none cursor-pointer uppercase tracking-wider min-w-[200px]"
+              className="bg-transparent border-none text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted hover:text-brand-text transition-colors focus:outline-none appearance-none cursor-pointer text-right"
             >
               {months.map(m => (
-                <option key={m} value={m}>{formatMonth(m)}</option>
+                <option key={m} value={m} className="bg-brand-bg text-brand-text">{formatMonth(m)}</option>
               ))}
             </select>
 
-            <button
-              onClick={openCreate}
-              disabled={!selectedMonth}
-              className="flex items-center gap-2 bg-brand-surface border border-brand-border text-brand-text px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest hover:border-brand-muted transition-colors disabled:opacity-30 cursor-pointer"
-            >
-              <Plus size={13} />
-              NUEVO GASTO FIJO
-            </button>
+            {hasMutateAccess && (
+              <button
+                onClick={openCreate}
+                disabled={!selectedMonth}
+                className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer flex items-center justify-end gap-2 text-[10px] font-bold tracking-[0.2em] uppercase disabled:opacity-30"
+              >
+                + NUEVO GASTO FIJO
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Table */}
-        <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden mb-6">
+        {/* Table (Raw Data) */}
+        <div className="mb-6">
           <table className="w-full whitespace-nowrap">
             <thead>
-              <tr className="border-b border-brand-border bg-brand-bg/50">
-                <th className="text-left text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3">CONCEPTO / SERVICIO</th>
-                <th className="text-left text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3">PROVEEDOR</th>
-                <th className="text-right text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3">MONTO</th>
-                <th className="text-center text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3 w-28">ESTADO</th>
-                <th className="text-right text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3 w-20"></th>
+              <tr className="border-b border-brand-border/50">
+                <th className="text-left text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted/50 pb-3">CONCEPTO / SERVICIO</th>
+                <th className="text-left text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted/50 pb-3">PROVEEDOR</th>
+                <th className="text-right text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted/50 pb-3">MONTO</th>
+                <th className="text-center text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted/50 pb-3 w-24">ESTADO</th>
+                {hasMutateAccess && (
+                  <th className="text-right text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted/50 pb-3 w-20"></th>
+                )}
               </tr>
             </thead>
-            <tbody className="divide-y divide-brand-border/50">
+            <tbody className="divide-y divide-brand-border/30">
               {loading ? (
-                <tr><td colSpan={5} className="text-center py-12 text-brand-muted text-xs uppercase tracking-widest">Cargando...</td></tr>
+                <tr><td colSpan={hasMutateAccess ? 5 : 4} className="text-center py-12 text-brand-muted text-xs uppercase tracking-widest">Cargando...</td></tr>
               ) : !selectedMonth ? (
-                <tr><td colSpan={5} className="text-center py-12 text-brand-muted/50 text-xs italic">Seleccione un mes para ver los costos.</td></tr>
+                <tr><td colSpan={hasMutateAccess ? 5 : 4} className="text-center py-12 text-brand-muted/50 text-xs italic">Seleccione un mes para ver los costos.</td></tr>
               ) : costs.length === 0 ? (
-                <tr><td colSpan={5} className="text-center py-12 text-brand-muted/50 text-xs uppercase tracking-widest">NO HAY COSTOS REGISTRADOS ESTE MES.</td></tr>
+                <tr><td colSpan={hasMutateAccess ? 5 : 4} className="text-center py-12 text-brand-muted/50 text-xs uppercase tracking-widest">NO HAY COSTOS REGISTRADOS ESTE MES.</td></tr>
               ) : costs.map((c) => (
                 <tr key={c.id} className="hover:bg-brand-card/50 transition-colors group">
-                  <td className="px-5 py-4 text-sm font-semibold text-brand-text">
+                  <td className="py-4 text-sm font-semibold text-brand-text">
                     <div className="flex items-center gap-2">
                       <Calendar size={12} className="text-brand-muted/50" />
                       {c.title}
                     </div>
                   </td>
-                  <td className="px-5 py-4 text-xs text-brand-muted">
+                  <td className="py-4 text-xs text-brand-muted">
                     {c.suppliers?.name ? (
-                      <span className="bg-brand-border/30 px-2 py-1 rounded text-brand-text">{c.suppliers.name}</span>
+                      <span>{c.suppliers.name}</span>
                     ) : (
                       <span className="text-brand-muted/50">—</span>
                     )}
                   </td>
-                  <td className="px-5 py-4 text-sm font-mono text-right text-brand-text">
+                  <td className="py-4 text-sm font-mono text-right text-brand-text">
                     {formatCurrency(c.amount)}
                   </td>
-                  <td className="px-5 py-4 text-center">
-                    <span className={`px-2 py-1 rounded text-[9px] font-bold tracking-[0.2em] uppercase ${
-                      c.status === 'pending' ? 'bg-brand-warning/20 text-brand-warning' : 
-                      'bg-brand-success/20 text-brand-success'
-                    }`}>
-                      {c.status === 'pending' ? 'PENDIENTE' : 'PAGADO'}
-                    </span>
+                  <td className="py-4 text-center">
+                    <div className="flex justify-center">
+                      <div 
+                        className={`w-2 h-2 rounded-full shadow-[0_0_6px_rgba(0,0,0,0.5)] ${c.status === 'pending' ? 'bg-brand-warning' : 'bg-brand-success'}`}
+                        title={c.status === 'pending' ? 'PENDIENTE' : 'PAGADO'}
+                      />
+                    </div>
                   </td>
-                  <td className="px-5 py-4 text-right flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {c.status === 'pending' && (
-                      <button onClick={() => handleMarkPaid(c.id)} className="text-brand-success/70 hover:text-brand-success transition-colors cursor-pointer p-1" title="Marcar como Pagado">
-                        <CheckCircle2 size={14} />
+                  {hasMutateAccess && (
+                    <td className="py-4 text-right flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {c.status === 'pending' && (
+                        <button onClick={() => handleMarkPaid(c.id)} className="text-brand-success/70 hover:text-brand-success transition-colors cursor-pointer" title="Marcar como Pagado">
+                          <CheckCircle2 size={14} />
+                        </button>
+                      )}
+                      <button onClick={() => openEdit(c)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer" title="Editar Costo">
+                        <Pencil size={14} />
                       </button>
-                    )}
-                    <button onClick={() => openEdit(c)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer p-1">
-                      <Pencil size={14} />
-                    </button>
-                    <button onClick={() => handleDelete(c.id)} className="text-brand-error/50 hover:text-brand-error transition-colors cursor-pointer p-1">
-                      <Trash2 size={14} />
-                    </button>
-                  </td>
+                      <button onClick={() => handleDelete(c.id)} className="text-brand-error/50 hover:text-brand-error transition-colors cursor-pointer" title="Eliminar Costo">
+                        <Trash2 size={14} />
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
 
-        {/* Cost KPI Grid */}
+        {/* Cost KPI Grid (Flattened) */}
         {selectedMonth && costs.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-brand-surface border border-brand-border rounded-xl px-6 py-5">
-              <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">TOTAL ESTRUCTURA</div>
-              <div className="text-2xl font-mono font-bold text-brand-text">{formatCurrency(totalAmount)}</div>
+          <div className="flex items-center justify-end gap-12 border-t border-brand-border/30 pt-6">
+            <div className="text-right">
+              <div className="text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-1">TOTAL ESTRUCTURA</div>
+              <div className="text-lg font-mono font-bold text-brand-text">{formatCurrency(totalAmount)}</div>
             </div>
-            <div className="bg-brand-surface border border-brand-border rounded-xl px-6 py-5">
-              <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">PAGADO</div>
-              <div className="text-2xl font-mono font-bold text-brand-success">{formatCurrency(paidAmount)}</div>
+            <div className="text-right">
+              <div className="text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-1">PAGADO</div>
+              <div className="text-lg font-mono font-bold text-brand-success">{formatCurrency(paidAmount)}</div>
             </div>
-            <div className="bg-brand-surface border border-brand-border rounded-xl px-6 py-5 relative overflow-hidden">
-              <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">PENDIENTE (PASIVO)</div>
-              <div className={`text-2xl font-mono font-bold ${pendingAmount > 0 ? 'text-brand-warning' : 'text-brand-muted'}`}>
+            <div className="text-right">
+              <div className="text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-1">PENDIENTE (PASIVO)</div>
+              <div className={`text-lg font-mono font-bold ${pendingAmount > 0 ? 'text-brand-warning' : 'text-brand-muted'}`}>
                 {formatCurrency(pendingAmount)}
               </div>
             </div>
@@ -282,13 +333,13 @@ export default function FixedCostsModule({ onNavigate }) {
       </div>
 
       {/* Slide-Over Panel */}
-      {slideOver && (
+      {slideOver && hasMutateAccess && (
         <>
           <div className="absolute inset-0 bg-black/30 z-40" onClick={() => setSlideOver(null)} />
           <div className="absolute top-0 right-0 h-full w-full max-w-sm bg-brand-bg border-l border-brand-border z-50 flex flex-col animate-slide-in">
             
-            <div className="flex items-center justify-between px-6 py-5 border-b border-brand-border shrink-0 bg-brand-surface">
-              <h3 className="text-xs font-bold tracking-[0.2em] uppercase text-brand-muted">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-brand-border/30 shrink-0">
+              <h3 className="text-[10px] font-bold tracking-[0.3em] uppercase text-brand-muted">
                 {slideOver === 'create' ? 'NUEVO GASTO ESTRUCTURAL' : 'EDITAR GASTO FIJO'}
               </h3>
               <button onClick={() => setSlideOver(null)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer">
@@ -296,54 +347,54 @@ export default function FixedCostsModule({ onNavigate }) {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <div className="flex-1 overflow-y-auto p-6 space-y-8 mt-4">
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Servicio / Concepto *</label>
+                <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">SERVICIO / CONCEPTO *</label>
                 <input
                   type="text"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
-                  placeholder="Ej: Alquiler, Edenor, Telecentro..."
+                  className="w-full bg-transparent border-b border-brand-border/50 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
+                  placeholder="Ej: Alquiler, Edenor..."
                   autoFocus
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Monto Fijo</label>
+                <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">MONTO FIJO</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-muted font-mono">$</span>
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 text-brand-muted font-mono">$</span>
                   <input
                     type="number"
                     min="0"
                     step="100"
                     value={form.amount}
                     onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                    className="w-full bg-brand-surface border border-brand-border rounded-xl pl-8 pr-4 py-3 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
+                    className="w-full bg-transparent border-b border-brand-border/50 pl-6 py-2 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Proveedor Asociado (Opcional)</label>
+                <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">PROVEEDOR ASOCIADO (OPCIONAL)</label>
                 <select
                   value={form.supplier_id}
                   onChange={(e) => setForm({ ...form, supplier_id: e.target.value })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none"
+                  className="w-full bg-transparent border-b border-brand-border/50 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none cursor-pointer"
                 >
-                  <option value="">-- Sin proveedor específico --</option>
+                  <option value="" className="bg-brand-bg text-brand-text">-- Sin proveedor --</option>
                   {suppliers.map(s => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
+                    <option key={s.id} value={s.id} className="bg-brand-bg text-brand-text">{s.name}</option>
                   ))}
                 </select>
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-brand-border shrink-0 bg-brand-surface">
+            <div className="border-t border-brand-border shrink-0 flex">
               <button
                 onClick={handleSave}
                 disabled={saving || !form.title.trim()}
-                className="w-full flex items-center justify-center gap-2 bg-brand-text text-brand-bg rounded-xl py-3 text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 bg-brand-text text-brand-bg py-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
               >
                 {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
                 {saving ? 'GUARDANDO...' : 'GUARDAR COSTO FIJO'}
