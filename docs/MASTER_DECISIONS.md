@@ -25,3 +25,11 @@
 6. **Data Fetching Consistency:** `useEffect` and `useCallback` combinations mapped to `fetchData` functions, handling initial loads and post-save refreshes efficiently.
 
 **Rationale:** This layout prioritizes extreme data density and rapid interaction suitable for POS and administrative high-frequency use. Slide-overs keep the user anchored to the context of the data table while performing mutations.
+
+## 2026-06-06: Asynchronous Inter-role Communication (Global Messages)
+**Context:** Need for asynchronous communication between Admin, Operativo, and Contador without relying on external apps (WhatsApp) and maintaining system traceability.
+**Decision:** Implementation of a "Global Messages Board" directly integrated into the Index Screens.
+**Technical Pattern Guidelines:**
+1. **Always-On Visibility:** The messages board (`<GlobalMessagesBoard />`) is placed permanently above the Active Workday Footer Ticker in all Index modules, eschewing hidden Slide-Overs or Modals to ensure immediate visibility of critical operational notes.
+2. **Realtime Sync:** Uses Supabase realtime subscriptions (`postgres_changes`) to instantly broadcast messages to all connected clients.
+3. **Flat Hierarchy:** A single `global_messages` table without role-based Row Level Security filtering ensures all operational roles share the exact same contextual awareness (Global Wall).

@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS global_messages (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), created_at TIMESTAMPTZ DEFAULT NOW(), author_name TEXT NOT NULL, content TEXT NOT NULL); ALTER TABLE global_messages ENABLE ROW LEVEL SECURITY; DROP POLICY IF EXISTS "Allow all" ON global_messages; CREATE POLICY "Allow all" ON global_messages FOR ALL USING (true) WITH CHECK (true);

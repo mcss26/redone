@@ -11,3 +11,12 @@
 **Context:** The `SkuModule` (Catálogo SKU) was functioning as the golden standard for master modules, featuring no explicit `< VOLVER` button, a ghost add button, and a raw typography title block without subtext. The other 7 master modules retained legacy containers, subtexts, solid Pill buttons, and back arrows.
 **Decision:** All master modules (`Profiles`, `Suppliers`, `StaffRoles`, `CostTemplates`, `FixedCostTemplates`, `PosTerminals`, `MasterVouchers`) have been strictly aligned to the `SkuModule`'s header format.
 **Rationale:** Enforces the "No Back Button Policy" dictating that backward navigation must rely on the TopBar central logo, creating a true "Control Panel" feel across the entire system. Removes redundant descriptive subtexts to improve data density.
+
+## 2026-06-06: Brutalismo Funcional en Autenticación (Login)
+**Context:** La pantalla de Login mantenía un diseño de 'tarjeta' flotante con bordes redondeados (Glassmorphism), lo que desentonaba drásticamente con la estética agresiva de alta densidad y contenedor purgado ('Container Purge') de los paneles Index.
+**Decision:** Rediseño completo bajo los principios de Brutalismo Funcional.
+**Guidelines:**
+1. Eliminación total de contenedores y sombreados. El formulario flota directamente sobre el 'Deep Void' (`bg-brand-bg`).
+2. Continuidad Tipográfica: Se utiliza una variante masiva del título (`text-[7rem]`) para igualar el impacto de la lectura de nombres en las pantallas Index, eliminando la sensación de 'landing page' e infundiendo la sensación de terminal operativa.
+3. Input como consola: Línea de base cruda (`border-b-2`) con tracking extremo en lugar de campos de texto estándar.
+4. Botón estricto: Bloque macizo sincronizado con el ancho del input, usando estados `disabled:bg-brand-surface` para visibilidad clara pero pasiva.

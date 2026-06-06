@@ -25,28 +25,29 @@ export default function Login() {
   if (!mounted) return null; // Avoid flicker before CSS animations start
 
   return (
-    <div className="h-screen w-full flex items-center justify-center relative overflow-hidden bg-brand-bg">
+    <div className="h-screen w-full flex flex-col items-center justify-center relative overflow-hidden bg-brand-bg">
 
-      <div className="w-full max-w-sm z-10 px-6">
+      <div className="w-full max-w-sm z-10 px-8 flex flex-col items-center">
         
         {/* Brand */}
-        <div className="text-center mb-14 animate-fade-in delay-100">
-          <h1 className="text-sm font-extrabold tracking-[0.3em] uppercase text-brand-text drop-shadow-md">
+        <div className="text-center mb-16 md:mb-24 animate-fade-in delay-100 flex flex-col items-center">
+          <span className="text-[8px] md:text-[10px] font-bold tracking-[0.4em] uppercase text-brand-muted mb-4 md:mb-6">
+            SYSTEM ACCESS // CONTROL PANEL
+          </span>
+          <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-[7rem] leading-none font-extrabold tracking-[0.1em] uppercase text-brand-text whitespace-nowrap">
             MIDNIGHT CLUB
           </h1>
-          <div className="mt-3 text-[9px] font-bold tracking-[0.6em] uppercase text-brand-muted/70">
-            CONTROL PANEL
-          </div>
         </div>
 
-        {/* Form Container (Ghost Glass) */}
-        <div className="animate-slide-up delay-300">
+        {/* Form Container (Raw Brutalist) */}
+        <div className="w-full max-w-xs animate-slide-up delay-300 mt-12">
           <form 
             onSubmit={handleSubmit} 
-            className="space-y-6 bg-brand-surface/40 backdrop-blur-xl border border-brand-border/50 rounded-2xl p-8 shadow-2xl"
+            className="w-full flex flex-col space-y-6"
           >
-            <div className="relative group">
-              <Lock size={14} className="absolute left-5 top-1/2 -translate-y-1/2 text-brand-muted group-focus-within:text-brand-text transition-colors duration-300" />
+            {/* Input Box */}
+            <div className="relative group w-full flex items-center border-b border-brand-border/50 focus-within:border-brand-text transition-colors duration-300 pb-3">
+              <Lock size={14} className="text-brand-muted/50 group-focus-within:text-brand-text transition-colors duration-300 mr-4" />
               <input
                 type="password"
                 inputMode="numeric"
@@ -55,37 +56,34 @@ export default function Login() {
                 onChange={handlePinChange}
                 placeholder="INGRESAR PIN"
                 autoFocus
-                className="w-full bg-brand-bg/50 border border-brand-border/40 rounded-xl pl-12 pr-5 py-4 text-sm font-mono tracking-[0.5em] text-brand-text placeholder:text-brand-muted/30 placeholder:tracking-[0.2em] focus:outline-none focus:border-brand-text/30 focus:bg-brand-bg/80 focus:ring-1 focus:ring-brand-text/30 transition-all duration-300 shadow-inner"
+                className="flex-1 bg-transparent border-none text-xl font-mono tracking-[0.5em] text-brand-text placeholder:text-brand-muted/30 placeholder:tracking-[0.2em] focus:outline-none"
               />
             </div>
 
-            {error && (
-               <div className="flex items-center justify-center gap-2 text-brand-error text-[11px] font-bold px-1 bg-brand-error/10 py-2.5 rounded-lg border border-brand-error/20 animate-fade-in">
-                <AlertCircle size={14} />
-                <span className="tracking-widest uppercase">{error}</span>
-              </div>
-            )}
+            {/* Error & Spacer */}
+            <div className="h-6 flex items-start">
+              {error && (
+                <div className="flex items-center gap-2 text-brand-error text-[10px] font-bold animate-fade-in uppercase tracking-widest">
+                  <AlertCircle size={12} />
+                  <span>{error}</span>
+                </div>
+              )}
+            </div>
 
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading || pin.length < 4}
-              className="w-full relative overflow-hidden bg-brand-text text-brand-bg rounded-xl py-4 text-[11px] font-extrabold uppercase tracking-[0.2em] hover:bg-white hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-30 disabled:hover:scale-100 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-3 group"
+              className="w-full bg-brand-text text-brand-bg py-4 text-[11px] font-extrabold uppercase tracking-[0.3em] hover:bg-white active:scale-95 transition-all duration-300 disabled:bg-brand-surface disabled:text-brand-muted/50 disabled:active:scale-100 cursor-pointer flex items-center justify-center"
             >
-              {/* Shine effect on hover */}
-              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover:animate-[shimmer_1.5s_infinite] pointer-events-none"></div>
-              
-              {loading ? (
-                <Loader2 size={16} className="animate-spin text-brand-bg" />
-              ) : (
-                'AUTENTICAR'
-              )}
+              {loading ? <Loader2 size={16} className="animate-spin" /> : 'AUTENTICAR'}
             </button>
           </form>
         </div>
 
         {/* Footer info */}
-        <div className="mt-12 text-center animate-fade-in delay-500">
-          <p className="text-[10px] font-mono text-brand-muted/40 uppercase tracking-widest">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-fade-in delay-500 w-full text-center">
+          <p className="text-[9px] font-mono text-brand-muted/30 uppercase tracking-[0.4em]">
             {new Date().getFullYear()} © SYSTEM V2.0
           </p>
         </div>

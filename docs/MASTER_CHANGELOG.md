@@ -12,3 +12,10 @@
 
 ### Role Index Validation
 - **Architecture:** Audited `ContadorIndex.jsx` and verified its strict alignment with the Index Screen Golden Standard. No structural refactoring was required.
+
+### Bug Fix: Cost Templates Deletion
+- **System:** Added `handleDelete` function to `CostTemplatesModule.jsx` to allow users to permanently delete cost templates from the master template list, completing its CRUD lifecycle.
+
+### Feature: Global Messages Board (Muro de Novedades)
+- **System:** Creada tabla `global_messages` en Supabase para almacenamiento asíncrono de notas.
+- **Architecture/UI:** Implementado `<GlobalMessagesBoard />` como un contenedor fijo (Always On) en todos los módulos de Index (`AdminIndex`, `OperativoIndex`, `ContadorIndex`). Provee comunicación en vivo inter-rol.

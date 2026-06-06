@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import dayjs from 'dayjs';
+import GlobalMessagesBoard from '../components/GlobalMessagesBoard';
 
 export default function OperativoIndex({ onNavigate }) {
   const { user } = useAuth();
@@ -91,6 +92,7 @@ export default function OperativoIndex({ onNavigate }) {
           ))}
         </div>
 
+        <GlobalMessagesBoard />
       </div>
       {/* Footer Ticker (Data Line Simplificada) */}
       <div className="fixed bottom-0 left-0 w-full py-4 bg-brand-bg border-t border-brand-border/30 flex justify-center z-40">

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import dayjs from 'dayjs';
+import GlobalMessagesBoard from '../components/GlobalMessagesBoard';
 
 const MODULE_MAP = [
   {
@@ -173,6 +174,8 @@ export default function AdminIndex({ onNavigate }) {
           )}
 
         </div>
+        
+        <GlobalMessagesBoard />
       </div>
 
       {/* Footer Ticker (Data Line) */}

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import dayjs from 'dayjs';
+import GlobalMessagesBoard from '../components/GlobalMessagesBoard';
 
 export default function ContadorIndex({ onNavigate }) {
   const { user } = useAuth();
@@ -124,6 +125,7 @@ export default function ContadorIndex({ onNavigate }) {
 
         </div>
 
+        <GlobalMessagesBoard />
       </div>
 
       {/* Footer Ticker (Data Line) */}

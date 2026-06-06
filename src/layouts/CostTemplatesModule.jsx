@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Plus, X, Save, ArrowLeft, Pencil, ClipboardList } from 'lucide-react';
+import { Plus, X, Save, ArrowLeft, Pencil, ClipboardList, Trash2 } from 'lucide-react';
 
 export default function CostTemplatesModule({ onNavigate }) {
   const [templates, setTemplates] = useState([]);
@@ -110,6 +110,19 @@ export default function CostTemplatesModule({ onNavigate }) {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm('¿Eliminar permanentemente esta plantilla?')) return;
+    try {
+      const { error } = await supabase.from('cost_templates').delete().eq('id', id);
+      if (error) throw error;
+      triggerFlash('success');
+      fetchData();
+    } catch (err) {
+      console.error('Error deleting template:', err);
+      triggerFlash('error');
+    }
+  };
+
   const formatCurrency = (val) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(val);
 
   return (
@@ -175,9 +188,12 @@ export default function CostTemplatesModule({ onNavigate }) {
                       <div className={`w-2 h-2 rounded-full mx-auto ${t.active ? 'bg-brand-success' : 'bg-brand-error'}`} />
                     </button>
                   </td>
-                  <td className="px-5 py-3.5 text-right">
-                    <button onClick={() => openEdit(t)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer">
+                  <td className="px-5 py-3.5 text-right flex justify-end gap-2">
+                    <button onClick={() => openEdit(t)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer p-1">
                       <Pencil size={13} />
+                    </button>
+                    <button onClick={() => handleDelete(t.id)} className="text-brand-error/50 hover:text-brand-error transition-colors cursor-pointer p-1">
+                      <Trash2 size={13} />
                     </button>
                   </td>
                 </tr>
