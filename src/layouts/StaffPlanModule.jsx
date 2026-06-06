@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { Plus, X, Save, ArrowLeft, Pencil, Users, CheckCircle2, Trash2 } from 'lucide-react';
+import { Plus, X, Save, ArrowLeft, Pencil, Users, CheckCircle2, Trash2, Loader2 } from 'lucide-react';
 import dayjs from 'dayjs';
 
 export default function StaffPlanModule({ onNavigate }) {
+  const { user } = useAuth();
   const [workDays, setWorkDays] = useState([]);
   const [selectedWorkDayId, setSelectedWorkDayId] = useState('');
   const [staffPlans, setStaffPlans] = useState([]);
@@ -24,8 +26,8 @@ export default function StaffPlanModule({ onNavigate }) {
     const fetchInit = async () => {
       try {
         const [wdRes, rolesRes] = await Promise.all([
-          supabase.from('work_days').select('*').in('status', ['open', 'closed']).order('work_date', { ascending: true }),
-          supabase.from('staff_roles').select('id, name, base_rate').eq('active', true).order('name')
+          supabase.from('work_days').select('*').in('status', ['open', 'closed']).order('work_date', { ascending: false }),
+          supabase.from('staff_roles').select('id, name, base_rate, default_quantity').eq('active', true).order('name')
         ]);
         
         if (wdRes.error) throw wdRes.error;
@@ -125,6 +127,7 @@ export default function StaffPlanModule({ onNavigate }) {
       const { error } = await supabase.from('staff_plan').delete().eq('id', id);
       if (error) throw error;
       triggerFlash('success');
+      setSlideOver(null);
       fetchPlans();
     } catch (err) {
       console.error('Error deleting plan:', err);
@@ -174,54 +177,49 @@ export default function StaffPlanModule({ onNavigate }) {
       {flashColor && <div className={`absolute inset-0 z-50 pointer-events-none opacity-10 transition-opacity duration-150 ${flashColor}`}></div>}
       <div className="flex-1 overflow-y-auto p-6 md:p-8">
         
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <button onClick={() => onNavigate('index')} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer">
-              <ArrowLeft size={16} />
-            </button>
-            <div>
-              <h2 className="text-xs font-extrabold tracking-[0.3em] uppercase text-brand-muted">PLAN DE STAFF</h2>
-              <p className="text-[10px] text-brand-muted/40 tracking-wide mt-0.5">Asignación de roles por jornada</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-4">
+        {/* Actions & Title (Above Table) */}
+        <div className="flex items-end justify-between mb-4">
+          <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">
+            PLAN DE STAFF
+          </h2>
+
+          <div className="flex items-center gap-6">
             <select
               value={selectedWorkDayId}
               onChange={(e) => setSelectedWorkDayId(e.target.value)}
-              className="bg-brand-surface border border-brand-border rounded-xl px-4 py-2 text-xs font-bold text-brand-text focus:outline-none appearance-none cursor-pointer uppercase tracking-wider"
+              className="bg-transparent border-none text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted hover:text-brand-text transition-colors focus:outline-none appearance-none cursor-pointer text-right"
             >
               {workDays.length === 0 ? <option value="">SIN JORNADAS ACTIVAS</option> : null}
               {workDays.map(wd => (
-                <option key={wd.id} value={wd.id}>
-                  {dayjs(wd.work_date).format('DD/MM/YYYY')} - {wd.event_name || 'Regular'}
+                <option key={wd.id} value={wd.id} className="bg-brand-bg text-brand-text">
+                  {dayjs(wd.work_date).format('DD/MM')} - {wd.event_name || 'REGULAR'}
                 </option>
               ))}
             </select>
 
-            <button
-              onClick={handleApproveAll}
-              disabled={!selectedWorkDayId || isClosed || staffPlans.filter(p => p.status === 'draft').length === 0}
-              className="flex items-center gap-2 bg-brand-success/10 border border-brand-success/30 text-brand-success px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-brand-success/20 hover:border-brand-success/50 transition-colors disabled:opacity-30 disabled:hover:bg-brand-success/10 disabled:hover:border-brand-success/30 cursor-pointer"
-            >
-              <CheckCircle2 size={13} />
-              APROBAR TODO
-            </button>
+            {user?.role === 'admin' && (
+              <button
+                onClick={handleApproveAll}
+                disabled={!selectedWorkDayId || isClosed || staffPlans.filter(p => p.status === 'draft').length === 0}
+                className="text-brand-success/70 hover:text-brand-success transition-colors cursor-pointer flex items-center justify-end gap-2 text-[10px] font-bold tracking-[0.2em] uppercase disabled:opacity-30"
+                title="Aprobar todo"
+              >
+                <CheckCircle2 size={13} /> APROBAR
+              </button>
+            )}
 
             <button
               onClick={openCreate}
               disabled={!selectedWorkDayId || isClosed}
-              className="flex items-center gap-2 bg-brand-surface border border-brand-border text-brand-text px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest hover:border-brand-muted transition-colors disabled:opacity-30 cursor-pointer"
+              className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer flex items-center justify-end gap-2 text-[10px] font-bold tracking-[0.2em] uppercase disabled:opacity-30"
             >
-              <Plus size={13} />
-              SOLICITAR ROL
+              + SOLICITAR
             </button>
           </div>
         </div>
 
         {/* Table */}
-        <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden">
+        <div className="w-full overflow-x-auto">
           <table className="w-full whitespace-nowrap">
             <thead>
               <tr className="border-b border-brand-border">
@@ -252,22 +250,25 @@ export default function StaffPlanModule({ onNavigate }) {
                   <td className="px-5 py-3.5 text-center font-mono text-brand-text text-sm">
                     {p.quantity_requested}
                   </td>
-                  <td className="px-5 py-3.5 text-center font-mono text-brand-success text-sm">
-                    {p.status === 'approved' ? p.quantity_approved : '—'}
+                  <td className="px-5 py-3.5 text-center font-mono text-sm">
+                    {p.status === 'approved' ? <span className="text-brand-success">{p.quantity_approved}</span> : <span className="text-brand-muted/50">—</span>}
                   </td>
                   <td className="px-5 py-3.5 text-right font-mono text-brand-text text-sm">
                     {formatCurrency(
                       (p.status === 'rejected' ? 0 : (p.status === 'approved' ? p.quantity_approved : p.quantity_requested)) * (p.staff_roles?.base_rate || 0)
                     )}
                   </td>
-                  <td className="px-5 py-3.5 text-center">
-                    <span className={`px-2 py-1 rounded text-[9px] font-bold tracking-[0.2em] uppercase ${
-                      p.status === 'draft' ? 'bg-brand-warning/20 text-brand-warning' : 
-                      p.status === 'approved' ? 'bg-brand-success/20 text-brand-success' : 
-                      'bg-brand-error/20 text-brand-error'
-                    }`}>
-                      {p.status}
-                    </span>
+                  <td className="px-5 py-3.5">
+                    <div className="flex justify-center w-full">
+                      <div 
+                        className={`w-2 h-2 rounded-full ${
+                          p.status === 'draft' ? 'bg-brand-warning shadow-[0_0_6px_rgba(250,204,21,0.5)]' : 
+                          p.status === 'approved' ? 'bg-brand-success shadow-[0_0_6px_rgba(74,222,128,0.5)]' : 
+                          'bg-brand-error shadow-[0_0_6px_rgba(248,113,113,0.5)]'
+                        }`} 
+                        title={p.status === 'draft' ? 'BORRADOR' : p.status === 'approved' ? 'APROBADO' : 'RECHAZADO'}
+                      />
+                    </div>
                   </td>
                   <td className="px-5 py-3.5 text-right flex justify-end gap-2 items-center">
                     {!isClosed && (
@@ -289,10 +290,10 @@ export default function StaffPlanModule({ onNavigate }) {
 
         {/* Cost KPI */}
         {selectedWorkDayId && staffPlans.length > 0 && (
-          <div className="mt-6 flex justify-end">
-            <div className="bg-brand-surface border border-brand-border rounded-xl px-6 py-4 flex items-center gap-5">
-              <span className="text-xs font-bold tracking-[0.2em] uppercase text-brand-muted">TOTAL PROYECTADO</span>
-              <span className="text-xl font-mono font-bold text-brand-success">{formatCurrency(totalCost)}</span>
+          <div className="mt-8 flex justify-end border-t border-brand-border/30 pt-4">
+            <div className="flex items-center gap-6">
+              <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-brand-muted">TOTAL PROYECTADO</span>
+              <span className="text-2xl font-mono font-bold text-brand-text">{formatCurrency(totalCost)}</span>
             </div>
           </div>
         )}
@@ -319,13 +320,23 @@ export default function StaffPlanModule({ onNavigate }) {
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Rol Requerido *</label>
                 <select
                   value={form.role_id}
-                  onChange={(e) => setForm({ ...form, role_id: e.target.value })}
+                  onChange={(e) => {
+                    const rId = e.target.value;
+                    const selectedRole = staffRoles.find(r => r.id === rId);
+                    setForm({ 
+                      ...form, 
+                      role_id: rId,
+                      quantity_requested: selectedRole && selectedRole.default_quantity > 0 
+                        ? selectedRole.default_quantity.toString() 
+                        : '1'
+                    });
+                  }}
                   className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none"
                   disabled={slideOver !== 'create'}
                 >
-                  <option value="">-- Seleccionar Rol --</option>
+                  <option value="" disabled className="bg-brand-bg">-- Seleccionar Rol --</option>
                   {staffRoles.map(r => (
-                    <option key={r.id} value={r.id}>{r.name}</option>
+                    <option key={r.id} value={r.id} className="bg-brand-bg">{r.name}</option>
                   ))}
                 </select>
               </div>
@@ -343,54 +354,67 @@ export default function StaffPlanModule({ onNavigate }) {
 
               {slideOver !== 'create' && (
                 <>
-                  <div className="pt-6 border-t border-brand-border mt-6">
-                    <h4 className="text-[10px] font-bold tracking-[0.3em] uppercase text-brand-accent mb-4">Aprobación (Admin)</h4>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Estado</label>
-                    <select
-                      value={form.status}
-                      onChange={(e) => {
-                        const s = e.target.value;
-                        setForm({ 
-                          ...form, 
-                          status: s,
-                          quantity_approved: s === 'approved' ? (form.quantity_approved === '0' ? form.quantity_requested : form.quantity_approved) : '0'
-                        });
-                      }}
-                      className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none"
-                    >
-                      <option value="draft">Borrador</option>
-                      <option value="approved">Aprobado</option>
-                      <option value="rejected">Rechazado</option>
-                    </select>
-                  </div>
+                  <div className="pt-6 border-t border-brand-border/30 mt-6">
+                    <h4 className="text-[10px] font-bold tracking-[0.3em] uppercase text-brand-accent/70 mb-6">Aprobación (Admin)</h4>
+                    
+                    <div className="space-y-6">
+                      <div>
+                        <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Estado</label>
+                        <select
+                          value={form.status}
+                          onChange={(e) => {
+                            const s = e.target.value;
+                            setForm({ 
+                              ...form, 
+                              status: s,
+                              quantity_approved: s === 'approved' ? (form.quantity_approved === '0' ? form.quantity_requested : form.quantity_approved) : '0'
+                            });
+                          }}
+                          className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none"
+                        >
+                          <option value="draft" className="bg-brand-bg">BORRADOR</option>
+                          <option value="approved" className="bg-brand-bg">APROBADO</option>
+                          <option value="rejected" className="bg-brand-bg">RECHAZADO</option>
+                        </select>
+                      </div>
 
-                  {form.status === 'approved' && (
-                    <div>
-                      <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Cantidad Aprobada</label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={form.quantity_approved}
-                        onChange={(e) => setForm({ ...form, quantity_approved: e.target.value })}
-                        className="w-full bg-brand-surface border border-brand-success/30 rounded-xl px-4 py-3 text-sm text-brand-success font-mono focus:outline-none focus:border-brand-success transition-colors"
-                      />
+                      {form.status === 'approved' && (
+                        <div>
+                          <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-success mb-2">Cantidad Aprobada</label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={form.quantity_approved}
+                            onChange={(e) => setForm({ ...form, quantity_approved: e.target.value })}
+                            className="w-full bg-brand-surface border border-brand-success/30 rounded-xl px-4 py-3 text-sm text-brand-success font-mono focus:outline-none focus:border-brand-success transition-colors"
+                          />
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </>
               )}
 
             </div>
 
-            <div className="px-6 py-4 border-t border-brand-border shrink-0">
+            {/* Panel Footer */}
+            <div className="px-6 py-4 border-t border-brand-border shrink-0 flex gap-3">
+              {slideOver !== 'create' && (
+                <button
+                  onClick={() => handleDelete(slideOver.id)}
+                  disabled={saving}
+                  className="flex items-center justify-center bg-brand-surface border border-brand-error/30 text-brand-error rounded-xl px-4 py-3 hover:bg-brand-error hover:text-white transition-colors disabled:opacity-30 cursor-pointer"
+                  title="Eliminar Solicitud"
+                >
+                  <Trash2 size={16} />
+                </button>
+              )}
               <button
                 onClick={handleSave}
                 disabled={saving || !form.role_id}
-                className="w-full flex items-center justify-center gap-2 bg-brand-text text-brand-bg rounded-xl py-3 text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 bg-brand-text text-brand-bg rounded-xl py-3 text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
               >
-                <Save size={13} />
+                {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
                 {saving ? 'GUARDANDO...' : 'GUARDAR PLAN'}
               </button>
             </div>

@@ -20,9 +20,10 @@ export default function MonthlyReportModule({ onNavigate }) {
     openDaysCount: 0,
     totalRevenue: 0,
     totalCosts: 0,
+    totalFixedCosts: 0,
     totalTaxes: 0,
     netProfit: 0,
-    expenseDistribution: { staff: 0, supply: 0, recurrent: 0, adHoc: 0 },
+    expenseDistribution: { staff: 0, supply: 0, recurrent: 0, adHoc: 0, fixed: 0 },
     breakdowns: []
   });
 
@@ -74,15 +75,26 @@ export default function MonthlyReportModule({ onNavigate }) {
       if (settingsRes.error && settingsRes.error.code !== 'PGRST116') throw settingsRes.error;
 
       const wds = wdsRes.data || [];
+      const taxRate = settingsRes.data?.digital_tax_rate || 38;
+
+      // Fetch fixed costs for the month
+      const { data: fixedCostsData, error: fixedError } = await supabase
+        .from('monthly_fixed_costs')
+        .select('amount, status')
+        .eq('billing_month', selectedMonth);
+        
+      if (fixedError) throw fixedError;
+      
+      const totalFixedCosts = (fixedCostsData || []).reduce((acc, curr) => acc + Number(curr.amount), 0);
+
       if (wds.length === 0) {
         setMonthData({
-          workDaysCount: 0, openDaysCount: 0, totalRevenue: 0, totalCosts: 0, totalTaxes: 0, netProfit: 0,
-          expenseDistribution: { staff: 0, supply: 0, recurrent: 0, adHoc: 0 }, breakdowns: []
+          workDaysCount: 0, openDaysCount: 0, totalRevenue: 0, totalCosts: totalFixedCosts, totalFixedCosts, totalTaxes: 0, netProfit: -totalFixedCosts,
+          expenseDistribution: { staff: 0, supply: 0, recurrent: 0, adHoc: 0, fixed: totalFixedCosts }, breakdowns: []
         });
         return;
       }
 
-      const taxRate = settingsRes.data?.digital_tax_rate || 38;
       const wdIds = wds.map(w => w.id);
       const wdDates = wds.map(w => w.work_date);
 
@@ -184,10 +196,11 @@ export default function MonthlyReportModule({ onNavigate }) {
         workDaysCount: wds.length,
         openDaysCount: openCount,
         totalRevenue: grandRev,
-        totalCosts: grandCosts,
+        totalCosts: grandCosts + totalFixedCosts,
+        totalFixedCosts: totalFixedCosts,
         totalTaxes: grandTax,
-        netProfit: grandNet,
-        expenseDistribution: { staff: distStaff, supply: distSupply, recurrent: distRecurrent, adHoc: distAdHoc },
+        netProfit: grandNet - totalFixedCosts,
+        expenseDistribution: { staff: distStaff, supply: distSupply, recurrent: distRecurrent, adHoc: distAdHoc, fixed: totalFixedCosts },
         breakdowns
       });
     } catch (error) {
@@ -220,11 +233,12 @@ export default function MonthlyReportModule({ onNavigate }) {
     { name: 'Staff', value: monthData.expenseDistribution.staff, pct: getDistPct(monthData.expenseDistribution.staff) },
     { name: 'Insumos', value: monthData.expenseDistribution.supply, pct: getDistPct(monthData.expenseDistribution.supply) },
     { name: 'Recurrentes', value: monthData.expenseDistribution.recurrent, pct: getDistPct(monthData.expenseDistribution.recurrent) },
-    { name: 'Ad-Hocs', value: monthData.expenseDistribution.adHoc, pct: getDistPct(monthData.expenseDistribution.adHoc) }
+    { name: 'Ad-Hocs', value: monthData.expenseDistribution.adHoc, pct: getDistPct(monthData.expenseDistribution.adHoc) },
+    { name: 'Gastos Fijos', value: monthData.expenseDistribution.fixed, pct: getDistPct(monthData.expenseDistribution.fixed) }
   ].sort((a, b) => b.value - a.value);
 
-  const rankBgColors = ['bg-[#ef4444]', 'bg-[#f97316]', 'bg-[#eab308]', 'bg-[#e5e5e5]'];
-  const rankTextColors = ['text-[#ef4444]', 'text-[#f97316]', 'text-[#eab308]', 'text-[#e5e5e5]'];
+  const rankBgColors = ['bg-[#ef4444]', 'bg-[#f97316]', 'bg-[#eab308]', 'bg-[#3b82f6]', 'bg-[#e5e5e5]'];
+  const rankTextColors = ['text-[#ef4444]', 'text-[#f97316]', 'text-[#eab308]', 'text-[#3b82f6]', 'text-[#e5e5e5]'];
 
   distSorted.forEach((item, idx) => {
     item.bgClass = rankBgColors[idx];
@@ -306,15 +320,26 @@ export default function MonthlyReportModule({ onNavigate }) {
           <div className="max-w-6xl mx-auto space-y-6">
             
             {/* ZONA A: KPIs ESTRATÉGICOS */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Costos Fijos */}
+              <div className="border border-brand-border bg-brand-surface rounded-2xl p-6 relative overflow-hidden group">
+                <div className="text-[10px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">ESTRUCTURA Y OVERHEADS</div>
+                <div className="text-4xl md:text-5xl font-mono tracking-tight text-brand-text mb-3">
+                  {formatCurrency(monthData.totalFixedCosts)}
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-brand-muted/80 uppercase tracking-widest font-bold">
+                  COSTOS FIJOS DEL NEGOCIO
+                </div>
+              </div>
+
               {/* Pasivo Impositivo */}
               <div className="border border-brand-border bg-brand-surface rounded-2xl p-6 relative overflow-hidden group">
-                <div className="text-[10px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">IMPUESTOS PROYECTADOS (PASIVO A RETENER)</div>
+                <div className="text-[10px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">IMPUESTOS PROYECTADOS</div>
                 <div className="text-4xl md:text-5xl font-mono tracking-tight text-brand-text mb-3">
                   {formatCurrency(monthData.totalTaxes)}
                 </div>
-                <div className="flex items-center gap-2 text-[10px] text-brand-muted/80 uppercase tracking-widest font-bold">
-                  <AlertTriangle size={12} className="text-brand-warning" /> RETENER LÍQUIDEZ PARA LIQUIDACIÓN
+                <div className="flex items-center gap-2 text-[10px] text-brand-warning/80 uppercase tracking-widest font-bold">
+                  <AlertTriangle size={12} /> RETENER PARA LÍQUIDO
                 </div>
               </div>
 

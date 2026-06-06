@@ -20,18 +20,18 @@ const ROLE_ACCESS = {
       // La Noche
       'bar_inventory', 'workday',
     ],
-    writable: ['work_days', 'opening_costs', 'staff_plan', 'stock_requests', 'bar_inventory', 'workday'],
+    writable: ['work_days', 'opening_costs', 'staff_plan', 'stock_requests', 'bar_inventory', 'workday', 'sku'],
   },
   contador: {
     access: [
       // Masters (read-only)
       'profiles', 'suppliers', 'sku', 'staff_roles', 'cost_templates', 'pos_terminals', 'master_vouchers',
       // Ejecución
-      'payments',
+      'payments', 'fixed_costs',
       // Reportes
       'night_report', 'monthly_report', 'annual_report',
     ],
-    writable: ['payments'],
+    writable: ['payments', 'fixed_costs'],
   },
   encargado: {
     access: ['bar_inventory', 'workday'],
@@ -44,7 +44,14 @@ const ROLE_ACCESS = {
 };
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('mc_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -65,6 +72,7 @@ export function AuthProvider({ children }) {
         return false;
       }
       setUser(data);
+      localStorage.setItem('mc_user', JSON.stringify(data));
       return true;
     } catch (e) {
       setError(e.message || 'Error de conexión');
@@ -77,6 +85,8 @@ export function AuthProvider({ children }) {
   const logout = useCallback(() => {
     setUser(null);
     setError(null);
+    localStorage.removeItem('mc_user');
+    localStorage.removeItem('mc_active_view');
   }, []);
 
   // Role-gating helpers

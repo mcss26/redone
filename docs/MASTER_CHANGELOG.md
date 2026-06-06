@@ -4,6 +4,8 @@
 
 ## Archivo: CHANGELOG-v2.md
 - [Midnight Club OS - Redone V2 Changelog](#midnight-club-os-redone-v2-changelog)
+  - [[2.18.0] - 2026-06-05](#2-18-0-2026-06-05)
+    - [Added: Módulo de Costos Fijos Mensuales (Overheads) y motor financiero](#added-m-dulo-de-costos-fijos-mensuales-overheads-y-motor-financiero)
   - [[2.16.0] - 2026-05-18](#2-16-0-2026-05-18)
     - [Fase 4: Polish & Deploy Readiness (Step 4.1 - 4.3)](#fase-4-polish-deploy-readiness-step-4-1-4-3)
     - [Fase 3: Code Quality (Step 3.1 - Reportes Financieros)](#fase-3-code-quality-step-3-1-reportes-financieros)
@@ -138,6 +140,24 @@
 ### --- SOURCE: CHANGELOG-v2.md --- ###
 
 # Midnight Club OS - Redone V2 Changelog
+
+## [2.18.0] - 2026-06-05
+
+### Operations UI/UX Polish (Functional Brutalism)
+- **Frontend - StaffPlanModule**: Se solucionó un bug lógico donde las solicitudes manuales de staff desde la vista operativa ignoraban la "Cantidad Default" configurada en el Tarifario. Ahora, el selector consulta `staff_roles` y auto-completa dinámicamente el campo de cantidad. Además, se alineó estéticamente la tabla a formato "Raw Data", eliminando los contenedores y reemplazando labels por Status Dots.
+- **Frontend - SkuModule**: Se alineó el catálogo al Brutalismo Funcional de la V2. El formulario (Sidebar) de ingreso y edición fue depurado de "cajas" sólidas. Se implementó funcionalidad de ordenamiento (sort) iterativo sin íconos redundantes en los encabezados de tabla.
+- **Arquitectura de Datos - SkuModule**: Se depreció por completo el campo `unit` (Unidad) de los formularios front-end por decisión de negocio ("siempre se carga por unidad"), forzando que internamente se pase siempre el valor `"unidad"` para no romper esquemas existentes de base de datos.
+- **Frontend - App.jsx & Contexts**: Se implementó persistencia de sesión a través del `localStorage` (`mc_user` y `mc_active_view`), lo que impide que los recargos de navegador eliminen la sesión iniciada mediante PIN de los usuarios operativos, mejorando sustancialmente la experiencia inmersiva del POS.
+
+### Added: Módulo de Costos Fijos Mensuales (Overheads) y motor financiero
+- **Supabase API Exec**: Se restauró la skill `supabase-cli-executor.js` usando la Management API (POST `/database/query`) para evitar bloqueos por falta de Docker Desktop local.
+- **Database**: Creación de tabla `monthly_fixed_costs` con RLS habilitado.
+- **Frontend - UI**: Se creó `FixedCostsModule.jsx` utilizando Functional Brutalism. Permite la carga, edición, borrado y pago de costos fijos por mes.
+- **Reporte Mensual**: Se integró el modelo financiero en `MonthlyReportModule.jsx` para restar la totalidad de la estructura/overheads mensual directamente del *Net Profit* bruto antes del ROI.
+- **Navegación**: Se dio acceso en rol Contador y Admin en la fase de Ejecución en `AdminIndex.jsx`.
+
+### Stock Requests & Operations Polish
+- **Database (stock_requests)**: Se ejecutó un `ALTER TABLE` vía `supabase-cli-executor.js` agregando la columna `supplier_id` (uuid REFERENCES suppliers). Esto quiebra la dependencia estricta al catálogo `skus`, permitiendo al equipo operativo sobreescribir el proveedor designado a nivel de pedido individual (Granular Supplier Override).
 
 ## [2.17.0] - 2026-05-20
 

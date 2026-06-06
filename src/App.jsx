@@ -20,11 +20,14 @@ import NightOpsModule from './layouts/NightOpsModule';
 import NightReportModule from './layouts/NightReportModule';
 import MonthlyReportModule from './layouts/MonthlyReportModule';
 import AnnualReportModule from './layouts/AnnualReportModule';
+import FixedCostsModule from './layouts/FixedCostsModule';
 import { LogOut, User } from 'lucide-react';
 
 function AppShell() {
   const { user, logout, canAccess } = useAuth();
-  const [activeView, setActiveView] = useState('index');
+  const [activeView, setActiveView] = useState(() => {
+    return localStorage.getItem('mc_active_view') || 'index';
+  });
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
 
   // If not logged in, show PIN screen
@@ -32,6 +35,7 @@ function AppShell() {
 
   const handleNavigation = (view) => {
     setActiveView(view);
+    localStorage.setItem('mc_active_view', view);
     setIsAvatarOpen(false);
   };
 
@@ -49,6 +53,7 @@ function AppShell() {
     staff_plan:     StaffPlanModule,
     stock_requests: StockRequestsModule,
     payments:       PaymentsModule,
+    fixed_costs:    FixedCostsModule,
     workday:        NightOpsModule,
     night_report:   NightReportModule,
     monthly_report: MonthlyReportModule,
@@ -84,26 +89,46 @@ function AppShell() {
     <div className="flex flex-col h-screen w-full bg-brand-bg overflow-hidden relative">
       
       {/* TOP BAR */}
-      <header className="h-14 flex items-center justify-between px-8 bg-brand-bg shrink-0 z-50 border-b border-brand-border/20">
+      <header className="h-14 flex items-center justify-between px-8 bg-brand-bg shrink-0 z-50 border-b border-brand-border/20 relative">
         
         {/* Left: Brand */}
         <button 
           onClick={() => handleNavigation('index')}
-          className="text-[11px] font-extrabold text-brand-muted tracking-[0.3em] uppercase hover:text-brand-text transition-colors cursor-pointer"
+          className="text-[11px] font-extrabold text-brand-muted tracking-[0.15em] uppercase hover:text-brand-text transition-colors cursor-pointer shrink-0"
         >
           MIDNIGHT CLUB
         </button>
+
+        {/* Center: Operative Sub-Nav */}
+        {activeView !== 'index' && ['work_days', 'opening_costs', 'stock_requests', 'staff_plan', 'sku'].includes(activeView) && (
+          <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-8 animate-fade-in">
+            {[
+              { id: 'work_days', label: 'WORKDAYS' },
+              { id: 'opening_costs', label: 'COSTOS DE APERTURA' },
+              { id: 'stock_requests', label: 'PEDIDOS' },
+              { id: 'staff_plan', label: 'STAFF' },
+              { id: 'sku', label: 'CONFIG' },
+            ].map(mod => (
+              <button
+                key={mod.id}
+                onClick={() => handleNavigation(mod.id)}
+                className={`text-[9px] font-bold tracking-[0.2em] uppercase transition-colors cursor-pointer ${
+                  activeView === mod.id ? 'text-brand-text' : 'text-brand-muted hover:text-brand-text'
+                }`}
+              >
+                {mod.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Right: User */}
         <div className="relative">
           <button 
             onClick={() => setIsAvatarOpen(!isAvatarOpen)}
-            className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-brand-surface transition-colors cursor-pointer"
+            className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-brand-surface transition-colors cursor-pointer"
           >
-            <span className={`text-[10px] font-bold uppercase tracking-widest ${ROLE_COLOR[user.role]}`}>
-              {user.role}
-            </span>
-            <div className="w-7 h-7 rounded-full bg-brand-surface border border-brand-border flex items-center justify-center">
+            <div className="w-7 h-7 rounded-full bg-brand-surface border border-brand-border flex items-center justify-center group-hover:bg-brand-muted/10">
               <User size={12} className="text-brand-muted" />
             </div>
           </button>

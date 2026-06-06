@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Plus, X, Save, ArrowLeft, Pencil, ChevronRight, CalendarDays, Trash2, Loader2, Search } from 'lucide-react';
+import { Plus, X, Save, ArrowLeft, ChevronRight, CalendarDays, Trash2, Loader2, Search } from 'lucide-react';
 import dayjs from 'dayjs';
 
 export default function WorkDaysModule({ onNavigate }) {
@@ -139,9 +139,8 @@ export default function WorkDaysModule({ onNavigate }) {
     }
   };
 
-  const handleDelete = async (id) => {
-    const dayId = id || selectedDay?.id;
-    if (!dayId) return;
+  const handleDelete = async () => {
+    if (!selectedDay) return;
     if (!window.confirm('¿Estás seguro de eliminar esta jornada permanentemente? Se eliminarán los costos asociados.')) return;
     
     setSaving(true);
@@ -149,7 +148,7 @@ export default function WorkDaysModule({ onNavigate }) {
       const { error } = await supabase
         .from('work_days')
         .delete()
-        .eq('id', dayId);
+        .eq('id', selectedDay.id);
       
       if (error) throw error;
       triggerFlash('success');
@@ -164,10 +163,10 @@ export default function WorkDaysModule({ onNavigate }) {
     }
   };
 
-  const STATUS_DOTS = {
-    open: 'bg-brand-success shadow-[0_0_6px_rgba(74,222,128,0.5)]',
-    closed: 'bg-brand-muted shadow-none',
-    cancelled: 'bg-brand-error shadow-[0_0_6px_rgba(248,113,113,0.5)]',
+  const STATUS_COLORS = {
+    open: 'bg-brand-success/20 text-brand-success',
+    closed: 'bg-brand-muted/50 text-brand-bg',
+    cancelled: 'bg-brand-error/20 text-brand-error',
   };
 
   const STATUS_LABELS = {
@@ -198,8 +197,8 @@ export default function WorkDaysModule({ onNavigate }) {
           </button>
         </div>
 
-        {/* Table (Raw Data Format) */}
-        <div className="w-full overflow-x-auto">
+        {/* Table */}
+        <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden">
           <table className="w-full whitespace-nowrap">
             <thead>
               <tr className="border-b border-brand-border">
@@ -215,23 +214,17 @@ export default function WorkDaysModule({ onNavigate }) {
               ) : workDays.length === 0 ? (
                 <tr><td colSpan={4} className="text-center py-12 text-brand-muted/50 text-xs italic">No hay jornadas registradas.</td></tr>
               ) : workDays.map((wd) => (
-                <tr key={wd.id} className="border-b border-brand-border/30 hover:bg-brand-card/50 transition-colors">
+                <tr key={wd.id} onClick={() => openEdit(wd)} className="border-b border-brand-border/30 hover:bg-brand-card/50 transition-colors cursor-pointer group">
                   <td className="px-5 py-3.5 text-sm font-mono text-brand-text">{dayjs(wd.work_date).format('DD/MM/YYYY')}</td>
                   <td className="px-5 py-3.5 text-sm font-semibold text-brand-text">{wd.event_name || <span className="text-brand-muted/30">Noche Regular</span>}</td>
-                  <td className="px-5 py-3.5">
-                    <div className="flex justify-center w-full">
-                      <div 
-                        className={`w-2 h-2 rounded-full ${STATUS_DOTS[wd.status] || 'bg-brand-muted'}`} 
-                        title={STATUS_LABELS[wd.status] || wd.status}
-                      />
-                    </div>
+                  <td className="px-5 py-3.5 text-center">
+                    <span className={`px-2 py-1 rounded text-[10px] font-bold tracking-widest ${STATUS_COLORS[wd.status]}`}>
+                      {STATUS_LABELS[wd.status]}
+                    </span>
                   </td>
-                  <td className="px-5 py-3.5 text-right flex justify-end gap-2 items-center">
-                    <button onClick={() => openEdit(wd)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer p-1" title="Ver Detalles">
-                      <Pencil size={13} />
-                    </button>
-                    <button onClick={() => handleDelete(wd.id)} className="text-brand-error/50 hover:text-brand-error transition-colors cursor-pointer p-1" title="Eliminar">
-                      <Trash2 size={13} />
+                  <td className="px-5 py-3.5 text-right">
+                    <button className="text-brand-muted group-hover:text-brand-text transition-colors cursor-pointer" title="Ver Detalles">
+                      <ChevronRight size={16} />
                     </button>
                   </td>
                 </tr>

@@ -1,56 +1,59 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { CalendarDays, DollarSign, Users, Package } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function OperativoIndex({ onNavigate }) {
   const { user } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Extraemos el primer nombre del usuario, fallback a CRISTIAN
+  const firstName = user?.full_name ? user.full_name.split(' ')[0].toUpperCase() : 'CRISTIAN';
 
   const MODULES = [
-    { id: 'work_days',      label: 'Jornadas',         icon: CalendarDays, description: 'Apertura y Cierre' },
-    { id: 'opening_costs',  label: 'Costos Apertura',  icon: DollarSign,   description: 'Caja chica y viáticos' },
-    { id: 'staff_plan',     label: 'Plan Staff',       icon: Users,        description: 'Asistencias y bajas' },
-    { id: 'stock_requests', label: 'Solicitud Stock',  icon: Package,      description: 'Pedidos a botellero' },
+    { id: 'work_days',      label: 'WORKDAYS' },
+    { id: 'opening_costs',  label: 'COSTOS DE APERTURA' },
+    { id: 'stock_requests', label: 'PEDIDOS' },
+    { id: 'staff_plan',     label: 'STAFF' },
+    { id: 'sku',            label: 'CONFIG' },
   ];
 
   return (
-    <div className="h-full overflow-y-auto p-6 md:p-10 flex flex-col items-center justify-center">
-      <div className="w-full max-w-4xl">
-        {/* Header */}
-        <div className="mb-12 text-center">
-          <h1 className="text-sm font-extrabold tracking-[0.4em] uppercase text-brand-success mb-2">
-            [ PANEL OPERATIVO ]
-          </h1>
-          <div className="text-[10px] tracking-[0.3em] uppercase text-brand-muted/40">
-            CONTROL DE LA JORNADA ACTUAL
-          </div>
-        </div>
+    <div className="h-full overflow-y-auto p-6 md:p-10 pt-24 md:pt-32 flex flex-col items-center">
+      <div className="w-full max-w-5xl flex flex-col items-center">
+        
+        {/* Header - Nombre Grande */}
+        <h1 className="text-6xl md:text-[8rem] leading-none font-extrabold tracking-[0.2em] uppercase text-brand-text mb-6 text-center animate-fade-in">
+          {firstName}
+        </h1>
 
-        {/* 2x2 Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          {MODULES.map((mod) => {
-            const Icon = mod.icon;
-            return (
-              <button
-                key={mod.id}
-                onClick={() => onNavigate(mod.id)}
-                className="group relative flex flex-col items-center justify-center gap-4 p-10 rounded-2xl bg-brand-surface border border-brand-border hover:border-brand-muted hover:bg-brand-card transition-all duration-200 cursor-pointer text-center"
-              >
-                <div className="w-16 h-16 rounded-full bg-brand-bg border border-brand-border flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300">
-                  <Icon size={24} className="text-brand-text" />
-                </div>
-                
-                <span className="text-sm font-bold tracking-widest text-brand-text uppercase">
+        {/* Link Desplegable */}
+        <button 
+          onClick={() => setIsOpen(!isOpen)}
+          className="group flex items-center gap-3 text-xs md:text-sm font-bold tracking-[0.3em] uppercase text-brand-muted hover:text-brand-text transition-colors duration-300 cursor-pointer"
+        >
+          OPERATIVO Y LOGISTICA - MIDNIGHT CLUB
+          {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+
+        {/* Tabs / Módulos Desplegables (Solo texto) */}
+        {isOpen && (
+          <div className="mt-16 flex flex-col md:flex-row flex-wrap items-center justify-center gap-8 md:gap-12 animate-slide-up">
+            {MODULES.map((mod) => {
+              return (
+                <button
+                  key={mod.id}
+                  onClick={() => onNavigate(mod.id)}
+                  className="text-xs md:text-sm font-bold tracking-[0.3em] uppercase text-brand-muted hover:text-brand-text transition-colors duration-200 cursor-pointer"
+                >
                   {mod.label}
-                </span>
-                
-                <span className="text-[10px] tracking-widest text-brand-muted uppercase">
-                  {mod.description}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
       </div>
     </div>
   );
 }
+

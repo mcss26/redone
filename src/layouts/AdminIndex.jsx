@@ -37,7 +37,8 @@ const MODULE_MAP = [
     description: 'Mié–Vie: Contador paga, Operativo recibe',
     color: 'brand-warning',
     modules: [
-      { id: 'payments',       label: 'Pagos',              icon: CreditCard,    status: 'live' },
+      { id: 'payments',       label: 'Pagos Variables',    icon: CreditCard,    status: 'live' },
+      { id: 'fixed_costs',    label: 'Gastos Fijos',       icon: DollarSign,    status: 'live' },
     ]
   },
   {

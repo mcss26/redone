@@ -423,3 +423,19 @@ This document tracks core architectural, aesthetic, and functional decisions for
 **Consequences:**
 - **Pros:** Massive reduction in cognitive load for operatives, ensuring they only see tools required for their physical tasks on the floor.
 - **Cons:** Any new module intended for operatives must now be explicitly added to \OperativoIndex.jsx\, breaking away from a single global dashboard configuration.
+
+### 2026-06-05: Integración de Costos Fijos (Overheads)
+**Context:** Se requería contabilizar los costos estructurales mensuales (alquiler, servicios, etc.) en el P&L que hasta el momento solo contemplaba costos operativos por jornada. Además, se enfrentaban bloqueos del Supabase CLI local por dependencias de Docker.
+**Decision:**
+1. Crear una skill (\supabase-cli-executor.js\) utilizando la Management API de Supabase vía \
+ode-fetch\ para inyectar SQL remotamente y sortear dependencias del OS.
+2. Desarrollar el módulo \FixedCostsModule.jsx\ (Functional Brutalism) para gestionar los registros mensuales e integrarlo al motor matemático de \MonthlyReportModule.jsx\, restando el total directamente del Net Profit mensual.
+**Consequences:**
+- **Pros:** El P&L ahora refleja ganancias reales netas incluyendo estructura. El equipo no depende de Docker para tirar scripts SQL administrativos.
+- **Cons:** El gasto estructural recae totalmente en la consolidación mensual y no en una métrica diaria prorrateada, lo que es correcto según la visión ejecutiva pero requiere cerrar el mes para ver el impacto.
+
+
+### [D23] Granular Supplier Override [2026-06-05]
+- **Context**: El sistema previamente heredaba el proveedor del catalogo SKU para cada solicitud de stock, impidiendo excepciones operativas.
+- **Decision**: Romper esta dependencia agregando una columna supplier_id (uuid) directamente a la tabla stock_requests. El UI asume el del catalogo por defecto, pero expone un selector para sobrescribirlo.
+- **Implications**: Permite control fino de costos y logistica sin modificar catalogos maestros.

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Search, ArrowLeft, X, Save, Package, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { Search, X, Save, Pencil, Trash2, Loader2, Package } from 'lucide-react';
 
 const UNITS = ['botella', 'caja', 'pack', 'kg', 'litro', 'unidad'];
 
@@ -25,7 +25,7 @@ export default function SkuModule({ onNavigate }) {
     supplier_id: '',
     name: '',
     system_id: '',
-    unit: 'botella',
+    unit: 'unidad',
     cost: '',
     volume_ml: '',
     stock_min: '',
@@ -78,7 +78,7 @@ export default function SkuModule({ onNavigate }) {
       supplier_id: suppliers.length > 0 ? suppliers[0].id : '',
       name: '',
       system_id: '',
-      unit: 'botella',
+      unit: 'unidad',
       cost: '',
       volume_ml: '',
       stock_min: '',
@@ -93,7 +93,7 @@ export default function SkuModule({ onNavigate }) {
       supplier_id: sku.supplier_id || '',
       name: sku.name || '',
       system_id: sku.system_id || '',
-      unit: sku.unit || 'botella',
+      unit: sku.unit || 'unidad',
       cost: sku.cost || '',
       volume_ml: sku.volume_ml || '',
       stock_min: sku.stock_min || '',
@@ -176,6 +176,38 @@ export default function SkuModule({ onNavigate }) {
     (s.suppliers?.name || '').toLowerCase().includes(search.toLowerCase())
   );
 
+  const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
+
+  const handleSort = (key) => {
+    setSortConfig(prev => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  const sortedSkus = [...filteredSkus].sort((a, b) => {
+    let valA = a[sortConfig.key];
+    let valB = b[sortConfig.key];
+
+    if (sortConfig.key === 'supplier') {
+      valA = a.suppliers?.name || '';
+      valB = b.suppliers?.name || '';
+    } else if (sortConfig.key === 'cost') {
+      valA = Number(a.cost) || 0;
+      valB = Number(b.cost) || 0;
+    } else if (sortConfig.key === 'active') {
+      valA = a.active ? 1 : 0;
+      valB = b.active ? 1 : 0;
+    } else if (sortConfig.key === 'name') {
+      valA = (a.name || '').toLowerCase();
+      valB = (b.name || '').toLowerCase();
+    }
+
+    if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+    if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+    return 0;
+  });
+
   return (
     <div className="h-full flex relative">
       {/* Interaction Flash Overlay */}
@@ -184,34 +216,30 @@ export default function SkuModule({ onNavigate }) {
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto p-6 md:p-8">
         
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <button onClick={() => onNavigate('index')} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer">
-              <ArrowLeft size={16} />
-            </button>
-            <div>
-              <h2 className="text-xs font-extrabold tracking-[0.3em] uppercase text-brand-muted">CATÁLOGO SKU</h2>
-              <p className="text-[10px] text-brand-muted/40 tracking-wide mt-0.5">{skus.length} registrados</p>
-            </div>
+        {/* Actions & Title (Above Table) */}
+        <div className="flex items-end justify-between mb-4">
+          <div className="flex flex-col">
+            <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">
+              CATÁLOGO SKU
+            </h2>
           </div>
-          <div className="flex gap-3">
+
+          <div className="flex items-center gap-6">
             <div className="relative">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-muted" />
+              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-muted/50" />
               <input 
                 type="text" 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar por nombre o proveedor..." 
-                className="pl-10 pr-4 py-2.5 rounded-xl bg-brand-surface border border-brand-border text-xs font-semibold focus:outline-none focus:border-brand-text focus:ring-1 focus:ring-brand-text/50 placeholder:text-brand-muted text-brand-text w-64 transition-all"
+                placeholder="Buscar por nombre..." 
+                className="pl-8 pr-0 py-1 bg-transparent border-b border-brand-border/50 text-[10px] font-semibold tracking-[0.1em] focus:outline-none focus:border-brand-muted placeholder:text-brand-muted/30 text-brand-text w-48 transition-all"
               />
             </div>
             <button
               onClick={openCreate}
-              className="flex items-center gap-2 bg-brand-text text-brand-bg px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors cursor-pointer"
+              className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer flex items-center justify-end gap-2 text-[10px] font-bold tracking-[0.2em] uppercase"
             >
-              <Package size={13} />
-              NUEVO
+              + NUEVO
             </button>
           </div>
         </div>
@@ -222,30 +250,37 @@ export default function SkuModule({ onNavigate }) {
             Cargando inventario...
           </div>
         ) : (
-          <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-brand-bg/50 border-b border-brand-border/50">
-                    <th className="px-5 py-4 text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted w-1/3">Item</th>
-                    <th className="px-5 py-4 text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted">Proveedor</th>
-                    <th className="px-5 py-4 text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted">Costo / Unidad</th>
-                    <th className="px-5 py-4 text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted text-center">Estado</th>
-                    <th className="px-5 py-4"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-brand-border/30">
-                  {filteredSkus.length === 0 ? (
+          <div className="w-full overflow-x-auto">
+            <table className="w-full whitespace-nowrap">
+              <thead>
+                <tr className="border-b border-brand-border">
+                  <th onClick={() => handleSort('name')} className="text-left text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3 w-1/3 cursor-pointer hover:text-brand-text select-none group">
+                    ITEM {sortConfig.key === 'name' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th onClick={() => handleSort('supplier')} className="text-left text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3 cursor-pointer hover:text-brand-text select-none group">
+                    PROVEEDOR {sortConfig.key === 'supplier' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th onClick={() => handleSort('cost')} className="text-left text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3 cursor-pointer hover:text-brand-text select-none group">
+                    COSTO / UNIDAD {sortConfig.key === 'cost' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th onClick={() => handleSort('active')} className="text-center text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3 cursor-pointer hover:text-brand-text select-none group">
+                    ESTADO {sortConfig.key === 'active' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th className="text-right text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3"></th>
+                </tr>
+              </thead>
+              <tbody>
+                  {sortedSkus.length === 0 ? (
                     <tr>
                       <td colSpan="5" className="px-5 py-8 text-center text-xs text-brand-muted tracking-widest uppercase">
                         No se encontraron resultados.
                       </td>
                     </tr>
-                  ) : filteredSkus.map((sku) => (
-                    <tr key={sku.id} className={`hover:bg-brand-bg/40 transition-colors ${!sku.active ? 'opacity-40' : ''}`}>
+                  ) : sortedSkus.map((sku) => (
+                    <tr key={sku.id} className={`border-b border-brand-border/30 hover:bg-brand-card/50 transition-colors ${!sku.active ? 'opacity-40' : ''}`}>
                       <td className="px-5 py-3.5">
                         <div className="text-sm font-semibold text-brand-text flex items-center gap-2">
-                          {sku.name} 
+                          <Package size={12} className="text-brand-muted" /> {sku.name} 
                           {sku.system_id && <span className="text-[9px] bg-brand-surface border border-brand-border/50 px-1.5 py-0.5 rounded font-mono text-brand-muted" title="ID en POS / Sistema">ID: {sku.system_id}</span>}
                         </div>
                         <div className="text-[10px] font-mono text-brand-muted mt-0.5">
@@ -253,24 +288,27 @@ export default function SkuModule({ onNavigate }) {
                         </div>
                       </td>
 
-                      <td className="px-5 py-3.5 text-xs font-semibold text-brand-muted uppercase tracking-wider">
-                        {sku.suppliers?.name || '?"'}
+                      <td className="px-5 py-3.5 text-xs text-brand-muted">
+                        {sku.suppliers?.name ? (
+                          <span className="bg-brand-border/30 px-2 py-1 rounded text-brand-text">{sku.suppliers.name}</span>
+                        ) : (
+                          <span className="text-brand-muted/50">—</span>
+                        )}
                       </td>
                       <td className="px-5 py-3.5">
-                        <div className="text-xs font-mono text-brand-text">
+                        <div className="text-sm font-mono text-brand-text">
                           ${Number(sku.cost).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                         </div>
-                        <div className="text-[9px] font-bold uppercase tracking-widest text-brand-muted mt-0.5">
-                          {sku.unit}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex justify-center w-full">
+                          <button onClick={() => toggleActive(sku)} className="cursor-pointer p-1" title={sku.active ? 'ACTIVO' : 'INACTIVO'}>
+                            <div className={`w-2 h-2 rounded-full ${sku.active ? 'bg-brand-success shadow-[0_0_6px_rgba(74,222,128,0.5)]' : 'bg-brand-error shadow-[0_0_6px_rgba(248,113,113,0.5)]'}`} />
+                          </button>
                         </div>
                       </td>
-                      <td className="px-5 py-3.5 text-center">
-                        <button onClick={() => toggleActive(sku)} className="cursor-pointer" title={sku.active ? 'Activo' : 'Inactivo'}>
-                          <div className={`w-2 h-2 rounded-full mx-auto ${sku.active ? 'bg-brand-success' : 'bg-brand-error'}`} />
-                        </button>
-                      </td>
-                      <td className="px-5 py-3.5 text-right">
-                        <button onClick={() => openEdit(sku)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer">
+                      <td className="px-5 py-3.5 text-right flex justify-end gap-2">
+                        <button onClick={() => openEdit(sku)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer p-1">
                           <Pencil size={13} />
                         </button>
                       </td>
@@ -279,7 +317,6 @@ export default function SkuModule({ onNavigate }) {
                 </tbody>
               </table>
             </div>
-          </div>
         )}
       </div>
 
@@ -300,27 +337,27 @@ export default function SkuModule({ onNavigate }) {
             </div>
 
             {/* Panel Body */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-5">
+            <div className="flex-1 overflow-y-auto p-6 space-y-8">
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Nombre del Item *</label>
+                  <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">Nombre del Item *</label>
                   <input
                     type="text"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
+                    className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text font-semibold placeholder:text-brand-muted/30 focus:outline-none focus:border-brand-muted transition-colors"
                     autoFocus
-                    placeholder="Ej: Vodka Smirnoff 700ml"
+                    placeholder="Ej: Vodka Smirnoff"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">ID Sistema (POS)</label>
+                  <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">ID Sistema (POS)</label>
                   <input
                     type="text"
                     value={form.system_id}
                     onChange={(e) => setForm({ ...form, system_id: e.target.value })}
-                    className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
+                    className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text font-mono placeholder:text-brand-muted/30 focus:outline-none focus:border-brand-muted transition-colors"
                     placeholder="Ej: 18"
                     title="El ID que arroja el CSV de Maxirest o GBOL"
                   />
@@ -328,66 +365,54 @@ export default function SkuModule({ onNavigate }) {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Proveedor Principal *</label>
+                <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">Proveedor Principal *</label>
                 <select
                   value={form.supplier_id}
                   onChange={(e) => setForm({ ...form, supplier_id: e.target.value })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none"
+                  className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text font-semibold focus:outline-none focus:border-brand-muted transition-colors appearance-none"
                 >
-                  <option value="" disabled>Seleccione proveedor...</option>
+                  <option value="" disabled className="bg-brand-bg">Seleccione proveedor...</option>
                   {suppliers.map(sup => (
-                    <option key={sup.id} value={sup.id}>{sup.name}</option>
+                    <option key={sup.id} value={sup.id} className="bg-brand-bg">{sup.name}</option>
                   ))}
                 </select>
               </div>
 
-
-
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-6">
                 <div>
-                  <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Unidad *</label>
-                  <select
-                    value={form.unit}
-                    onChange={(e) => setForm({ ...form, unit: e.target.value })}
-                    className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none"
-                  >
-                    {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Costo Base ($) *</label>
+                  <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">Costo Base ($) *</label>
                   <input
                     type="number"
                     step="0.01"
                     min="0"
                     value={form.cost}
                     onChange={(e) => setForm({ ...form, cost: e.target.value })}
-                    className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
+                    className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text font-mono placeholder:text-brand-muted/30 focus:outline-none focus:border-brand-muted transition-colors"
                     placeholder="0.00"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Volumen (ml)</label>
+                  <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">Volumen (ml)</label>
                   <input
                     type="number"
                     min="0"
                     value={form.volume_ml}
                     onChange={(e) => setForm({ ...form, volume_ml: e.target.value })}
-                    className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
+                    className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text font-mono placeholder:text-brand-muted/30 focus:outline-none focus:border-brand-muted transition-colors"
                     placeholder="Opcional"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Stock Mínimo</label>
+                  <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">Stock Mínimo</label>
                   <input
                     type="number"
                     min="0"
                     value={form.stock_min}
                     onChange={(e) => setForm({ ...form, stock_min: e.target.value })}
-                    className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
+                    className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text font-mono placeholder:text-brand-muted/30 focus:outline-none focus:border-brand-muted transition-colors"
                     placeholder="0"
                   />
                 </div>
@@ -396,12 +421,12 @@ export default function SkuModule({ onNavigate }) {
             </div>
 
             {/* Panel Footer */}
-            <div className="px-6 py-4 border-t border-brand-border shrink-0 flex gap-3">
+            <div className="border-t border-brand-border shrink-0 flex">
               {slideOver === 'edit' && (
                 <button
                   onClick={handleDelete}
                   disabled={saving}
-                  className="flex items-center justify-center bg-brand-surface border border-brand-error/30 text-brand-error rounded-xl px-4 py-3 hover:bg-brand-error hover:text-white transition-colors disabled:opacity-30 cursor-pointer"
+                  className="flex items-center justify-center bg-transparent border-r border-brand-border text-brand-error/70 px-6 py-4 hover:bg-brand-error hover:text-brand-bg transition-colors disabled:opacity-30 cursor-pointer"
                   title="Eliminar SKU"
                 >
                   <Trash2 size={16} />
@@ -410,9 +435,9 @@ export default function SkuModule({ onNavigate }) {
               <button
                 onClick={handleSave}
                 disabled={saving || !form.name.trim() || !form.supplier_id}
-                className="flex-1 flex items-center justify-center gap-2 bg-brand-text text-brand-bg rounded-xl py-3 text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 bg-brand-text text-brand-bg py-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
               >
-                {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+                {saving ? <Loader2 size={13} className="animate-spin" /> : null}
                 {saving ? 'GUARDANDO...' : 'GUARDAR'}
               </button>
             </div>

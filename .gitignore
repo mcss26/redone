@@ -17,3 +17,6 @@ Thumbs.db
 
 # Supabase CLI cache
 supabase/.temp/
+
+supabase-cli-executor.js
+scratch_*.js
