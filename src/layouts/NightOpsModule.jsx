@@ -1,8 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 import { GbolService } from '../../lib/gbolService';
 import { Plus, X, Save, ArrowLeft, TerminalSquare, Receipt, Lock, CheckCircle2, AlertTriangle, Upload, Ticket, Users, Loader2, Copy } from 'lucide-react';
 import dayjs from 'dayjs';
+
+const publicSupabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false }
+});
 
 const parseCsvLine = (line, separator) => {
   const result = [];
@@ -57,7 +62,7 @@ export default function NightOpsModule({ onNavigate }) {
         setLoading(false);
       }
     } catch (err) {
-      console.error('Error fetching workdays:', err);
+      window.UI?.toast?.(err.message, 'danger');
       triggerFlash('error');
       setLoading(false);
     }
@@ -109,10 +114,7 @@ export default function NightOpsModule({ onNavigate }) {
         .eq('operational_date', selectedWorkDay.work_date)
         .range(from, from + limit - 1);
         
-      if (error) {
-        console.error('Error fetching passline tickets:', error);
-        break;
-      }
+      if (error) throw error;
       
       if (passlineTicketsChunk && passlineTicketsChunk.length > 0) {
         allPasslineTickets = [...allPasslineTickets, ...passlineTicketsChunk];
@@ -155,7 +157,7 @@ export default function NightOpsModule({ onNavigate }) {
 
       setLoading(false);
     } catch (err) {
-      console.error('Error fetching night details:', err);
+      window.UI?.toast?.(err.message, 'danger');
       triggerFlash('error');
       setLoading(false);
     }
@@ -198,7 +200,7 @@ export default function NightOpsModule({ onNavigate }) {
       fetchNightDetails();
     } catch (err) {
       triggerFlash('error');
-      console.error('Error saving declared amount:', err);
+      window.UI?.toast?.(err.message, 'danger');
     }
   };
 
@@ -228,8 +230,7 @@ export default function NightOpsModule({ onNavigate }) {
       await fetchNightDetails();
     } catch (err) {
       triggerFlash('error');
-      console.error('Error auto-completing amounts:', err);
-      alert('Error auto-completando: ' + err.message);
+      window.UI?.toast?.(err.message, 'danger');
     } finally {
       setSaving(false);
     }
@@ -248,11 +249,11 @@ export default function NightOpsModule({ onNavigate }) {
         triggerFlash('success');
       } else {
         triggerFlash('error');
-        alert("Error procesando CSV de GBOL: " + res.error);
+        window.UI?.toast?.("Error procesando CSV de GBOL: " + (res.error?.message || res.error), 'danger');
       }
     } catch(err) {
       triggerFlash('error');
-      alert("Error: " + err.message);
+      window.UI?.toast?.(err.message, 'danger');
     } finally {
       setSyncingGbol(false);
       if (gbolCsvRef.current) gbolCsvRef.current.value = '';
@@ -272,8 +273,12 @@ export default function NightOpsModule({ onNavigate }) {
       const sep = lines[0].includes(';') ? ';' : ',';
       const headers = parseCsvLine(lines[0], sep).map(h => h.toLowerCase().trim());
       const statusIdx = headers.indexOf('estado del eticket');
-      const ticketIdIdx = headers.indexOf('id ticket');
-      if (statusIdx === -1) { alert('No se encontró la columna "Estado del eticket" en el CSV.'); return; }
+      const ticketIdIdx = headers.findIndex(h => h === 'id ticket' || h === 'ticket id' || h === 'id' || h === 'id_ticket' || h.includes('código'));
+      
+      if (statusIdx === -1) { 
+        window.UI?.toast?.('No se encontró la columna "Estado del eticket" en el CSV.', 'danger'); 
+        return; 
+      }
       
       const ticketsMap = new Map();
       
@@ -301,19 +306,22 @@ export default function NightOpsModule({ onNavigate }) {
         (async () => {
           try {
             setSaving(true);
-            await supabase.from('stg_passline_tickets')
+            const { error: delError } = await publicSupabase.from('stg_passline_tickets')
               .delete()
               .eq('operational_date', selectedWorkDay.work_date)
               .eq('tipo_ticket', 'MEMBER');
+            if (delError) throw delError;
             
             const chunkSize = 500;
             for (let i = 0; i < dbRows.length; i += chunkSize) {
-              await supabase.from('stg_passline_tickets').insert(dbRows.slice(i, i + chunkSize));
+              const { error: insError } = await supabase.from('stg_passline_tickets').insert(dbRows.slice(i, i + chunkSize));
+              if (insError) throw insError;
             }
             triggerFlash('success');
             await fetchNightDetails();
           } catch (err) {
             triggerFlash('error');
+            window.UI?.toast?.(err.message, 'danger');
           } finally {
             setSaving(false);
           }
@@ -338,8 +346,11 @@ export default function NightOpsModule({ onNavigate }) {
       const tipoIdx = headers.indexOf('tipo');
       const statusIdx = headers.indexOf('estado del eticket');
       const totalIdx = headers.indexOf('total');
-      const ticketIdIdx = headers.indexOf('id ticket');
-      if (tipoIdx === -1 || statusIdx === -1) { alert('No se encontraron columnas necesarias.'); return; }
+      const ticketIdIdx = headers.findIndex(h => h === 'id ticket' || h === 'ticket id' || h === 'id' || h === 'id_ticket' || h.includes('código'));
+      if (tipoIdx === -1 || statusIdx === -1) { 
+        window.UI?.toast?.('No se encontraron columnas necesarias.', 'danger'); 
+        return; 
+      }
 
       const ticketsMap = new Map();
       
@@ -369,19 +380,24 @@ export default function NightOpsModule({ onNavigate }) {
         (async () => {
           try {
             setSaving(true);
-            await supabase.from('stg_passline_tickets')
+            const uniqueTipos = [...new Set(dbRows.map(r => r.tipo_ticket))];
+            
+            const { error: delError } = await publicSupabase.from('stg_passline_tickets')
               .delete()
               .eq('operational_date', selectedWorkDay.work_date)
-              .neq('tipo_ticket', 'MEMBER');
+              .in('tipo_ticket', uniqueTipos);
+            if (delError) throw delError;
             
             const chunkSize = 500;
             for (let i = 0; i < dbRows.length; i += chunkSize) {
-              await supabase.from('stg_passline_tickets').insert(dbRows.slice(i, i + chunkSize));
+              const { error: insError } = await supabase.from('stg_passline_tickets').insert(dbRows.slice(i, i + chunkSize));
+              if (insError) throw insError;
             }
             triggerFlash('success');
             await fetchNightDetails();
           } catch (err) {
             triggerFlash('error');
+            window.UI?.toast?.(err.message, 'danger');
           } finally {
             setSaving(false);
           }
