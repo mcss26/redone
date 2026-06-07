@@ -1,30 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './layouts/Login';
 import AdminIndex from './layouts/AdminIndex';
 import OperativoIndex from './layouts/OperativoIndex';
 import ContadorIndex from './layouts/ContadorIndex';
 import EncargadoIndex from './layouts/EncargadoIndex';
-import ProfilesModule from './layouts/ProfilesModule';
-import SuppliersModule from './layouts/SuppliersModule';
-import SkuModule from './layouts/SkuModule';
-import MasterVouchersModule from './layouts/MasterVouchersModule';
-import BarInventoryModule from './layouts/BarInventoryModule';
-import StaffRolesModule from './layouts/StaffRolesModule';
-import CostTemplatesModule from './layouts/CostTemplatesModule';
-import FixedCostTemplatesModule from './layouts/FixedCostTemplatesModule';
-import PosTerminalsModule from './layouts/PosTerminalsModule';
-import WorkDaysModule from './layouts/WorkDaysModule';
-import OpeningCostsModule from './layouts/OpeningCostsModule';
-import StaffPlanModule from './layouts/StaffPlanModule';
-import StockRequestsModule from './layouts/StockRequestsModule';
-import PaymentsModule from './layouts/PaymentsModule';
-import NightOpsModule from './layouts/NightOpsModule';
-import NightReportModule from './layouts/NightReportModule';
-import MonthlyReportModule from './layouts/MonthlyReportModule';
-import AnnualReportModule from './layouts/AnnualReportModule';
-import FixedCostsModule from './layouts/FixedCostsModule';
 import { LogOut, User } from 'lucide-react';
+import ViewLoader from './components/ViewLoader';
+
+const ProfilesModule = React.lazy(() => import('./layouts/ProfilesModule'));
+const SuppliersModule = React.lazy(() => import('./layouts/SuppliersModule'));
+const SkuModule = React.lazy(() => import('./layouts/SkuModule'));
+const MasterVouchersModule = React.lazy(() => import('./layouts/MasterVouchersModule'));
+const BarInventoryModule = React.lazy(() => import('./layouts/BarInventoryModule'));
+const StaffRolesModule = React.lazy(() => import('./layouts/StaffRolesModule'));
+const CostTemplatesModule = React.lazy(() => import('./layouts/CostTemplatesModule'));
+const FixedCostTemplatesModule = React.lazy(() => import('./layouts/FixedCostTemplatesModule'));
+const PosTerminalsModule = React.lazy(() => import('./layouts/PosTerminalsModule'));
+const WorkDaysModule = React.lazy(() => import('./layouts/WorkDaysModule'));
+const OpeningCostsModule = React.lazy(() => import('./layouts/OpeningCostsModule'));
+const StaffPlanModule = React.lazy(() => import('./layouts/StaffPlanModule'));
+const StockRequestsModule = React.lazy(() => import('./layouts/StockRequestsModule'));
+const PaymentsModule = React.lazy(() => import('./layouts/PaymentsModule'));
+const NightOpsModule = React.lazy(() => import('./layouts/NightOpsModule'));
+const NightReportModule = React.lazy(() => import('./layouts/NightReportModule'));
+const MonthlyReportModule = React.lazy(() => import('./layouts/MonthlyReportModule'));
+const AnnualReportModule = React.lazy(() => import('./layouts/AnnualReportModule'));
+const FixedCostsModule = React.lazy(() => import('./layouts/FixedCostsModule'));
 
 function AppShell() {
   const { user, logout, canAccess } = useAuth();
@@ -82,7 +84,13 @@ function AppShell() {
     if (!canAccess(activeView)) return <AdminIndex onNavigate={handleNavigation} />;
 
     const Component = ROUTE_MAP[activeView];
-    if (Component) return <Component onNavigate={handleNavigation} />;
+    if (Component) {
+      return (
+        <Suspense fallback={<ViewLoader />}>
+          <Component onNavigate={handleNavigation} />
+        </Suspense>
+      );
+    }
 
     return <AdminIndex onNavigate={handleNavigation} />;
   };
