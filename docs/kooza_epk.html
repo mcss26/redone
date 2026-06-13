@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KOOZA | DJ Dossier</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f0f0f;
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --border-color: rgba(255, 255, 255, 0.15);
+            --font-main: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 80px 40px;
+        }
+
+        header {
+            margin-bottom: 60px;
+        }
+
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 60px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .top-nav .brand {
+            color: var(--text-primary);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .top-nav .brand span {
+            color: #ff3333;
+        }
+
+        header h1 {
+            font-size: 4.5rem;
+            font-weight: 400;
+            margin: 0 0 10px 0;
+            letter-spacing: -0.03em;
+        }
+
+        header h1 span {
+            color: var(--text-secondary);
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            padding-bottom: 60px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .hero-statement {
+            font-size: 1.4rem;
+            font-weight: 300;
+            line-height: 1.5;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        
+        .hero-sub {
+            color: var(--text-secondary);
+            font-weight: 300;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            padding: 40px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .feature-item .circle {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .feature-item h4 {
+            font-weight: 400;
+            font-size: 1rem;
+            margin: 0 0 10px 0;
+        }
+
+        .feature-item p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .section {
+            display: flex;
+            padding: 60px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            flex: 1;
+            padding-right: 40px;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            font-weight: 400;
+            margin: 0;
+            letter-spacing: -0.02em;
+        }
+
+        .section-content {
+            flex: 1.5;
+        }
+        
+        .section-content.two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .section-content p {
+            color: var(--text-secondary);
+            font-weight: 300;
+            font-size: 1.1rem;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .list-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0 40px;
+            margin-top: 40px;
+        }
+
+        .list-item {
+            border-top: 1px solid var(--border-color);
+            padding: 20px 0;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        a {
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        a:hover {
+            opacity: 0.7;
+        }
+
+        .btn {
+            display: inline-block;
+            border: 1px solid var(--border-color);
+            padding: 10px 30px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            margin-top: 20px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn:hover {
+            border-color: var(--text-primary);
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 768px) {
+            .hero-grid, .section, .list-group, .section-content.two-col {
+                grid-template-columns: 1fr;
+                flex-direction: column;
+            }
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .section-title {
+                margin-bottom: 30px;
+            }
+            header h1 {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="top-nav">
+            <div class="brand"><span>✦</span> KOOZA</div>
+            <div>Booking & Press Kit</div>
+        </div>
+
+        <header>
+            <h1>KOOZA <span>DJ</span></h1>
+            
+            <div class="hero-grid">
+                <p class="hero-sub">
+                    Open Format & Urban Club<br>
+                    📍 Salta, Argentina
+                </p>
+                <p class="hero-statement">
+                    KOOZA transforma cada presentación en una experiencia de libertad, energía y disfrute, combinando técnica, selección musical y conexión con el público.
+                </p>
+            </div>
+        </header>
+
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="circle">1</div>
+                <h4>Urbano</h4>
+                <p>Reggaetón, RKT, Trap, Hip Hop.</p>
+            </div>
+            <div class="feature-item">
+                <div class="circle">2</div>
+                <h4>Club</h4>
+                <p>Club Edits, Funk y ritmos para la pista.</p>
+            </div>
+            <div class="feature-item">
+                <div class="circle">3</div>
+                <h4>Open Format</h4>
+                <p>Lectura precisa de la pista y versatilidad.</p>
+            </div>
+            <div class="feature-item">
+                <div class="circle">4</div>
+                <h4>Residencia</h4>
+                <p>Host actual de MIDNIGHT CLUB.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">
+                <h2>Biografía</h2>
+            </div>
+            <div class="section-content">
+                <p>Desde muy joven, KOOZA descubrió su pasión por el DJing, experimentando con la música y las mezclas de forma autodidacta.</p>
+                <p>Su sonido está profundamente influenciado por la cultura urbana, el trap, el reggaetón y el hip hop, con una fuerte inspiración en la energía vibrante del público y la auténtica experiencia del club. Su propuesta está pensada para mantener la pista en movimiento, transmitiendo emoción mediante una lectura precisa del momento.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">
+                <h2>Trayectoria</h2>
+            </div>
+            <div class="section-content">
+                <p>A lo largo de su carrera, ha consolidado su nombre formando parte de los mejores eventos y fiestas urbanas en Salta, Córdoba y Tucumán.</p>
+                
+                <div class="list-group">
+                    <div class="list-item">
+                        <span>Atlanta</span>
+                        <span style="color: var(--text-secondary);">Showcase</span>
+                    </div>
+                    <div class="list-item">
+                        <span>Midnight Club</span>
+                        <span style="color: var(--text-secondary);">Residencia</span>
+                    </div>
+                    <div class="list-item">
+                        <span>Omar Varela</span>
+                        <span style="color: var(--text-secondary);">Stage Share</span>
+                    </div>
+                    <div class="list-item">
+                        <span>Zaramay</span>
+                        <span style="color: var(--text-secondary);">Stage Share</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">
+                <h2>Live Sets <br>& Media</h2>
+            </div>
+            <div class="section-content two-col">
+                <div>
+                    <p>Conoce la energía de KOOZA en cabina. Revisa su último live set en YouTube.</p>
+                    <a href="https://www.youtube.com/watch?v=NGGh4a-el6k" target="_blank" class="btn">Ver en YouTube</a>
+                </div>
+                <div>
+                    <p>Accede a la galería oficial de prensa, con fotos en alta resolución para flyers y promociones.</p>
+                    <a href="#" class="btn">Descargar Fotos</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">
+                <h2>Rider Técnico <br>& Contacto</h2>
+            </div>
+            <div class="section-content">
+                <p>Se adapta a cualquier cabina profesional siempre que se provean conexiones para su computadora. Cuenta con setup propio (Pioneer RX3 / XDJ-3000) de ser necesario. Se requiere monitoreo de calidad.</p>
+                
+                <div class="list-group">
+                    <div class="list-item">
+                        <span>Email</span>
+                        <a href="mailto:luchorodriguuez@gmail.com" style="color: var(--text-secondary);">luchorodriguuez@gmail.com</a>
+                    </div>
+                    <div class="list-item">
+                        <span>Instagram</span>
+                        <a href="https://www.instagram.com/kooza____?igsh=bnFuaTV0NGhtNm80&utm_source=qr" target="_blank" style="color: var(--text-secondary);">@kooza____</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

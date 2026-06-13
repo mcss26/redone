@@ -35,3 +35,10 @@
 - **System:** Implementado patrón de `React.lazy()` en `src/App.jsx` exclusivamente para los sub-módulos del `ROUTE_MAP` (vistas pesadas de CRUD y Reportes).
 - **Architecture:** Se mantuvieron como importaciones estáticas las pantallas de inicio (`Login` y los módulos `*Index`) para asegurar renderizado de primer acceso instantáneo (Cero intrusión en la UX).
 - **UI:** Añadido componente inmersivo `<ViewLoader />` como fallback the `<Suspense>`, con estética funcional (fondo oscuro, loader de neón) minimizando el salto visual en la primera carga de un módulo.
+
+### Feature: Auditoría Barra (Fase 1 y 2 - Conciliación y Consolidación)
+- **System:** Creado componente `AuditoriaBarraModule.jsx` que implementa la carga de archivos CSV de consumos de sistema y los compara en tiempo real contra los registros de `bar_inventory` (Stock Inicial - Stock Final).
+- **System:** Se agregó funcionalidad para consolidar la auditoría en la caja de la jornada. Al presionar "Consolidar", el módulo genera asientos de ingresos/egresos (`type='income'/'expense'`) en la tabla `financial_adjustments` con la categoría `auditoria_barra`. 
+- **Architecture:** Se garantiza la idempotencia (los ajustes antiguos de barra para esa jornada se eliminan automáticamente antes de insertar los nuevos). El Night Report los lee nativamente y los impacta en el P&L final de forma transparente.
+- **UI:** Añadida tabla de alta densidad visual con cálculo de diferencias en unidades y su monetización automática (usando `skus.cost`).
+- **Feature:** Modificado `BarInventoryModule.jsx` para permitir el ingreso de valores decimales (comas y puntos) en el conteo de stock físico.

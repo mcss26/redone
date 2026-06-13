@@ -109,10 +109,18 @@ export default function BarInventoryModule({ onNavigate }) {
     setInventory(prev => {
       const current = prev[skuId];
 
-
       let newValue = 0;
       if (exactValue !== null) {
-        newValue = Math.max(0, parseInt(exactValue) || 0);
+        // Keep the string if it ends with a dot or comma so the user can type "1." -> "1.5"
+        const strVal = String(exactValue).replace(',', '.');
+        if (strVal.endsWith('.')) {
+          newValue = strVal; // Store the string temporarily
+        } else {
+          let parsed = parseFloat(strVal);
+          if (isNaN(parsed)) parsed = 0;
+          // Don't apply Math.max to empty string or if it's just a number string to avoid stripping trailing zeros if we want to support them, but parseFloat strips trailing zeros anyway.
+          newValue = parsed < 0 ? 0 : strVal === '' ? '' : parsed;
+        }
       } else {
         const val = mode === 'open' ? Number(current.stock_open) : Number(current.stock_close);
         newValue = Math.max(0, val + delta);
@@ -272,9 +280,15 @@ export default function BarInventoryModule({ onNavigate }) {
                           </button>
                           
                           <input 
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             value={value}
-                            onChange={(e) => updateStock(sku.id, 0, e.target.value)}
+                            onChange={(e) => {
+                              // Allow temporary trailing commas/dots for UX by checking if it ends with one,
+                              // but we still trigger updateStock. Actually, updateStock expects a number,
+                              // so let's pass the raw string so it doesn't strip the decimal if the user is typing "1."
+                              updateStock(sku.id, 0, e.target.value);
+                            }}
                             disabled={isModeLocked}
                             className="w-16 h-12 bg-transparent text-center font-mono font-bold text-xl text-brand-text focus:outline-none focus:bg-brand-bg rounded-xl transition-colors disabled:opacity-100"
                           />
