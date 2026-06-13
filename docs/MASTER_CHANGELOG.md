@@ -1,5 +1,11 @@
 # Midnight Club - Master Changelog
 
+## 2026-06-13
+### Feature: Auditoría Barra (Fase 3 - Persistencia de Consumo)
+- **System:** Implementada la persistencia completa del reporte de Auditoría de Barra utilizando las tablas nativas `import_system_consumption` y `night_consumption`.
+- **Architecture:** `AuditoriaBarraModule.jsx` ahora guarda el CSV crudo en `import_system_consumption` (asegurando trazabilidad de ítems no mapeados) y el consumo asociado a SKUs válidos en `night_consumption`.
+- **UI:** Al seleccionar una jornada con auditoría previa, el módulo recupera automáticamente los datos reconstruyendo el reporte en pantalla e indicando el estado `AUDITORÍA CONSOLIDADA`, permitiendo visualizar el histórico sin necesidad de re-subir archivos CSV.
+
 ## 2026-06-06
 ### Module Review & Documentation Initialization
 - **System:** Commenced a fresh documentation cycle for Midnight Club System 4.0 to maintain a streamlined and updated context.

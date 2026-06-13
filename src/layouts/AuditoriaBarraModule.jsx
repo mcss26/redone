@@ -28,6 +28,7 @@ export default function AuditoriaBarraModule({ onNavigate }) {
   const [comparisonResults, setComparisonResults] = useState([]);
   const [saving, setSaving] = useState(false);
   const [flashColor, setFlashColor] = useState('');
+  const [isConsolidated, setIsConsolidated] = useState(false);
   
   const triggerFlash = (type) => {
     setFlashColor(type === 'success' ? 'bg-brand-success' : 'bg-brand-error');
@@ -70,17 +71,17 @@ export default function AuditoriaBarraModule({ onNavigate }) {
     fetchBaseData();
   }, []);
 
-  // Fetch Inventory when Workday changes
-  const fetchInventory = useCallback(async () => {
+  // Fetch Inventory and Saved Audit when Workday changes
+  const fetchInventoryAndAudit = useCallback(async () => {
     if (!selectedWorkDayId) return;
     try {
       setLoading(true);
-      const { data: invData, error } = await supabase
+      const { data: invData, error: invError } = await supabase
         .from('bar_inventory')
         .select('*')
         .eq('work_day_id', selectedWorkDayId);
 
-      if (error) throw error;
+      if (invError) throw invError;
 
       const map = {};
       (invData || []).forEach(inv => {
@@ -90,6 +91,30 @@ export default function AuditoriaBarraModule({ onNavigate }) {
         };
       });
       setInventoryMap(map);
+
+      // Fetch Saved Audit (from import_system_consumption)
+      const { data: auditData, error: auditError } = await supabase
+        .from('import_system_consumption')
+        .select('*')
+        .eq('work_day_id', selectedWorkDayId);
+
+      if (auditError) throw auditError;
+
+      if (auditData && auditData.length > 0) {
+        const reconstructedCsv = auditData.map(row => {
+          const [sysId, det] = (row.sku_name_raw || '').split('||');
+          return {
+            system_id: sysId || row.sku_name_raw,
+            detail: det || 'Desconocido',
+            quantity: Number(row.quantity)
+          };
+        });
+        setCsvData(reconstructedCsv);
+        setIsConsolidated(true);
+      } else {
+        setCsvData([]);
+        setIsConsolidated(false);
+      }
     } catch (err) {
       window.UI?.toast?.(err.message, 'danger');
     } finally {
@@ -98,8 +123,8 @@ export default function AuditoriaBarraModule({ onNavigate }) {
   }, [selectedWorkDayId]);
 
   useEffect(() => {
-    fetchInventory();
-  }, [fetchInventory]);
+    fetchInventoryAndAudit();
+  }, [fetchInventoryAndAudit]);
 
   // Compare CSV against Inventory
   useEffect(() => {
@@ -137,6 +162,7 @@ export default function AuditoriaBarraModule({ onNavigate }) {
       return {
         ...csvRow,
         skuFound: true,
+        skuId: matchSku.id,
         skuName: matchSku.name,
         cost: cost,
         realConsumption,
@@ -208,6 +234,7 @@ export default function AuditoriaBarraModule({ onNavigate }) {
       }
 
       setCsvData(parsedData);
+      setIsConsolidated(false);
       window.UI?.toast?.(`CSV cargado: ${parsedData.length} registros`, 'success');
       
       if (csvRef.current) csvRef.current.value = '';
@@ -234,6 +261,20 @@ export default function AuditoriaBarraModule({ onNavigate }) {
           amount: Math.abs(r.monetized_diff)
         }));
 
+      const importData = csvData.map(r => ({
+        work_day_id: selectedWorkDayId,
+        sku_name_raw: `${r.system_id}||${r.detail}`,
+        quantity: r.quantity
+      }));
+
+      const nightConsData = comparisonResults
+        .filter(r => r.skuFound)
+        .map(r => ({
+          work_day_id: selectedWorkDayId,
+          sku_id: r.skuId,
+          system_quantity: r.systemConsumption
+        }));
+
       // Delete existing
       const { error: delError } = await supabase
         .from('financial_adjustments')
@@ -243,18 +284,43 @@ export default function AuditoriaBarraModule({ onNavigate }) {
 
       if (delError) throw delError;
 
+      const { error: delImpError } = await supabase
+        .from('import_system_consumption')
+        .delete()
+        .eq('work_day_id', selectedWorkDayId);
+      if (delImpError) throw delImpError;
+
+      const { error: delNightError } = await supabase
+        .from('night_consumption')
+        .delete()
+        .eq('work_day_id', selectedWorkDayId);
+      if (delNightError) throw delNightError;
+
       // Insert new
       if (adjustments.length > 0) {
         const { error: insError } = await supabase
           .from('financial_adjustments')
           .insert(adjustments);
-          
         if (insError) throw insError;
+      }
+      
+      if (importData.length > 0) {
+        const { error: insImpError } = await supabase
+          .from('import_system_consumption')
+          .insert(importData);
+        if (insImpError) throw insImpError;
+      }
+      
+      if (nightConsData.length > 0) {
+        const { error: insNightError } = await supabase
+          .from('night_consumption')
+          .insert(nightConsData);
+        if (insNightError) throw insNightError;
       }
 
       triggerFlash('success');
       window.UI?.toast?.('Auditoría guardada exitosamente.', 'success');
-      setCsvData([]); // Reset to indicate completion
+      setIsConsolidated(true);
     } catch (err) {
       triggerFlash('error');
       window.UI?.toast?.(err.message, 'danger');
@@ -282,7 +348,6 @@ export default function AuditoriaBarraModule({ onNavigate }) {
             value={selectedWorkDayId}
             onChange={(e) => {
               setSelectedWorkDayId(e.target.value);
-              setCsvData([]); // Reset CSV on workday change to avoid mismatch
             }}
             className="bg-transparent border-b border-brand-border/50 pb-1 text-[10px] font-bold text-brand-text focus:outline-none focus:border-brand-text appearance-none cursor-pointer uppercase tracking-widest min-w-[200px]"
           >
@@ -298,10 +363,10 @@ export default function AuditoriaBarraModule({ onNavigate }) {
           <button 
             onClick={() => csvRef.current?.click()}
             disabled={!selectedWorkDayId || loading}
-            className="flex items-center gap-2 border-b border-brand-accent pb-1 text-[9px] font-extrabold text-brand-accent tracking-[0.3em] uppercase transition-all cursor-pointer disabled:opacity-50 hover:opacity-80"
+            className={`flex items-center gap-2 border-b pb-1 text-[9px] font-extrabold tracking-[0.3em] uppercase transition-all cursor-pointer disabled:opacity-50 hover:opacity-80 ${isConsolidated ? 'border-brand-warning text-brand-warning' : 'border-brand-accent text-brand-accent'}`}
           >
             <Upload size={12} />
-            SUBIR CSV SISTEMA
+            {isConsolidated ? 'RESUBIR CSV' : 'SUBIR CSV SISTEMA'}
           </button>
         </div>
       </div>
@@ -330,14 +395,19 @@ export default function AuditoriaBarraModule({ onNavigate }) {
                   Negativos: FALTANTE (Consumo Físico \u003e Sistema). Positivos: SOBRANTE.
                 </div>
               </div>
-              <div className="mt-6 md:mt-0">
+              <div className="mt-6 md:mt-0 flex flex-col items-end gap-3">
+                {isConsolidated && (
+                  <div className="text-[10px] font-bold text-brand-warning tracking-widest uppercase border border-brand-warning/30 px-3 py-1 rounded bg-brand-warning/10">
+                    AUDITORÍA CONSOLIDADA
+                  </div>
+                )}
                 <button
                   onClick={handleSaveAuditoria}
                   disabled={saving || comparisonResults.length === 0}
                   className="bg-transparent border-b-2 border-brand-text text-brand-text hover:opacity-70 pb-1 text-[10px] font-extrabold tracking-[0.3em] uppercase transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
                   {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
-                  CONSOLIDAR AUDITORÍA
+                  {isConsolidated ? 'RE-CONSOLIDAR' : 'CONSOLIDAR AUDITORÍA'}
                 </button>
               </div>
             </div>
