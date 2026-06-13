@@ -32,6 +32,7 @@ const MODULE_MAP = [
     phase: 'REPORTES',
     modules: [
       { id: 'night_report',   label: 'AUDITORÍA JORNADA' },
+      { id: 'auditoria_barra',label: 'AUDITORÍA BARRA' },
       { id: 'monthly_report', label: 'REPORTE MENSUAL' },
       { id: 'annual_report',  label: 'AUDITORÍA ANUAL' },
     ]

@@ -24,6 +24,7 @@ const StockRequestsModule = React.lazy(() => import('./layouts/StockRequestsModu
 const PaymentsModule = React.lazy(() => import('./layouts/PaymentsModule'));
 const NightOpsModule = React.lazy(() => import('./layouts/NightOpsModule'));
 const NightReportModule = React.lazy(() => import('./layouts/NightReportModule'));
+const AuditoriaBarraModule = React.lazy(() => import('./layouts/AuditoriaBarraModule'));
 const MonthlyReportModule = React.lazy(() => import('./layouts/MonthlyReportModule'));
 const AnnualReportModule = React.lazy(() => import('./layouts/AnnualReportModule'));
 const FixedCostsModule = React.lazy(() => import('./layouts/FixedCostsModule'));
@@ -62,6 +63,7 @@ function AppShell() {
     fixed_costs:    FixedCostsModule,
     workday:        NightOpsModule,
     night_report:   NightReportModule,
+    auditoria_barra: AuditoriaBarraModule,
     monthly_report: MonthlyReportModule,
     annual_report:  AnnualReportModule,
   };
