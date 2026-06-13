@@ -5,6 +5,9 @@
 - **System:** Implementada la persistencia completa del reporte de Auditoría de Barra utilizando las tablas nativas `import_system_consumption` y `night_consumption`.
 - **Architecture:** `AuditoriaBarraModule.jsx` ahora guarda el CSV crudo en `import_system_consumption` (asegurando trazabilidad de ítems no mapeados) y el consumo asociado a SKUs válidos en `night_consumption`.
 - **UI:** Al seleccionar una jornada con auditoría previa, el módulo recupera automáticamente los datos reconstruyendo el reporte en pantalla e indicando el estado `AUDITORÍA CONSOLIDADA`, permitiendo visualizar el histórico sin necesidad de re-subir archivos CSV.
+### Feature: Simplificación P&L (Arqueo y Barra)
+- **UI/UX:** En `NightReportModule.jsx` se agregó una lógica de agregación que consolida todos los ajustes de auditoría de barra en un monto neto para limpiar visualmente el P&L.
+- **Architecture:** Se implementó una lógica contable dinámica para las diferencias de caja (Arqueo) y Barra: los sobrantes netos suman a Ingresos, y los faltantes netos suman a Egresos. Esto alinea la UI con los principios contables estándar y evita valores de ingreso negativos.
 
 ## 2026-06-06
 ### Module Review & Documentation Initialization

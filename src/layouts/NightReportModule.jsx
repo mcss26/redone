@@ -39,8 +39,8 @@ export default function NightReportModule({ onNavigate }) {
   };
 
   const [reportData, setReportData] = useState({
-    inflows: { posCash: 0, posDigital: 0, passline: 0, discrepancies: 0, manual: 0, total: 0 },
-    outflows: { costsPaid: 0, recurrentCostsPaid: 0, adHocCostsPaid: 0, supplyCostsPaid: 0, costsPending: 0, payroll: 0, efficiencyImpact: 0, tax: 0, manual: 0, total: 0 },
+    inflows: { posCash: 0, posDigital: 0, passline: 0, arqueoSobrante: 0, barraSobrante: 0, discrepancies: 0, manual: 0, total: 0 },
+    outflows: { costsPaid: 0, recurrentCostsPaid: 0, adHocCostsPaid: 0, supplyCostsPaid: 0, costsPending: 0, payroll: 0, arqueoFaltante: 0, barraFaltante: 0, tax: 0, manual: 0, total: 0 },
     manualAdjustments: [],
     netProfit: 0,
     margin: 0
@@ -150,11 +150,16 @@ export default function NightReportModule({ onNavigate }) {
     const adjustments = adjRes.data || [];
     let manualIncome = 0;
     let manualExpense = 0;
+    let barraIncome = 0;
+    let barraExpense = 0;
     let storedTax = null;
 
     adjustments.forEach(adj => {
       if (adj.category === 'tax_estimation') {
         storedTax = Number(adj.amount);
+      } else if (adj.category === 'auditoria_barra') {
+        if (adj.type === 'income') barraIncome += Number(adj.amount);
+        if (adj.type === 'expense') barraExpense += Number(adj.amount);
       } else {
         if (adj.type === 'income') manualIncome += Number(adj.amount);
         if (adj.type === 'expense') manualExpense += Number(adj.amount);
@@ -168,16 +173,24 @@ export default function NightReportModule({ onNavigate }) {
       tax = storedTax || 0;
     }
 
+    // Process Barra & Arqueo
+    const netBarra = barraIncome - barraExpense;
+    const barraSobrante = netBarra > 0 ? netBarra : 0;
+    const barraFaltante = netBarra < 0 ? Math.abs(netBarra) : 0;
+
+    const arqueoSobrante = discrepancies > 0 ? discrepancies : 0;
+    const arqueoFaltante = discrepancies < 0 ? Math.abs(discrepancies) : 0;
+
     // Totals
-    const totalInflows = posCash + posDigital + passline + discrepancies + manualIncome;
-    const totalOutflows = costsPaid + costsPending + payroll + tax + manualExpense;
+    const totalInflows = posCash + posDigital + passline + arqueoSobrante + barraSobrante + manualIncome;
+    const totalOutflows = costsPaid + costsPending + payroll + tax + arqueoFaltante + barraFaltante + manualExpense;
     const netProfit = totalInflows - totalOutflows;
     const margin = totalInflows > 0 ? (netProfit / totalInflows) * 100 : 0;
 
       setReportData({
-        inflows: { posCash, posDigital, passline, discrepancies, manual: manualIncome, total: totalInflows },
-        outflows: { costsPaid, recurrentCostsPaid, adHocCostsPaid, supplyCostsPaid, costsPending, payroll, efficiencyImpact: 0, tax, manual: manualExpense, total: totalOutflows },
-        manualAdjustments: adjustments.filter(a => a.category !== 'tax_estimation'),
+        inflows: { posCash, posDigital, passline, arqueoSobrante, barraSobrante, discrepancies, manual: manualIncome, total: totalInflows },
+        outflows: { costsPaid, recurrentCostsPaid, adHocCostsPaid, supplyCostsPaid, costsPending, payroll, arqueoFaltante, barraFaltante, tax, manual: manualExpense, total: totalOutflows },
+        manualAdjustments: adjustments.filter(a => a.category !== 'tax_estimation' && a.category !== 'auditoria_barra'),
         netProfit,
         margin
       });
@@ -331,7 +344,8 @@ export default function NightReportModule({ onNavigate }) {
                       <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Insumos Pagados</td><td className="py-3 text-right">{formatCurrency(reportData.outflows.supplyCostsPaid)}</td></tr>
                       <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Costos Pendientes</td><td className="py-3 text-right">{formatCurrency(reportData.outflows.costsPending)}</td></tr>
                       <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Nómina Operativa</td><td className="py-3 text-right">{formatCurrency(reportData.outflows.payroll)}</td></tr>
-                      <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Impacto Mermas Barra</td><td className="py-3 text-right">{formatCurrency(reportData.outflows.efficiencyImpact)}</td></tr>
+                      <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Diferencia Arqueo (Faltante)</td><td className={`py-3 text-right ${reportData.outflows.arqueoFaltante > 0 ? 'text-brand-error' : ''}`}>{formatCurrency(reportData.outflows.arqueoFaltante)}</td></tr>
+                      <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Impacto Mermas Barra</td><td className={`py-3 text-right ${reportData.outflows.barraFaltante > 0 ? 'text-brand-error' : ''}`}>{formatCurrency(reportData.outflows.barraFaltante)}</td></tr>
                       <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Impuestos Estimados ({globalSettings.digital_tax_rate}%)</td><td className="py-3 text-right text-brand-warning/80">{formatCurrency(reportData.outflows.tax)}</td></tr>
                       {reportData.manualAdjustments.filter(a => a.type === 'expense').map(adj => (
                         <tr key={adj.id}>
@@ -366,9 +380,12 @@ export default function NightReportModule({ onNavigate }) {
                       <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">POS Físico (Efectivo)</td><td className="py-3 text-right">{formatCurrency(reportData.inflows.posCash)}</td></tr>
                       <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">POS Físico (Digital)</td><td className="py-3 text-right">{formatCurrency(reportData.inflows.posDigital)}</td></tr>
                       <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Venta Passline (Digital)</td><td className="py-3 text-right">{formatCurrency(reportData.inflows.passline)}</td></tr>
-                      <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Diferencia de Arqueo</td><td className={`py-3 text-right ${reportData.inflows.discrepancies < 0 ? 'text-brand-error' : reportData.inflows.discrepancies > 0 ? 'text-brand-success' : ''}`}>
-                        {reportData.inflows.discrepancies > 0 ? '+' : ''}{formatCurrency(reportData.inflows.discrepancies)}
-                      </td></tr>
+                      {reportData.inflows.arqueoSobrante > 0 && (
+                        <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Diferencia Arqueo (Sobrante)</td><td className="py-3 text-right text-brand-success">+{formatCurrency(reportData.inflows.arqueoSobrante)}</td></tr>
+                      )}
+                      {reportData.inflows.barraSobrante > 0 && (
+                        <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Sobrante de Barra</td><td className="py-3 text-right text-brand-success">+{formatCurrency(reportData.inflows.barraSobrante)}</td></tr>
+                      )}
                       {reportData.manualAdjustments.filter(a => a.type === 'income').map(adj => (
                         <tr key={adj.id}>
                           <td className="py-3 font-sans uppercase tracking-wider text-[10px] text-brand-success flex items-center gap-2">
