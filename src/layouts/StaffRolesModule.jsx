@@ -23,7 +23,7 @@ export default function StaffRolesModule({ onNavigate }) {
 
   const fetchRoles = useCallback(async () => {
     try {
-      setLoading(true);
+      setIsFetchingBackground(true);
       const { data, error } = await supabase
         .from('staff_roles')
         .select('*')
@@ -35,7 +35,7 @@ export default function StaffRolesModule({ onNavigate }) {
       triggerFlash('error');
       window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
-      setLoading(false);
+      (setIsFetchingBackground(false), setLoading(false));
     }
   }, []);
 
@@ -86,7 +86,7 @@ export default function StaffRolesModule({ onNavigate }) {
   };
 
   const handleDelete = async () => {
-    if (!(await window.UI.confirm())) return;
+    if (!(await window.UI.confirm(`¿Eliminar permanentemente el rol "${form.name}"?`))) return;
     try {
       setSaving(true);
       const { error } = await supabase.from('staff_roles').delete().eq('id', slideOver.id);

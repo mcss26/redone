@@ -39,13 +39,13 @@ export default function WorkDaysModule({ onNavigate }) {
   };
 
   const fetchWorkDays = useCallback(async () => {
-    setLoading(true);
+    setIsFetchingBackground(true);
     const { data } = await supabase
       .from('work_days')
       .select('*')
       .order('work_date', { ascending: false });
     setWorkDays(data || []);
-    setLoading(false);
+    (setIsFetchingBackground(false), setLoading(false));
   }, []);
 
   useEffect(() => { fetchWorkDays(); }, [fetchWorkDays]);
@@ -138,7 +138,7 @@ export default function WorkDaysModule({ onNavigate }) {
       console.error('Error saving work day:', err);
       triggerFlash('error');
       window.UI?.toast?.(err.message || "Error al procesar", 'danger');
-      alert('Error al guardar la jornada. Revise la consola para más detalles.');
+      window.UI?.toast?.('Error al guardar la jornada. Revise la consola para más detalles.', 'danger');
     } finally {
       setSaving(false);
     }
@@ -147,7 +147,7 @@ export default function WorkDaysModule({ onNavigate }) {
   const handleDelete = async (id) => {
     const dayId = id || selectedDay?.id;
     if (!dayId) return;
-    if (!(await window.UI.confirm())) return;
+    if (!(await window.UI.confirm('¿Estás seguro de eliminar esta jornada permanentemente? Se eliminarán los costos asociados.'))) return;
     
     setSaving(true);
     try {
@@ -164,7 +164,7 @@ export default function WorkDaysModule({ onNavigate }) {
       console.error('Error deleting work day:', err);
       triggerFlash('error');
       window.UI?.toast?.(err.message || "Error al procesar", 'danger');
-      alert('Error al eliminar. Revisa la consola.');
+      window.UI?.toast?.('Error al eliminar. Revisa la consola.', 'danger');
     } finally {
       setSaving(false);
     }
@@ -233,10 +233,10 @@ export default function WorkDaysModule({ onNavigate }) {
                     </div>
                   </td>
                   <td className="px-5 py-3.5 text-right flex justify-end gap-2 items-center">
-                    <button onClick={() => openEdit(wd)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer p-1" title="Ver Detalles">
+                    <button onClick={() => openEdit(wd)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer w-11 h-11 flex items-center justify-center shrink-0" title="Ver Detalles">
                       <Pencil size={13} />
                     </button>
-                    <button onClick={() => handleDelete(wd.id)} className="text-brand-error/50 hover:text-brand-error transition-colors cursor-pointer p-1" title="Eliminar">
+                    <button onClick={() => handleDelete(wd.id)} className="text-brand-error/50 hover:text-brand-error transition-colors cursor-pointer w-11 h-11 flex items-center justify-center shrink-0" title="Eliminar">
                       <Trash2 size={13} />
                     </button>
                   </td>

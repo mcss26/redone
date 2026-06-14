@@ -44,11 +44,11 @@ export default function OpeningCostsModule({ onNavigate }) {
         if (wdRes.data && wdRes.data.length > 0) {
           setSelectedWorkDayId(wdRes.data[0].id);
         } else {
-          setLoading(false);
+          (setIsFetchingBackground(false), setLoading(false));
         }
       } catch (err) {
         console.error('Error in fetchInit:', err);
-        setLoading(false);
+        (setIsFetchingBackground(false), setLoading(false));
       }
     };
     fetchInit();
@@ -58,7 +58,7 @@ export default function OpeningCostsModule({ onNavigate }) {
   const fetchCosts = useCallback(async () => {
     if (!selectedWorkDayId) return;
     try {
-      setLoading(true);
+      setIsFetchingBackground(true);
       const { data, error } = await supabase
         .from('opening_costs')
         .select(`*, suppliers ( name )`)
@@ -71,7 +71,7 @@ export default function OpeningCostsModule({ onNavigate }) {
       triggerFlash('error');
       window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
-      setLoading(false);
+      (setIsFetchingBackground(false), setLoading(false));
     }
   }, [selectedWorkDayId]);
 
@@ -126,7 +126,7 @@ export default function OpeningCostsModule({ onNavigate }) {
   };
 
   const handleDelete = async (id) => {
-    if (!(await window.UI.confirm())) return;
+    if (!(await window.UI.confirm('¿Eliminar este costo?'))) return;
     try {
       const { error } = await supabase.from('opening_costs').delete().eq('id', id);
       if (error) throw error;
@@ -140,7 +140,7 @@ export default function OpeningCostsModule({ onNavigate }) {
   };
 
   const handleApprove = async (id) => {
-    if (!(await window.UI.confirm())) return;
+    if (!(await window.UI.confirm('¿Aprobar este costo para pago?'))) return;
     try {
       const { error } = await supabase.from('opening_costs').update({ status: 'approved' }).eq('id', id);
       if (error) throw error;
@@ -154,7 +154,7 @@ export default function OpeningCostsModule({ onNavigate }) {
   };
 
   const handleApproveAll = async () => {
-    if (!(await window.UI.confirm())) return;
+    if (!(await window.UI.confirm('¿Aprobar TODOS los costos pendientes para pago?'))) return;
     try {
       const draftIds = costs.filter(c => c.status === 'draft').map(c => c.id);
       if (draftIds.length === 0) return;
@@ -280,14 +280,14 @@ export default function OpeningCostsModule({ onNavigate }) {
                     {!isClosed && (
                       <>
                         {c.status === 'draft' && user?.role === 'admin' && (
-                          <button onClick={() => handleApprove(c.id)} className="text-brand-success/70 hover:text-brand-success transition-colors cursor-pointer p-1" title="Aprobar Costo">
+                          <button onClick={() => handleApprove(c.id)} className="text-brand-success/70 hover:text-brand-success transition-colors cursor-pointer w-11 h-11 flex items-center justify-center shrink-0" title="Aprobar Costo">
                             <CheckCircle2 size={13} />
                           </button>
                         )}
-                        <button onClick={() => openEdit(c)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer p-1">
+                        <button onClick={() => openEdit(c)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer w-11 h-11 flex items-center justify-center shrink-0">
                           <Pencil size={13} />
                         </button>
-                        <button onClick={() => handleDelete(c.id)} className="text-brand-error/50 hover:text-brand-error transition-colors cursor-pointer p-1">
+                        <button onClick={() => handleDelete(c.id)} className="text-brand-error/50 hover:text-brand-error transition-colors cursor-pointer w-11 h-11 flex items-center justify-center shrink-0">
                           <Trash2 size={13} />
                         </button>
                       </>
@@ -327,8 +327,8 @@ export default function OpeningCostsModule({ onNavigate }) {
 
             <div className={`flex-1 overflow-y-auto p-6 space-y-6 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Concepto *</label>
-                <input autoComplete="off"
+                <label htmlFor="cost_title" className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Concepto *</label>
+                <input id="cost_title" autoComplete="off"
                   type="text"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
@@ -339,10 +339,10 @@ export default function OpeningCostsModule({ onNavigate }) {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Monto</label>
+                <label htmlFor="cost_amount" className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Monto</label>
                 <div className="relative">
                   <span className="absolute left-0 top-1/2 -translate-y-1/2 text-brand-muted font-mono">$</span>
-                  <input autoComplete="off"
+                  <input id="cost_amount" autoComplete="off"
                     type="number"
                     min="0"
                     step="100"
@@ -354,8 +354,8 @@ export default function OpeningCostsModule({ onNavigate }) {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Proveedor</label>
-                <select
+                <label htmlFor="cost_supplier" className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Proveedor</label>
+                <select id="cost_supplier"
                   value={form.supplier_id}
                   onChange={(e) => setForm({ ...form, supplier_id: e.target.value })}
                   className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none"

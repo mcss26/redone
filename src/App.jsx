@@ -168,7 +168,7 @@ function AppShell() {
 
         {/* Center: Operative Sub-Nav (Admin Only) */}
         {user?.role === 'admin' && activeView !== 'index' && ['work_days', 'opening_costs', 'stock_requests', 'staff_plan'].includes(activeView) && (
-          <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-start md:justify-center gap-4 md:gap-8 w-[50vw] md:w-auto overflow-x-auto no-scrollbar animate-fade-in">
+          <div className="flex-1 flex items-center justify-start md:justify-center gap-4 md:gap-8 overflow-x-auto no-scrollbar animate-fade-in px-4">
             {[
               { id: 'work_days', label: 'WORKDAYS' },
               { id: 'opening_costs', label: 'COST. APERTURA' },
@@ -190,7 +190,7 @@ function AppShell() {
 
         {/* Center: Night Chief Sub-Nav (Admin Only) */}
         {user?.role === 'admin' && activeView !== 'index' && ['workday', 'auditoria_barra', 'bar_inventory'].includes(activeView) && (
-          <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-start md:justify-center gap-4 md:gap-8 w-[50vw] md:w-auto overflow-x-auto no-scrollbar animate-fade-in">
+          <div className="flex-1 flex items-center justify-start md:justify-center gap-4 md:gap-8 overflow-x-auto no-scrollbar animate-fade-in px-4">
             {[
               { id: 'workday', label: 'NIGHT CHIEF' },
               { id: 'auditoria_barra', label: 'AUDITORIA CONSUMO' },
@@ -211,7 +211,7 @@ function AppShell() {
 
         {/* Center: Pagos Sub-Nav (Admin Only) */}
         {user?.role === 'admin' && activeView !== 'index' && ['payments', 'fixed_costs'].includes(activeView) && (
-          <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-start md:justify-center gap-4 md:gap-8 w-[50vw] md:w-auto overflow-x-auto no-scrollbar animate-fade-in">
+          <div className="flex-1 flex items-center justify-start md:justify-center gap-4 md:gap-8 overflow-x-auto no-scrollbar animate-fade-in px-4">
             {[
               { id: 'payments', label: 'PAGOS SEMANA' },
               { id: 'fixed_costs', label: 'PAGOS MES' },
@@ -231,7 +231,7 @@ function AppShell() {
 
         {/* Center: Reportes Sub-Nav */}
         {activeView !== 'index' && ['night_report', 'monthly_report', 'annual_report'].includes(activeView) && (
-          <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-start md:justify-center gap-4 md:gap-6 w-[50vw] md:w-auto overflow-x-auto no-scrollbar animate-fade-in">
+          <div className="flex-1 flex items-center justify-start md:justify-center gap-4 md:gap-6 overflow-x-auto no-scrollbar animate-fade-in px-4">
             {[
               { id: 'night_report', label: 'R. NOCHE' },
               { id: 'monthly_report', label: 'R. MES' },

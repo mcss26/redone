@@ -49,7 +49,7 @@ export default function NightOpsModule({ onNavigate }) {
 
   const fetchData = useCallback(async () => {
     try {
-      setLoading(true);
+      setIsFetchingBackground(true);
       const { data: wdData, error } = await supabase
         .from('work_days')
         .select('*')
@@ -63,12 +63,12 @@ export default function NightOpsModule({ onNavigate }) {
         const targetWd = wdData.find(w => w.status.toLowerCase() === 'open') || wdData[0];
         setSelectedWorkDay(targetWd);
       } else {
-        setLoading(false);
+        (setIsFetchingBackground(false), setLoading(false));
       }
     } catch (err) {
       window.UI?.toast?.(err.message, 'danger');
       triggerFlash('error');
-      setLoading(false);
+      (setIsFetchingBackground(false), setLoading(false));
     }
   }, []);
 
@@ -79,7 +79,7 @@ export default function NightOpsModule({ onNavigate }) {
   const fetchNightDetails = useCallback(async () => {
     if (!selectedWorkDay) return;
     try {
-      setLoading(true);
+      setIsFetchingBackground(true);
       
       const [termRes, closeRes] = await Promise.all([
         supabase.from('pos_terminals').select('*').eq('active', true).order('name'),
@@ -159,11 +159,11 @@ export default function NightOpsModule({ onNavigate }) {
         setGeneralData(null);
       }
 
-      setLoading(false);
+      (setIsFetchingBackground(false), setLoading(false));
     } catch (err) {
       window.UI?.toast?.(err.message, 'danger');
       triggerFlash('error');
-      setLoading(false);
+      (setIsFetchingBackground(false), setLoading(false));
     }
   }, [selectedWorkDay]);
 
@@ -210,7 +210,7 @@ export default function NightOpsModule({ onNavigate }) {
 
   const handleReplicateSystem = async () => {
     if (!selectedWorkDay) return;
-    if (!(await window.UI.confirm())) return;
+    if (!(await window.UI.confirm('¿Seguro deseas auto-completar el Arqueo Físico usando los valores del sistema? Esto sobrescribirá lo que hayas ingresado.'))) return;
     
     setSaving(true);
     try {

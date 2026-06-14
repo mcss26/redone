@@ -17,13 +17,13 @@ export default function ProfilesModule({ onNavigate }) {
   const [flashColor, setFlashColor] = useState(null);
 
   const fetchProfiles = useCallback(async () => {
-    setLoading(true);
+    setIsFetchingBackground(true);
     const { data } = await supabase
       .from('profiles')
       .select('*')
       .order('created_at', { ascending: true });
     setProfiles(data || []);
-    setLoading(false);
+    (setIsFetchingBackground(false), setLoading(false));
   }, []);
 
   useEffect(() => { fetchProfiles(); }, [fetchProfiles]);
@@ -88,7 +88,95 @@ export default function ProfilesModule({ onNavigate }) {
   };
 
   const handleDelete = async (profile) => {
-    const confirmed = await window.UI.confirm();
+    const confirmed = await window.UI.confirm(`¿Eliminar permanentemente a "${profile.full_name}"?`);
+    if (!confirmed) return;
+    try {
+      const { error } = await supabase.from('profiles').delete().eq('id', profile.id);
+      if (error) throw error;
+      flash('#22c55e');
+      fetchProfiles();
+    } catch (err) {
+      console.error(err);
+      flash('#ef4444');
+    }
+  };
+
+  const ROLE_BADGE = {
+    admin:     'bg-brand-text text-brand-bg',
+    operativo: 'bg-brand-accent/20 text-brand-accent',
+    contador:  'bg-brand-warning/20 text-brand-warning',
+    encargado: 'bg-purple-500/20 text-purple-500',
+    viewer:    'bg-brand-muted/20 text-brand-muted',
+  };
+
+  return (
+    <div className="h-full flex relative" style={flashColor ? { boxShadow: `inset 0 0 0 2px ${flashColor}`, transition: 'box-shadow 0.3s' } : { transition: 'box-shadow 0.3s' }}>
+      {/* Main Content */}
+      <div className={`flex-1 overflow-y-auto p-6 md:p-8 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
+        
+        {/* Actions & Title (Above Table) */}
+        <div className="flex items-end justify-between mb-4">
+          <div className="flex flex-col">
+            <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">
+              PERFILES
+            </h2>
+          </div>
+
+          <div className="flex items-center gap-6">
+            <button
+              onClick={openCreate}
+              className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer flex items-center justify-end gap-2 text-[10px] font-bold tracking-[0.2em] uppercase"
+            >
+              + NUEVO
+            </button>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-brand-border">
+                <th className="text-left text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3">NOMBRE</th>
+                <th className="text-left text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3">ROL</th>
+                <th className="text-left text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3">TELÉFONO</th>
+                <th className="text-left text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3">PIN</th>
+                <th className="text-center text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3">ESTADO</th>
+                <th className="text-right text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={6} className="text-center py-12 text-brand-muted text-xs">Cargando...</td></tr>
+              ) : profiles.length === 0 ? (
+                <tr><td colSpan={6} className="text-center py-12 text-brand-muted text-xs tracking-widest uppercase">No hay registros.</td></tr>
+              ) : profiles.map((p) => (
+                <tr key={p.id} className="border-b border-brand-border/30 hover:bg-brand-card/50 transition-colors">
+                  <td className="px-5 py-3.5 text-sm font-semibold text-brand-text">{p.full_name}</td>
+                  <td className="px-5 py-3.5">
+                    <span className={`inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest ${ROLE_BADGE[p.role]}`}>
+                      {p.role}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3.5 text-xs text-brand-muted font-mono">{p.phone || '—'}</td>
+                  <td className="px-5 py-3.5 text-xs text-brand-muted font-mono">{p.pin ? '••••' : '—'}</td>
+                  <td className="px-5 py-3.5 text-center">
+                    <button onClick={() => toggleActive(p)} className="cursor-pointer" title={p.active ? 'Activo' : 'Inactivo'}>
+                      <div className={`w-2 h-2 rounded-full mx-auto ${p.active ? 'bg-brand-success' : 'bg-brand-error'}`} />
+                    </button>
+                  </td>
+                  <td className="px-5 py-3.5 text-right">
+                    <div className="flex items-center justify-end gap-3">
+                      <button onClick={() => openEdit(p)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer" title="Editar">
+                        <Pencil size={13} />
+                      </button>
+                      <button onClick={() => handleDelete(p)} className="text-brand-muted hover:text-red-500 transition-colors cursor-pointer" title="Eliminar">
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
     if (!confirmed) return;
     try {
       const { error } = await supabase.from('profiles').delete().eq('id', profile.id);

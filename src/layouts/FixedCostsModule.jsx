@@ -63,7 +63,7 @@ export default function FixedCostsModule() {
   const fetchCosts = useCallback(async (silent = false) => {
     if (!selectedMonth) return;
     try {
-      if (!silent) setLoading(true);
+      if (!silent) setIsFetchingBackground(true);
       const { data, error } = await supabase
         .from('monthly_fixed_costs')
         .select(`*, suppliers ( name )`)
@@ -76,7 +76,7 @@ export default function FixedCostsModule() {
       triggerFlash('error');
       window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
-      if (!silent) setLoading(false);
+      if (!silent) (setIsFetchingBackground(false), setLoading(false));
     }
   }, [selectedMonth]);
 
@@ -85,7 +85,7 @@ export default function FixedCostsModule() {
     const load = async () => {
       if (!selectedMonth) return;
       try {
-        setLoading(true);
+        setIsFetchingBackground(true);
         const { data, error } = await supabase
           .from('monthly_fixed_costs')
           .select(`*, suppliers ( name )`)
@@ -124,7 +124,7 @@ export default function FixedCostsModule() {
         if (isMounted) triggerFlash('error');
       window.UI?.toast?.(err.message || "Error al procesar", 'danger');
       } finally {
-        if (isMounted) setLoading(false);
+        if (isMounted) (setIsFetchingBackground(false), setLoading(false));
       }
     };
     load();
@@ -178,7 +178,7 @@ export default function FixedCostsModule() {
   };
 
   const handleDelete = async (id) => {
-    if (!(await window.UI.confirm())) return;
+    if (!(await window.UI.confirm('¿Eliminar este costo fijo mensual?'))) return;
     try {
       const { error } = await supabase.from('monthly_fixed_costs').delete().eq('id', id);
       if (error) throw error;
@@ -363,7 +363,7 @@ export default function FixedCostsModule() {
             <div className={`flex-1 overflow-y-auto p-6 space-y-8 mt-4 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">SERVICIO / CONCEPTO *</label>
-                <input autoComplete="off"
+                <input id="fc_title" autoComplete="off"
                   type="text"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
@@ -377,7 +377,7 @@ export default function FixedCostsModule() {
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">MONTO FIJO</label>
                 <div className="relative">
                   <span className="absolute left-0 top-1/2 -translate-y-1/2 text-brand-muted font-mono">$</span>
-                  <input autoComplete="off"
+                  <input id="fc_amount" autoComplete="off"
                     type="number"
                     min="0"
                     step="100"
@@ -390,7 +390,7 @@ export default function FixedCostsModule() {
 
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">PROVEEDOR ASOCIADO (OPCIONAL)</label>
-                <select
+                <select id="fc_supplier"
                   value={form.supplier_id}
                   onChange={(e) => setForm({ ...form, supplier_id: e.target.value })}
                   className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none cursor-pointer"

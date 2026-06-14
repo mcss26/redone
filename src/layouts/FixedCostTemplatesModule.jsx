@@ -23,7 +23,7 @@ export default function FixedCostTemplatesModule({ onNavigate }) {
 
   const fetchData = useCallback(async () => {
     try {
-      setLoading(true);
+      setIsFetchingBackground(true);
       
       // Fetch active suppliers for the dropdown
       const { data: sups, error: supsError } = await supabase
@@ -50,7 +50,7 @@ export default function FixedCostTemplatesModule({ onNavigate }) {
       triggerFlash('error');
       window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
-      setLoading(false);
+      (setIsFetchingBackground(false), setLoading(false));
     }
   }, []);
 
@@ -97,7 +97,7 @@ export default function FixedCostTemplatesModule({ onNavigate }) {
       fetchData();
     } catch (err) {
       console.error('Error saving template:', err);
-      alert('Error de BD: ' + err.message);
+      window.UI?.toast?.('Error de BD: ' + err.message, 'danger');
       triggerFlash('error');
       window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {

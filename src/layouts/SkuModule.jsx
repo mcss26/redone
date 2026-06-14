@@ -43,7 +43,7 @@ export default function SkuModule({ onNavigate }) {
 
   const fetchData = async () => {
     try {
-      setLoading(true);
+      setIsFetchingBackground(true);
       setError(null);
       
       // Fetch suppliers for the dropdown
@@ -73,7 +73,7 @@ export default function SkuModule({ onNavigate }) {
       triggerFlash('error');
       window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
-      setLoading(false);
+      (setIsFetchingBackground(false), setLoading(false));
     }
   };
 
@@ -143,7 +143,7 @@ export default function SkuModule({ onNavigate }) {
   };
 
   const handleDelete = async () => {
-    if (!(await window.UI.confirm())) return;
+    if (!(await window.UI.confirm(`¿Eliminar permanentemente el SKU "${form.name}"?`))) return;
     try {
       setSaving(true);
       const { error } = await supabase.from('skus').delete().eq('id', form.id);

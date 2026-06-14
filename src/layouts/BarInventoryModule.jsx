@@ -63,12 +63,12 @@ export default function BarInventoryModule({ onNavigate }) {
   // Fetch Inventory for selected Work Day
   const fetchInventory = useCallback(async () => {
     if (!selectedWorkDayId || skus.length === 0) {
-      setLoading(false);
+      (setIsFetchingBackground(false), setLoading(false));
       return;
     }
     
     try {
-      setLoading(true);
+      setIsFetchingBackground(true);
       const { data: invData, error } = await supabase
         .from('bar_inventory')
         .select('*')
@@ -97,12 +97,12 @@ export default function BarInventoryModule({ onNavigate }) {
         if (wd && wd.status === 'closed') setMode('close');
       }
       
-      setLoading(false);
+      (setIsFetchingBackground(false), setLoading(false));
     } catch (err) {
       console.error('Error fetching inventory:', err);
       triggerFlash('error');
       window.UI?.toast?.(err.message || "Error al procesar", 'danger');
-      setLoading(false);
+      (setIsFetchingBackground(false), setLoading(false));
     }
   }, [selectedWorkDayId, skus, workDays]);
 

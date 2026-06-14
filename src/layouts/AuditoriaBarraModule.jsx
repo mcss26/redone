@@ -45,7 +45,7 @@ export default function AuditoriaBarraModule({ onNavigate }) {
   useEffect(() => {
     const fetchBaseData = async () => {
       try {
-        setLoading(true);
+        setIsFetchingBackground(true);
         const { data: wdData, error: wdError } = await supabase
           .from('work_days')
           .select('id, work_date, status, event_name')
@@ -68,7 +68,7 @@ export default function AuditoriaBarraModule({ onNavigate }) {
       } catch (err) {
         window.UI?.toast?.(err.message, 'danger');
       } finally {
-        setLoading(false);
+        (setIsFetchingBackground(false), setLoading(false));
       }
     };
     
@@ -79,7 +79,7 @@ export default function AuditoriaBarraModule({ onNavigate }) {
   const fetchInventoryAndAudit = useCallback(async () => {
     if (!selectedWorkDayId) return;
     try {
-      setLoading(true);
+      setIsFetchingBackground(true);
       const { data: invData, error: invError } = await supabase
         .from('bar_inventory')
         .select('*')
@@ -122,7 +122,7 @@ export default function AuditoriaBarraModule({ onNavigate }) {
     } catch (err) {
       window.UI?.toast?.(err.message, 'danger');
     } finally {
-      setLoading(false);
+      (setIsFetchingBackground(false), setLoading(false));
     }
   }, [selectedWorkDayId]);
 
@@ -250,7 +250,7 @@ export default function AuditoriaBarraModule({ onNavigate }) {
 
   const handleSaveAuditoria = async () => {
     if (!selectedWorkDayId) return;
-    if (!(await window.UI.confirm())) return;
+    if (!(await window.UI.confirm('¿Deseas consolidar esta auditoría en la caja de la jornada seleccionada? Esto sobrescribirá cualquier auditoría de barra previa para esta jornada.'))) return;
 
     setSaving(true);
     try {

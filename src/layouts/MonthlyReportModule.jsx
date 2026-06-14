@@ -33,7 +33,7 @@ export default function MonthlyReportModule({ onNavigate }) {
   });
 
   const fetchAvailableMonths = useCallback(async () => {
-    setLoading(true);
+    setIsFetchingBackground(true);
     try {
       const { data, error } = await supabase
         .from('work_days')
@@ -52,7 +52,7 @@ export default function MonthlyReportModule({ onNavigate }) {
       triggerFlash('error');
       window.UI?.toast?.(error.message || "Error al procesar", 'danger');
     } finally {
-      setLoading(false);
+      (setIsFetchingBackground(false), setLoading(false));
     }
   }, []);
 
@@ -62,7 +62,7 @@ export default function MonthlyReportModule({ onNavigate }) {
 
   const fetchMonthDetails = useCallback(async () => {
     if (!selectedMonth) return;
-    setLoading(true);
+    setIsFetchingBackground(true);
 
     try {
       const startDate = `${selectedMonth}-01`;
@@ -276,7 +276,7 @@ export default function MonthlyReportModule({ onNavigate }) {
       triggerFlash('error');
       window.UI?.toast?.(error.message || "Error al procesar", 'danger');
     } finally {
-      setLoading(false);
+      (setIsFetchingBackground(false), setLoading(false));
     }
   }, [selectedMonth]);
 

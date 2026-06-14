@@ -1,11 +1,3 @@
-# Midnight Club - UI/UX Changelog
-
-## 2026-06-14
-### Mass Remediation: Standardizing Inputs and Touch Targets
-- **Modules:** `WorkDaysModule.jsx`, `NightReportModule.jsx`, `ProfilesModule.jsx`, `SkuModule.jsx`, `OpeningCostsModule.jsx`, `FixedCostsModule.jsx`, `PaymentsModule.jsx`
-- **Action:** Standardized all inputs across slide-over panels to use the `border-b` brutalist style (`bg-transparent border-b border-brand-border/50`). Removed any remaining native `alert()` or `console.error` calls and replaced them with the unified `window.UI.toast`. Increased touch target size for primary action buttons inside tables to a minimum of 44x44px.
-- **Reason:** To adhere to the "Functional Brutalism" constraints, maximizing accessibility (larger touch areas) and maintaining uniform feedback mechanisms without blocking UI threads.
-
 ### Payments & Fixed Costs UI Alignment
 - **Modules:** `PaymentsModule.jsx`, `FixedCostsModule.jsx`
 - **Action:** Replaced the pure brutalist (transparent border-b) form inputs in the slide-overs with the curved surface inputs (`bg-brand-surface rounded-xl border border-brand-border`) to perfectly align with the `OpeningCostsModule` and `StaffPlanModule` standards. Added KPI grids at the bottom of the tables with `text-2xl` values. Standardized the Neon Status Dots so that 'paid' is universally blue (`bg-blue-500` with matching shadow glow) and 'pending'/'approved' is yellow. Added hover highlight to table rows and fixed table cell paddings. Added `rounded-xl` to Slide-Over footer buttons.
@@ -63,3 +55,4 @@
 
 - 2026-06-14 - Refactor UI/UX Auditoría: Eliminado window.confirm, implementado GlobalUI, remediado Container Purge y dependencias huérfanas en módulos CRUD. Añadido isMountedRef en useEffects para seguridad asíncrona.
 - 2026-06-14 - Hotfix: Resolución de errores de sintaxis masivos provocados por migración de window.confirm. Añadidos los paréntesis de cierre en condicionales asíncronos en 13 módulos. Vite ahora compila exitosamente.
+- 2026-06-14 - UX Architecture: Refactorización masiva de 19 módulos para erradicar las recargas destructivas de tablas. Se reemplazó setLoading(true) por isFetchingBackground(true) en todas las recargas asíncronas para eliminar los Layout Shifts y generar una percepción de red instantánea.

@@ -28,7 +28,7 @@ export default function SuppliersModule({ onNavigate }) {
 
   const fetchSuppliers = useCallback(async () => {
     try {
-      setLoading(true);
+      setIsFetchingBackground(true);
       setError(null);
       const { data, error: fetchErr } = await supabase
         .from('suppliers')
@@ -41,7 +41,7 @@ export default function SuppliersModule({ onNavigate }) {
       console.error('Error fetching suppliers:', err);
       setError(err.message);
     } finally {
-      setLoading(false);
+      (setIsFetchingBackground(false), setLoading(false));
     }
   }, []);
 
@@ -105,7 +105,7 @@ export default function SuppliersModule({ onNavigate }) {
   };
 
   const handleDelete = async () => {
-    if (!(await window.UI.confirm())) return;
+    if (!(await window.UI.confirm(`¿Eliminar permanentemente al proveedor "${form.name}"?`))) return;
     try {
       setSaving(true);
       const { error } = await supabase.from('suppliers').delete().eq('id', slideOver.id);
@@ -253,7 +253,7 @@ export default function SuppliersModule({ onNavigate }) {
               
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Razón Social *</label>
-                <input autoComplete="off"
+                <input id="sup_name" autoComplete="off"
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}

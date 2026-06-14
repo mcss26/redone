@@ -23,7 +23,7 @@ export default function PosTerminalsModule({ onNavigate }) {
 
   const fetchTerminals = useCallback(async () => {
     try {
-      setLoading(true);
+      setIsFetchingBackground(true);
       const { data, error } = await supabase
         .from('pos_terminals')
         .select('*')
@@ -35,7 +35,7 @@ export default function PosTerminalsModule({ onNavigate }) {
       triggerFlash('error');
       window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
-      setLoading(false);
+      (setIsFetchingBackground(false), setLoading(false));
     }
   }, []);
 
@@ -84,7 +84,7 @@ export default function PosTerminalsModule({ onNavigate }) {
   };
 
   const handleDelete = async () => {
-    if (!(await window.UI.confirm())) return;
+    if (!(await window.UI.confirm(`¿Eliminar permanentemente la terminal "${form.name}"?`))) return;
     try {
       setSaving(true);
       const { error } = await supabase.from('pos_terminals').delete().eq('id', slideOver.id);

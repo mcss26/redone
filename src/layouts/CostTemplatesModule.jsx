@@ -23,7 +23,7 @@ export default function CostTemplatesModule({ onNavigate }) {
 
   const fetchData = useCallback(async () => {
     try {
-      setLoading(true);
+      setIsFetchingBackground(true);
       
       // Fetch active suppliers for the dropdown
       const { data: sups, error: supsError } = await supabase
@@ -50,7 +50,7 @@ export default function CostTemplatesModule({ onNavigate }) {
       triggerFlash('error');
       window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
-      setLoading(false);
+      (setIsFetchingBackground(false), setLoading(false));
     }
   }, []);
 
@@ -118,7 +118,7 @@ export default function CostTemplatesModule({ onNavigate }) {
   };
 
   const handleDelete = async (id) => {
-    if (!(await window.UI.confirm())) return;
+    if (!(await window.UI.confirm('¿Eliminar permanentemente esta plantilla?'))) return;
     try {
       const { error } = await supabase.from('cost_templates').delete().eq('id', id);
       if (error) throw error;

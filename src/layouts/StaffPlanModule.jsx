@@ -43,11 +43,11 @@ export default function StaffPlanModule({ onNavigate }) {
         if (wdRes.data && wdRes.data.length > 0) {
           setSelectedWorkDayId(wdRes.data[0].id);
         } else {
-          setLoading(false);
+          (setIsFetchingBackground(false), setLoading(false));
         }
       } catch (err) {
         console.error('Error in fetchInit:', err);
-        setLoading(false);
+        (setIsFetchingBackground(false), setLoading(false));
       }
     };
     fetchInit();
@@ -56,7 +56,7 @@ export default function StaffPlanModule({ onNavigate }) {
   const fetchPlans = useCallback(async () => {
     if (!selectedWorkDayId) return;
     try {
-      setLoading(true);
+      setIsFetchingBackground(true);
       const { data, error } = await supabase
         .from('staff_plan')
         .select(`*, staff_roles ( name, base_rate )`)
@@ -69,7 +69,7 @@ export default function StaffPlanModule({ onNavigate }) {
       triggerFlash('error');
       window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
-      setLoading(false);
+      (setIsFetchingBackground(false), setLoading(false));
     }
   }, [selectedWorkDayId]);
 
@@ -128,7 +128,7 @@ export default function StaffPlanModule({ onNavigate }) {
   };
 
   const handleDelete = async (id) => {
-    if (!(await window.UI.confirm())) return;
+    if (!(await window.UI.confirm('¿Eliminar esta solicitud de staff?'))) return;
     try {
       const { error } = await supabase.from('staff_plan').delete().eq('id', id);
       if (error) throw error;
@@ -143,7 +143,7 @@ export default function StaffPlanModule({ onNavigate }) {
   };
 
   const handleApproveAll = async () => {
-    if (!(await window.UI.confirm())) return;
+    if (!(await window.UI.confirm('¿Aprobar TODAS las solicitudes pendientes de staff usando la cantidad solicitada?'))) return;
     
     try {
       setSaving(true);
@@ -277,10 +277,10 @@ export default function StaffPlanModule({ onNavigate }) {
                   <td className="px-5 py-3.5 text-right flex justify-end gap-2 items-center">
                     {!isClosed && (
                       <>
-                        <button onClick={() => openEdit(p)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer p-1">
+                        <button onClick={() => openEdit(p)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer w-11 h-11 flex items-center justify-center shrink-0">
                           <Pencil size={13} />
                         </button>
-                        <button onClick={() => handleDelete(p.id)} className="text-brand-error/50 hover:text-brand-error transition-colors cursor-pointer p-1">
+                        <button onClick={() => handleDelete(p.id)} className="text-brand-error/50 hover:text-brand-error transition-colors cursor-pointer w-11 h-11 flex items-center justify-center shrink-0">
                           <Trash2 size={13} />
                         </button>
                       </>
@@ -322,7 +322,7 @@ export default function StaffPlanModule({ onNavigate }) {
               
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Rol Requerido *</label>
-                <select
+                <select id="sp_role"
                   value={form.role_id}
                   onChange={(e) => {
                     const rId = e.target.value;
@@ -346,7 +346,7 @@ export default function StaffPlanModule({ onNavigate }) {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Cantidad Solicitada *</label>
+                <label htmlFor="sp_qty" className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Cantidad Solicitada *</label>
                 <input autoComplete="off"
                   type="number"
                   min="1"

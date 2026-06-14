@@ -53,7 +53,7 @@ export default function PaymentsModule() {
           if (data && data.length > 0) {
             setSelectedWorkDayId(data[0].id);
           } else {
-            setLoading(false);
+            (setIsFetchingBackground(false), setLoading(false));
           }
         }
       } catch (err) {
@@ -67,7 +67,7 @@ export default function PaymentsModule() {
   const fetchCosts = useCallback(async (silent = false) => {
     if (!selectedWorkDayId) return;
     try {
-      if (!silent) setLoading(true);
+      if (!silent) setIsFetchingBackground(true);
       const { data, error } = await supabase
         .from('opening_costs')
         .select(`*, suppliers ( name, tax_id, bank_name, bank_alias, contact_name, contact_phone )`)
@@ -82,7 +82,7 @@ export default function PaymentsModule() {
       triggerFlash('error');
       window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
-      if (!silent) setLoading(false);
+      if (!silent) (setIsFetchingBackground(false), setLoading(false));
     }
   }, [selectedWorkDayId]);
 
@@ -91,7 +91,7 @@ export default function PaymentsModule() {
     const load = async () => {
       if (!selectedWorkDayId) return;
       try {
-        setLoading(true);
+        setIsFetchingBackground(true);
         const { data, error } = await supabase
           .from('opening_costs')
           .select(`*, suppliers ( name, tax_id, bank_name, bank_alias, contact_name, contact_phone )`)
@@ -106,7 +106,7 @@ export default function PaymentsModule() {
         if (isMounted) triggerFlash('error');
       window.UI?.toast?.(err.message || "Error al procesar", 'danger');
       } finally {
-        if (isMounted) setLoading(false);
+        if (isMounted) (setIsFetchingBackground(false), setLoading(false));
       }
     };
     load();

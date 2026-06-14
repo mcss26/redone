@@ -32,7 +32,7 @@ export default function AnnualReportModule({ onNavigate }) {
   });
 
   const fetchAvailableYears = useCallback(async () => {
-    setLoading(true);
+    setIsFetchingBackground(true);
     try {
       const { data, error } = await supabase
         .from('work_days')
@@ -56,7 +56,7 @@ export default function AnnualReportModule({ onNavigate }) {
       triggerFlash('error');
       window.UI?.toast?.(error.message || "Error al procesar", 'danger');
     } finally {
-      setLoading(false);
+      (setIsFetchingBackground(false), setLoading(false));
     }
   }, []);
 
@@ -66,7 +66,7 @@ export default function AnnualReportModule({ onNavigate }) {
 
   const fetchYearDetails = useCallback(async () => {
     if (!selectedYear) return;
-    setLoading(true);
+    setIsFetchingBackground(true);
 
     try {
       const startDate = `${selectedYear}-01-01`;
@@ -298,7 +298,7 @@ export default function AnnualReportModule({ onNavigate }) {
       triggerFlash('error');
       window.UI?.toast?.(error.message || "Error al procesar", 'danger');
     } finally {
-      setLoading(false);
+      (setIsFetchingBackground(false), setLoading(false));
     }
   }, [selectedYear]);
 

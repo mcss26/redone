@@ -22,14 +22,14 @@ export default function MasterVouchersModule({ onNavigate }) {
   };
 
   const fetchVouchers = useCallback(async () => {
-    setLoading(true);
+    setIsFetchingBackground(true);
     const { data } = await supabase
       .from('voucher_types')
       .select('*')
       .order('name');
     
     setVouchers(data || []);
-    setLoading(false);
+    (setIsFetchingBackground(false), setLoading(false));
   }, []);
 
   useEffect(() => {

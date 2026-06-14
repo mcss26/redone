@@ -47,11 +47,11 @@ export default function StockRequestsModule({ onNavigate }) {
         if (wdRes.data && wdRes.data.length > 0) {
           setSelectedWorkDayId(wdRes.data[0].id);
         } else {
-          setLoading(false);
+          (setIsFetchingBackground(false), setLoading(false));
         }
       } catch (err) {
         console.error('Error in fetchInit:', err);
-        setLoading(false);
+        (setIsFetchingBackground(false), setLoading(false));
       }
     };
     fetchInit();
@@ -60,7 +60,7 @@ export default function StockRequestsModule({ onNavigate }) {
   const fetchRequests = useCallback(async () => {
     if (!selectedWorkDayId) return;
     try {
-      setLoading(true);
+      setIsFetchingBackground(true);
       const { data, error } = await supabase
         .from('stock_requests')
         .select(`*, skus ( name, unit, category, cost, supplier_id ), suppliers ( name )`)
@@ -74,7 +74,7 @@ export default function StockRequestsModule({ onNavigate }) {
       triggerFlash('error');
       window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
-      setLoading(false);
+      (setIsFetchingBackground(false), setLoading(false));
     }
   }, [selectedWorkDayId]);
 
@@ -153,7 +153,7 @@ export default function StockRequestsModule({ onNavigate }) {
   };
 
   const handleDelete = async (id) => {
-    if (!(await window.UI.confirm())) return;
+    if (!(await window.UI.confirm('¿Eliminar esta solicitud de stock?'))) return;
     try {
       const { error } = await supabase.from('stock_requests').delete().eq('id', id);
       if (error) throw error;
@@ -167,13 +167,13 @@ export default function StockRequestsModule({ onNavigate }) {
   };
 
   const approveAll = async () => {
-    if (!(await window.UI.confirm())) return;
+    if (!(await window.UI.confirm('¿Aprobar todas las solicitudes en borrador? Se generarán los pagos agrupados por proveedor.'))) return;
     
     try {
       const draftRequests = stockRequests.filter(r => r.status === 'draft');
       if (draftRequests.length === 0) return;
 
-      setLoading(true);
+      setIsFetchingBackground(true);
 
       const supplierGroups = {};
       draftRequests.forEach(r => {
@@ -212,7 +212,7 @@ export default function StockRequestsModule({ onNavigate }) {
       triggerFlash('error');
       window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
-      setLoading(false);
+      (setIsFetchingBackground(false), setLoading(false));
     }
   };
 
@@ -340,10 +340,10 @@ export default function StockRequestsModule({ onNavigate }) {
                   <td className="px-5 py-3.5 text-right flex justify-end gap-2 items-center h-full">
                     {!isClosed && r.status !== 'approved' && (
                       <>
-                        <button onClick={() => openEdit(r)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer p-1">
+                        <button onClick={() => openEdit(r)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer w-11 h-11 flex items-center justify-center shrink-0">
                           <Pencil size={13} />
                         </button>
-                        <button onClick={() => handleDelete(r.id)} className="text-brand-error/50 hover:text-brand-error transition-colors cursor-pointer p-1">
+                        <button onClick={() => handleDelete(r.id)} className="text-brand-error/50 hover:text-brand-error transition-colors cursor-pointer w-11 h-11 flex items-center justify-center shrink-0">
                           <Trash2 size={13} />
                         </button>
                       </>

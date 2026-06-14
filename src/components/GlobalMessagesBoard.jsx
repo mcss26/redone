@@ -31,6 +31,7 @@ export default function GlobalMessagesBoard() {
       scrollToBottom();
     } catch (err) {
       console.error('Error fetching global messages:', err);
+      window.UI?.toast?.(err.message || 'Error de conexión', 'danger');
     } finally {
       setLoading(false);
     }
@@ -80,6 +81,7 @@ export default function GlobalMessagesBoard() {
     } catch (err) {
       console.error('Error sending message:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || 'Error de envío', 'danger');
     } finally {
       setSaving(false);
     }
