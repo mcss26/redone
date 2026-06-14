@@ -7,6 +7,7 @@ const ROLES = ['admin', 'operativo', 'contador', 'encargado', 'viewer'];
 export default function ProfilesModule({ onNavigate }) {
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isFetchingBackground, setIsFetchingBackground] = useState(false);
   const [slideOver, setSlideOver] = useState(null); // null | 'create' | profile object
   const [form, setForm] = useState({ full_name: '', role: 'operativo', phone: '', pin: '' });
   const [saving, setSaving] = useState(false);
@@ -108,7 +109,7 @@ export default function ProfilesModule({ onNavigate }) {
   return (
     <div className="h-full flex relative" style={flashColor ? { boxShadow: `inset 0 0 0 2px ${flashColor}`, transition: 'box-shadow 0.3s' } : { transition: 'box-shadow 0.3s' }}>
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto p-6 md:p-8">
+      <div className={`flex-1 overflow-y-auto p-6 md:p-8 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
         
         {/* Actions & Title (Above Table) */}
         <div className="flex items-end justify-between mb-4">
@@ -195,7 +196,7 @@ export default function ProfilesModule({ onNavigate }) {
             </div>
 
             {/* Panel Body */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-5">
+            <div className={`flex-1 overflow-y-auto p-6 space-y-5 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
               {/* Full Name */}
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Nombre completo</label>

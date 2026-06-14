@@ -27,6 +27,7 @@ export default function NightOpsModule({ onNavigate }) {
   const [selectedWorkDay, setSelectedWorkDay] = useState(null);
   const [terminals, setTerminals] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isFetchingBackground, setIsFetchingBackground] = useState(false);
   const [saving, setSaving] = useState(false);
   const [closingNight, setClosingNight] = useState(false);
   const [syncingGbol, setSyncingGbol] = useState(false);
@@ -430,11 +431,8 @@ export default function NightOpsModule({ onNavigate }) {
 
       <div className="shrink-0 bg-[#0A0A0A] border-b border-brand-border/50 px-8 py-6 z-10 flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <button onClick={() => onNavigate('index')} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer">
-            <ArrowLeft size={16} />
-          </button>
           <div>
-            <h2 className="text-xs font-extrabold tracking-[0.3em] uppercase text-brand-muted">NIGHT CHIEF</h2>
+            <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">NIGHT CHIEF</h2>
           </div>
         </div>
         
@@ -458,7 +456,7 @@ export default function NightOpsModule({ onNavigate }) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
+      <div className={`flex-1 overflow-y-auto p-6 md:p-8 space-y-8 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
         {selectedWorkDay && (
           <>
             <div className={`p-4 rounded-xl border flex items-center justify-between ${

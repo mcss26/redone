@@ -4,6 +4,7 @@ import { ArrowLeft, Loader2, PackageCheck, Save, Lock } from 'lucide-react';
 
 export default function BarInventoryModule({ onNavigate }) {
   const [loading, setLoading] = useState(true);
+  const [isFetchingBackground, setIsFetchingBackground] = useState(false);
   const [workDays, setWorkDays] = useState([]);
   const [selectedWorkDayId, setSelectedWorkDayId] = useState('');
   
@@ -49,6 +50,7 @@ export default function BarInventoryModule({ onNavigate }) {
       } catch (err) {
         console.error('Error in fetchBaseData:', err);
         triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
       }
     };
     
@@ -96,6 +98,7 @@ export default function BarInventoryModule({ onNavigate }) {
     } catch (err) {
       console.error('Error fetching inventory:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
       setLoading(false);
     }
   }, [selectedWorkDayId, skus, workDays]);
@@ -161,6 +164,7 @@ export default function BarInventoryModule({ onNavigate }) {
     } catch (error) {
       console.error('Error locking inventory:', error);
       triggerFlash('error');
+      window.UI?.toast?.(error.message || "Error al procesar", 'danger');
     } finally {
       setSaving(false);
     }
@@ -181,11 +185,8 @@ export default function BarInventoryModule({ onNavigate }) {
       {/* Header - Mobile First Design */}
       <div className="shrink-0 p-4 md:p-6 border-b border-brand-border bg-brand-surface z-10 shadow-md">
         <div className="flex items-center gap-4 mb-4">
-          <button onClick={() => onNavigate('index')} className="text-brand-muted hover:text-brand-text p-2 -ml-2 rounded-lg transition-colors cursor-pointer">
-            <ArrowLeft size={20} />
-          </button>
           <div>
-            <h2 className="text-sm md:text-xs font-extrabold tracking-[0.3em] uppercase text-brand-text">APERTURA/CIERRE BARRA</h2>
+            <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">APERTURA/CIERRE BARRA</h2>
             <p className="text-[10px] text-brand-muted/50 tracking-wide mt-0.5">Control físico de mercadería</p>
           </div>
         </div>
@@ -224,7 +225,7 @@ export default function BarInventoryModule({ onNavigate }) {
       </div>
 
       {/* Content area - Large Touch Targets */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-32">
+      <div className={`flex-1 overflow-y-auto p-4 md:p-6 pb-32 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
         {loading ? (
           <div className="flex justify-center items-center h-full text-brand-muted">
             <Loader2 className="animate-spin" size={24} />

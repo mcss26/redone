@@ -9,6 +9,7 @@ export default function SkuModule({ onNavigate }) {
   const [suppliers, setSuppliers] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [isFetchingBackground, setIsFetchingBackground] = useState(false);
   const [error, setError] = useState(null);
   const [flashColor, setFlashColor] = useState('');
   
@@ -67,6 +68,7 @@ export default function SkuModule({ onNavigate }) {
       console.error('Error fetching data:', err);
       setError(err.message);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
       setLoading(false);
     }
@@ -132,6 +134,7 @@ export default function SkuModule({ onNavigate }) {
     } catch (err) {
       console.error('Error saving sku:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
       setSaving(false);
     }
@@ -149,6 +152,7 @@ export default function SkuModule({ onNavigate }) {
     } catch (err) {
       console.error('Error deleting sku:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
       setSaving(false);
     }
@@ -168,6 +172,7 @@ export default function SkuModule({ onNavigate }) {
     } catch (err) {
       console.error('Error toggling active:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     }
   };
 
@@ -214,7 +219,7 @@ export default function SkuModule({ onNavigate }) {
       {flashColor && <div className={`absolute inset-0 z-50 pointer-events-none opacity-10 transition-opacity duration-150 ${flashColor}`}></div>}
       
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto p-6 md:p-8">
+      <div className={`flex-1 overflow-y-auto p-6 md:p-8 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
         
         {/* Actions & Title (Above Table) */}
         <div className="flex items-end justify-between mb-4">
@@ -337,7 +342,7 @@ export default function SkuModule({ onNavigate }) {
             </div>
 
             {/* Panel Body */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-8">
+            <div className={`flex-1 overflow-y-auto p-6 space-y-8 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
               
               <div className="grid grid-cols-2 gap-6">
                 <div>

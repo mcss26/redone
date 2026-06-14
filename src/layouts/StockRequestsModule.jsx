@@ -12,6 +12,7 @@ export default function StockRequestsModule({ onNavigate }) {
   const [skus, setSkus] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isFetchingBackground, setIsFetchingBackground] = useState(false);
   
   const [slideOver, setSlideOver] = useState(null); // null | 'create' | request object
   const [form, setForm] = useState({ sku_id: '', supplier_id: '', quantity_requested: '0', quantity_approved: '0', status: 'draft', notes: '' });
@@ -68,6 +69,7 @@ export default function StockRequestsModule({ onNavigate }) {
     } catch (err) {
       console.error('Error fetching stock requests:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
       setLoading(false);
     }
@@ -141,6 +143,7 @@ export default function StockRequestsModule({ onNavigate }) {
     } catch (err) {
       console.error('Error saving stock request:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
       setSaving(false);
     }
@@ -156,6 +159,7 @@ export default function StockRequestsModule({ onNavigate }) {
     } catch (err) {
       console.error('Error deleting stock request:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     }
   };
 
@@ -203,6 +207,7 @@ export default function StockRequestsModule({ onNavigate }) {
     } catch (err) {
       console.error('Error approving all stock requests:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
       setLoading(false);
     }
@@ -223,7 +228,7 @@ export default function StockRequestsModule({ onNavigate }) {
       {/* Interaction Flash Overlay */}
       {flashColor && <div className={`absolute inset-0 z-50 pointer-events-none opacity-10 transition-opacity duration-150 ${flashColor}`}></div>}
 
-      <div className="flex-1 overflow-y-auto p-6 md:p-8">
+      <div className={`flex-1 overflow-y-auto p-6 md:p-8 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
         
         {/* Actions & Title (Above Table) */}
         <div className="flex items-end justify-between mb-4">
@@ -376,7 +381,7 @@ export default function StockRequestsModule({ onNavigate }) {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <div className={`flex-1 overflow-y-auto p-6 space-y-6 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
               
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">SKU Requerido *</label>

@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { fetchAll } from '../../lib/queryHelper';
-import { ArrowLeft, Calendar, DollarSign, Activity, FileText, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Calendar, Loader2 } from 'lucide-react';
 import dayjs from 'dayjs';
 
 export default function AnnualReportModule({ onNavigate }) {
   const [years, setYears] = useState([]);
   const [selectedYear, setSelectedYear] = useState('');
   const [loading, setLoading] = useState(true);
+  const [isFetchingBackground, setIsFetchingBackground] = useState(false);
   const [flashColor, setFlashColor] = useState('');
   
   const triggerFlash = (type) => {
@@ -18,11 +19,10 @@ export default function AnnualReportModule({ onNavigate }) {
   const [yearData, setYearData] = useState({
     workDaysCount: 0,
     openDaysCount: 0,
-    totalRevenue: 0,
-    totalCosts: 0,
-    totalTaxes: 0,
+    inflows: { total: 0, cash: 0, digital: 0, surplus: 0 },
+    outflows: { total: 0, weeklyCosts: 0, monthlyCosts: 0, taxes: 0, stockDiscrepancies: 0, tillDiscrepancies: 0 },
     netProfit: 0,
-    expenseDistribution: { staff: 0, supply: 0, recurrent: 0, adHoc: 0 },
+    margin: 0,
     breakdowns: []
   });
 
@@ -40,10 +40,16 @@ export default function AnnualReportModule({ onNavigate }) {
         const uniqueYears = [...new Set(data.map(d => d.work_date.substring(0, 4)))];
         setYears(uniqueYears);
         setSelectedYear(uniqueYears[0]);
+      } else {
+        // Fallback to current year if no work_days exist
+        const currYear = dayjs().format('YYYY');
+        setYears([currYear]);
+        setSelectedYear(currYear);
       }
     } catch (error) {
       console.error('Error fetching available years:', error);
       triggerFlash('error');
+      window.UI?.toast?.(error.message || "Error al procesar", 'danger');
     } finally {
       setLoading(false);
     }
@@ -61,23 +67,42 @@ export default function AnnualReportModule({ onNavigate }) {
       const startDate = `${selectedYear}-01-01`;
       const endDate = `${selectedYear}-12-31`;
 
-      const [wdsRes, settingsRes] = await Promise.all([
+      const [wdsRes, settingsRes, fixedCostsRes] = await Promise.all([
         supabase.from('work_days')
           .select('id, work_date, event_name, status')
           .gte('work_date', startDate)
           .lte('work_date', endDate)
           .order('work_date', { ascending: true }),
-        supabase.from('global_settings').select('*').single()
+        supabase.from('global_settings').select('*').single(),
+        fetchAll(supabase.from('monthly_fixed_costs').select('amount, status, billing_month').like('billing_month', `${selectedYear}-%`))
       ]);
 
       if (wdsRes.error) throw wdsRes.error;
       if (settingsRes.error && settingsRes.error.code !== 'PGRST116') throw settingsRes.error;
+      if (fixedCostsRes.error) throw fixedCostsRes.error;
+
+      let totalFixedCosts = 0;
+      const monthlyFixedCosts = {};
+      for(let i=1; i<=12; i++) monthlyFixedCosts[i] = 0;
+
+      (fixedCostsRes.data || []).forEach(fc => {
+        if (fc.status === 'paid' && fc.billing_month) {
+          totalFixedCosts += Number(fc.amount);
+          const mStr = fc.billing_month.split('-')[1];
+          const m = parseInt(mStr, 10);
+          if (m >= 1 && m <= 12) {
+            monthlyFixedCosts[m] += Number(fc.amount);
+          }
+        }
+      });
 
       const wds = wdsRes.data || [];
-      if (wds.length === 0) {
+      if (wds.length === 0 && totalFixedCosts === 0) {
         setYearData({
-          workDaysCount: 0, openDaysCount: 0, totalRevenue: 0, totalCosts: 0, totalTaxes: 0, netProfit: 0,
-          expenseDistribution: { staff: 0, supply: 0, recurrent: 0, adHoc: 0 }, breakdowns: []
+          workDaysCount: 0, openDaysCount: 0, 
+          inflows: { total: 0, cash: 0, digital: 0, surplus: 0 },
+          outflows: { total: 0, weeklyCosts: 0, monthlyCosts: 0, taxes: 0, stockDiscrepancies: 0, tillDiscrepancies: 0 },
+          netProfit: 0, margin: 0, breakdowns: []
         });
         return;
       }
@@ -100,99 +125,141 @@ export default function AnnualReportModule({ onNavigate }) {
       if (staffRes.error) throw staffRes.error;
       if (adjRes.error) throw adjRes.error;
 
-      let grandRev = 0, grandCosts = 0, grandNet = 0, grandTax = 0;
-    let distStaff = 0, distSupply = 0, distRecurrent = 0, distAdHoc = 0;
-    let openCount = 0;
-    const breakdowns = [];
+      let grandInflows = { total: 0, cash: 0, digital: 0, surplus: 0 };
+      let grandOutflows = { total: 0, weeklyCosts: 0, monthlyCosts: totalFixedCosts, taxes: 0, stockDiscrepancies: 0, tillDiscrepancies: 0 };
+      let grandNet = 0;
+      let openCount = 0;
 
-    wds.forEach(wd => {
-      if (wd.status === 'open') openCount++;
-
-      // Incomes
-      const wdClose = (closingRes.data || []).filter(x => x.work_day_id === wd.id);
-      const posCash = wdClose.reduce((acc, curr) => acc + Number(curr.system_cash || 0), 0);
-      const posDigital = wdClose.reduce((acc, curr) => acc + Number(curr.system_digital || 0), 0);
-      const diffCash = wdClose.reduce((acc, curr) => acc + Number(curr.diff_cash || 0), 0);
-      const diffDigital = wdClose.reduce((acc, curr) => acc + Number(curr.diff_digital || 0), 0);
-
-      const wdPassline = (passlineRes.data || []).filter(x => x.operational_date === wd.work_date && x.tipo_ticket !== 'MEMBER');
-      const passline = wdPassline.reduce((acc, curr) => acc + (parseFloat(curr.total_raw.replace(/[^0-9.-]/g, '')) || 0), 0);
-
-      const wdAdj = (adjRes.data || []).filter(x => x.work_day_id === wd.id);
-      const manualIncome = wdAdj.filter(x => x.type === 'income').reduce((acc, curr) => acc + Number(curr.amount), 0);
-      const manualExpense = wdAdj.filter(x => x.type === 'expense' && x.category !== 'tax_estimation').reduce((acc, curr) => acc + Number(curr.amount), 0);
-      const storedTaxRow = wdAdj.find(x => x.category === 'tax_estimation');
-
-      const rev = posCash + posDigital + diffCash + diffDigital + passline + manualIncome;
-
-      // Expenses
-      const wdStaff = (staffRes.data || []).filter(s => s.work_day_id === wd.id);
-      const payroll = wdStaff.reduce((acc, curr) => {
-        const rate = curr.staff_roles ? Number(curr.staff_roles.base_rate) : 0;
-        return acc + (Number(curr.quantity_approved) * rate);
-      }, 0);
-
-      const wdCosts = (costsRes.data || []).filter(x => x.work_day_id === wd.id);
-      let daySupply = 0, dayRecurrent = 0, dayAdHoc = 0;
-      
-      wdCosts.forEach(cost => {
-        const amt = Number(cost.amount);
-        if (cost.title && cost.title.includes('Pedido de Insumos')) {
-          daySupply += amt;
-        } else if (cost.template_id) {
-          dayRecurrent += amt;
-        } else {
-          dayAdHoc += amt;
-        }
-      });
-
-      // Tax projection
-      let dayTax = 0;
-      if (wd.status === 'open') {
-        dayTax = (posDigital + passline) * (taxRate / 100);
-      } else {
-        dayTax = storedTaxRow ? Number(storedTaxRow.amount) : 0;
+      const monthlyBreakdownsMap = {};
+      for (let i = 1; i <= 12; i++) {
+        monthlyBreakdownsMap[i] = { revenue: 0, costs: 0, hasData: false, hasOpenDays: false };
       }
 
-      // Add tax to operational costs so 'Total Egresos' matches math
-      const dayOpCosts = daySupply + dayRecurrent + dayAdHoc + payroll + manualExpense + dayTax;
+      wds.forEach(wd => {
+        if (wd.status === 'open') openCount++;
+        const m = parseInt(wd.work_date.split('-')[1], 10);
 
-      const net = rev - dayOpCosts;
+        // Incomes
+        const wdClose = (closingRes.data || []).filter(x => x.work_day_id === wd.id);
+        const posCash = wdClose.reduce((acc, curr) => acc + Number(curr.system_cash || 0), 0);
+        const posDigital = wdClose.reduce((acc, curr) => acc + Number(curr.system_digital || 0), 0);
+        const diffCash = wdClose.reduce((acc, curr) => acc + Number(curr.diff_cash || 0), 0);
+        const diffDigital = wdClose.reduce((acc, curr) => acc + Number(curr.diff_digital || 0), 0);
 
-      grandRev += rev;
-      grandCosts += dayOpCosts;
-      grandTax += dayTax;
-      grandNet += net;
+        const wdPassline = (passlineRes.data || []).filter(x => x.operational_date === wd.work_date && x.tipo_ticket !== 'MEMBER');
+        const passline = wdPassline.reduce((acc, curr) => acc + (parseFloat(curr.total_raw.replace(/[^0-9.-]/g, '')) || 0), 0);
 
-      distStaff += payroll;
-      distSupply += daySupply;
-      distRecurrent += dayRecurrent;
-      distAdHoc += dayAdHoc + manualExpense;
+        const wdAdj = (adjRes.data || []).filter(x => x.work_day_id === wd.id);
+        const manualIncome = wdAdj.filter(x => x.type === 'income' && x.category !== 'auditoria_barra').reduce((acc, curr) => acc + Number(curr.amount), 0);
+        const manualExpense = wdAdj.filter(x => x.type === 'expense' && x.category !== 'tax_estimation' && x.category !== 'auditoria_barra').reduce((acc, curr) => acc + Number(curr.amount), 0);
+        const storedTaxRow = wdAdj.find(x => x.category === 'tax_estimation');
 
-      breakdowns.push({
-        id: wd.id,
-        date: wd.work_date,
-        name: wd.event_name || 'SIN NOMBRE',
-        status: wd.status,
-        revenue: rev,
-        costs: dayOpCosts,
-        net: net
+        const barraIncome = wdAdj.filter(x => x.category === 'auditoria_barra' && x.type === 'income').reduce((acc, curr) => acc + Number(curr.amount), 0);
+        const barraExpense = wdAdj.filter(x => x.category === 'auditoria_barra' && x.type === 'expense').reduce((acc, curr) => acc + Number(curr.amount), 0);
+        
+        const netBarra = barraIncome - barraExpense;
+        const barraSobrante = netBarra > 0 ? netBarra : 0;
+        const barraFaltante = netBarra < 0 ? Math.abs(netBarra) : 0;
+
+        const discrepancies = diffCash + diffDigital;
+        const arqueoSobrante = discrepancies > 0 ? discrepancies : 0;
+        const arqueoFaltante = discrepancies < 0 ? Math.abs(discrepancies) : 0;
+
+        // Expenses
+        const wdStaff = (staffRes.data || []).filter(s => s.work_day_id === wd.id);
+        const payroll = wdStaff.reduce((acc, curr) => {
+          const rate = curr.staff_roles ? Number(curr.staff_roles.base_rate) : 0;
+          return acc + (Number(curr.quantity_approved) * rate);
+        }, 0);
+
+        const wdCosts = (costsRes.data || []).filter(x => x.work_day_id === wd.id);
+        let daySupply = 0, dayRecurrent = 0, dayAdHoc = 0;
+        
+        wdCosts.forEach(cost => {
+          const amt = Number(cost.amount);
+          if (cost.title && cost.title.includes('Pedido de Insumos')) {
+            daySupply += amt;
+          } else if (cost.template_id) {
+            dayRecurrent += amt;
+          } else {
+            dayAdHoc += amt;
+          }
+        });
+
+        // Tax projection
+        let dayTax = 0;
+        if (wd.status === 'open' && !storedTaxRow) {
+          dayTax = (posDigital + passline) * (taxRate / 100);
+        } else {
+          dayTax = storedTaxRow ? Number(storedTaxRow.amount) : 0;
+        }
+
+        const dayWeeklyCosts = daySupply + dayRecurrent + dayAdHoc + payroll + manualExpense;
+        const dayOpCosts = dayWeeklyCosts + dayTax + barraFaltante + arqueoFaltante;
+
+        const revCash = posCash;
+        const revDigital = posDigital + passline;
+        const revSurplus = barraSobrante + arqueoSobrante + manualIncome;
+        const revTotal = revCash + revDigital + revSurplus;
+
+        const net = revTotal - dayOpCosts;
+
+        grandInflows.cash += revCash;
+        grandInflows.digital += revDigital;
+        grandInflows.surplus += revSurplus;
+        grandInflows.total += revTotal;
+
+        grandOutflows.weeklyCosts += dayWeeklyCosts;
+        grandOutflows.taxes += dayTax;
+        grandOutflows.stockDiscrepancies += barraFaltante;
+        grandOutflows.tillDiscrepancies += arqueoFaltante;
+
+        monthlyBreakdownsMap[m].revenue += revTotal;
+        monthlyBreakdownsMap[m].costs += dayOpCosts;
+        monthlyBreakdownsMap[m].hasData = true;
+        if (wd.status === 'open') monthlyBreakdownsMap[m].hasOpenDays = true;
       });
-    });
+
+      const finalBreakdowns = [];
+      const monthNames = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
+
+      for(let i=1; i<=12; i++) {
+        const monthFixed = monthlyFixedCosts[i] || 0;
+        
+        if (monthlyBreakdownsMap[i].hasData || monthFixed > 0) {
+           const rev = monthlyBreakdownsMap[i].revenue;
+           const cst = monthlyBreakdownsMap[i].costs + monthFixed;
+           const net = rev - cst;
+
+           finalBreakdowns.push({
+             id: i,
+             name: monthNames[i-1],
+             revenue: rev,
+             costs: cst,
+             net: net,
+             hasOpenDays: monthlyBreakdownsMap[i].hasOpenDays
+           });
+        }
+      }
+
+      grandOutflows.total = grandOutflows.weeklyCosts + grandOutflows.monthlyCosts + grandOutflows.taxes + grandOutflows.stockDiscrepancies + grandOutflows.tillDiscrepancies;
+      grandNet = grandInflows.total - grandOutflows.total;
+      const margin = grandInflows.total > 0 ? (grandNet / grandInflows.total) * 100 : 0;
 
       setYearData({
         workDaysCount: wds.length,
         openDaysCount: openCount,
-        totalRevenue: grandRev,
-        totalCosts: grandCosts,
-        totalTaxes: grandTax,
+        inflows: grandInflows,
+        outflows: grandOutflows,
         netProfit: grandNet,
-        expenseDistribution: { staff: distStaff, supply: distSupply, recurrent: distRecurrent, adHoc: distAdHoc },
-        breakdowns
+        margin: margin,
+        breakdowns: finalBreakdowns
       });
+
     } catch (error) {
       console.error('Error fetching year details:', error);
       triggerFlash('error');
+      window.UI?.toast?.(error.message || "Error al procesar", 'danger');
     } finally {
       setLoading(false);
     }
@@ -202,29 +269,9 @@ export default function AnnualReportModule({ onNavigate }) {
     fetchYearDetails();
   }, [fetchYearDetails]);
 
-  const formatCurrency = (val) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(val);
+  const formatCurrency = (val) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(val || 0);
 
-  const marginPct = yearData.totalRevenue > 0 ? (yearData.netProfit / yearData.totalRevenue) * 100 : 0;
-  const costRatio = yearData.totalRevenue > 0 ? (yearData.totalCosts / yearData.totalRevenue) * 100 : 0;
-  const clampedCostRatio = Math.min(costRatio, 100);
-  
-  const totalOpCosts = yearData.totalCosts;
-  const getDistPct = (val) => totalOpCosts > 0 ? (val / totalOpCosts) * 100 : 0;
-
-  const distSorted = [
-    { name: 'Staff', value: yearData.expenseDistribution.staff, pct: getDistPct(yearData.expenseDistribution.staff) },
-    { name: 'Insumos', value: yearData.expenseDistribution.supply, pct: getDistPct(yearData.expenseDistribution.supply) },
-    { name: 'Recurrentes', value: yearData.expenseDistribution.recurrent, pct: getDistPct(yearData.expenseDistribution.recurrent) },
-    { name: 'Ad-Hocs', value: yearData.expenseDistribution.adHoc, pct: getDistPct(yearData.expenseDistribution.adHoc) }
-  ].sort((a, b) => b.value - a.value);
-
-  const rankBgColors = ['bg-[#ef4444]', 'bg-[#f97316]', 'bg-[#eab308]', 'bg-[#e5e5e5]'];
-  const rankTextColors = ['text-[#ef4444]', 'text-[#f97316]', 'text-[#eab308]', 'text-[#e5e5e5]'];
-
-  distSorted.forEach((item, idx) => {
-    item.bgClass = rankBgColors[idx];
-    item.textClass = rankTextColors[idx];
-  });
+  const marginPct = yearData.margin;
 
   const renderTrendLine = () => {
     if (yearData.breakdowns.length < 2) return null;
@@ -260,16 +307,13 @@ export default function AnnualReportModule({ onNavigate }) {
 
   return (
     <div className={`h-full flex flex-col relative overflow-hidden bg-brand-bg transition-colors duration-150 ${flashColor}`}>
-      <div className="flex-1 overflow-y-auto p-6 md:p-8">
+      <div className={`flex-1 overflow-y-auto p-6 md:p-8 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
         
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">
-            <button onClick={() => onNavigate('index')} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer">
-              <ArrowLeft size={16} />
-            </button>
             <div>
-              <h2 className="text-xs font-extrabold tracking-[0.3em] uppercase text-brand-muted">REPORTE ANUAL</h2>
+              <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">R. ANUAL</h2>
               <p className="text-[10px] text-brand-muted/40 tracking-wide mt-0.5">Reporte Consolidado Vivo</p>
             </div>
           </div>
@@ -301,54 +345,90 @@ export default function AnnualReportModule({ onNavigate }) {
           <div className="max-w-6xl mx-auto space-y-6">
             
             {/* ZONA A: KPIs ESTRATÉGICOS */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Pasivo Impositivo */}
-              <div className="border border-brand-border bg-brand-surface rounded-2xl p-6 relative overflow-hidden group">
-                <div className="text-[10px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">IMPUESTOS PROYECTADOS (PASIVO A RETENER)</div>
-                <div className="text-4xl md:text-5xl font-mono tracking-tight text-brand-text mb-3">
-                  {formatCurrency(yearData.totalTaxes)}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              
+              {/* COL 1: EGRESOS */}
+              <div className="flex flex-col gap-4">
+                <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 relative">
+                  <div className="text-[10px] font-extrabold tracking-widest uppercase text-brand-muted mb-2">TOTAL EGRESOS</div>
+                  <div className="text-4xl font-mono text-brand-text">
+                    -{formatCurrency(yearData.outflows.total)}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-[10px] text-brand-muted/80 uppercase tracking-widest font-bold">
-                  <AlertTriangle size={12} className="text-brand-warning" /> RETENER LÍQUIDEZ PARA LIQUIDACIÓN
+                
+                <div className="bg-brand-surface/30 border border-brand-border/50 rounded-2xl p-4">
+                  <table className="w-full text-xs font-mono">
+                    <tbody className="divide-y divide-brand-border/30">
+                      <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Costos Semana (Inc. RRHH)</td><td className="py-3 text-right">-{formatCurrency(yearData.outflows.weeklyCosts)}</td></tr>
+                      <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Costos Mes (Fijos)</td><td className="py-3 text-right">-{formatCurrency(yearData.outflows.monthlyCosts)}</td></tr>
+                      <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Impuestos Proyectados</td><td className="py-3 text-right text-brand-warning">-{formatCurrency(yearData.outflows.taxes)}</td></tr>
+                      {yearData.outflows.stockDiscrepancies > 0 && (
+                        <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Mermas de Barra</td><td className="py-3 text-right text-brand-error">-{formatCurrency(yearData.outflows.stockDiscrepancies)}</td></tr>
+                      )}
+                      {yearData.outflows.tillDiscrepancies > 0 && (
+                        <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Diferencias de Arqueo</td><td className="py-3 text-right text-brand-error">-{formatCurrency(yearData.outflows.tillDiscrepancies)}</td></tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
-              {/* Resultado Neto */}
-              <div className={`border rounded-2xl p-6 ${
-                yearData.netProfit >= 0 
-                  ? 'bg-brand-success/5 border-brand-success/30' 
-                  : 'bg-brand-surface border-brand-border'
-              }`}>
-                <div className="text-[10px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">RESULTADO NETO ESTIMADO</div>
-                <div className={`text-4xl md:text-5xl font-mono tracking-tight ${yearData.netProfit >= 0 ? 'text-brand-success' : 'text-brand-text'} mb-3`}>
-                  {formatCurrency(yearData.netProfit)}
+              {/* COL 2: INGRESOS */}
+              <div className="flex flex-col gap-4">
+                <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 relative">
+                  <div className="text-[10px] font-extrabold tracking-widest uppercase text-brand-muted mb-2">TOTAL INGRESOS</div>
+                  <div className="text-4xl font-mono text-brand-success">
+                    {formatCurrency(yearData.inflows.total)}
+                  </div>
                 </div>
-                <div className={`text-[10px] uppercase tracking-widest font-bold ${yearData.netProfit >= 0 ? 'text-brand-success/80' : 'text-brand-muted'}`}>
-                  MARGEN OPERATIVO: {marginPct > 0 ? '+' : ''}{marginPct.toFixed(1)}%
+                
+                <div className="bg-brand-surface/30 border border-brand-border/50 rounded-2xl p-4">
+                  <table className="w-full text-xs font-mono">
+                    <tbody className="divide-y divide-brand-border/30">
+                      <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Efectivo (POS)</td><td className="py-3 text-right">{formatCurrency(yearData.inflows.cash)}</td></tr>
+                      <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Digital (POS + Passline)</td><td className="py-3 text-right">{formatCurrency(yearData.inflows.digital)}</td></tr>
+                      {yearData.inflows.surplus > 0 && (
+                        <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Otros / Ajustes</td><td className="py-3 text-right text-brand-success">+{formatCurrency(yearData.inflows.surplus)}</td></tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
+
+              {/* COL 3: MARGEN NETO */}
+              <div className="flex flex-col gap-4">
+                <div className={`border rounded-2xl p-6 flex flex-col justify-between h-[116px] ${
+                  yearData.netProfit >= 0 ? 'bg-brand-success/5 border-brand-success/30' : 'bg-brand-error/5 border-brand-error/30'
+                }`}>
+                  <div className="flex justify-between items-start">
+                    <div className="text-[10px] font-extrabold tracking-widest uppercase text-brand-muted mb-2">MARGEN NETO</div>
+                    <div className={`text-xs font-bold px-2 py-1 rounded bg-[#111111] font-mono tracking-widest ${yearData.margin >= 0 ? 'text-brand-success' : 'text-brand-error'}`}>
+                      {yearData.margin > 0 ? '+' : ''}{yearData.margin.toFixed(1)}% MRG
+                    </div>
+                  </div>
+                  <div className={`text-4xl font-mono tracking-tight ${yearData.netProfit >= 0 ? 'text-brand-success' : 'text-brand-error'}`}>
+                    {formatCurrency(yearData.netProfit)}
+                  </div>
+                </div>
+
+                <div className="bg-brand-surface/30 border border-brand-border/50 rounded-2xl p-4">
+                  <table className="w-full text-xs font-mono">
+                    <tbody className="divide-y divide-brand-border/30">
+                      <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Ingresos Totales</td><td className="py-3 text-right text-brand-success">{formatCurrency(yearData.inflows.total)}</td></tr>
+                      <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Egresos Totales</td><td className="py-3 text-right text-brand-error">-{formatCurrency(yearData.outflows.total)}</td></tr>
+                      <tr className="bg-brand-surface/50"><td className="py-3 px-2 text-brand-text font-sans font-bold uppercase tracking-wider text-[10px]">Beneficio Operativo</td><td className={`py-3 px-2 text-right font-bold ${yearData.netProfit >= 0 ? 'text-brand-success' : 'text-brand-error'}`}>{formatCurrency(yearData.netProfit)}</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
             </div>
 
             {/* ZONA B: GRÁFICOS */}
             
-            {/* Termómetro de rentabilidad Minimalista */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between border border-brand-border bg-brand-surface rounded-xl p-4 gap-4">
-              <div className="flex items-center gap-4 w-full">
-                <span className="text-[10px] font-bold tracking-widest uppercase text-brand-muted whitespace-nowrap">RENTABILIDAD</span>
-                <div className="flex-1 h-1 bg-brand-border rounded-full overflow-hidden relative">
-                  <div className="absolute top-0 left-0 h-full bg-brand-success/50 w-full"></div>
-                  <div className="absolute top-0 left-0 h-full bg-brand-muted" style={{ width: `${clampedCostRatio}%` }}></div>
-                </div>
-                <div className="text-[10px] uppercase tracking-widest font-mono font-bold text-brand-text whitespace-nowrap">
-                  <span className="text-brand-muted mr-3">EGR: {costRatio.toFixed(1)}%</span>
-                  {marginPct >= 20 ? <span className="text-brand-success">SALUDABLE</span> : marginPct >= 0 ? <span className="text-brand-warning">AJUSTADA</span> : <span className="text-brand-error">EN PÉRDIDA</span>}
-                </div>
-              </div>
-            </div>
-
             {/* Tendencia Historica Mes */}
             <div className="bg-brand-surface/30 border border-brand-border rounded-xl p-6 flex flex-col justify-between min-h-[220px]">
-              <div className="text-[10px] font-bold tracking-widest uppercase text-brand-muted mb-6">TENDENCIA HISTÓRICA AÑO (INGRESOS vs EGRESOS)</div>
+              <div className="text-[10px] font-bold tracking-widest uppercase text-brand-muted mb-6">TENDENCIA HISTÓRICA ANUAL (INGRESOS vs EGRESOS POR MES)</div>
               <div className="flex-1 w-full flex items-end justify-center relative">
                 {yearData.breakdowns.length >= 2 ? renderTrendLine() : (
                   <div className="text-[10px] text-brand-muted uppercase tracking-widest h-full flex items-center">NO HAY SUFICIENTES DATOS AÚN</div>
@@ -360,34 +440,15 @@ export default function AnnualReportModule({ onNavigate }) {
               </div>
             </div>
 
-            {/* Distribucion del gasto Minimalista */}
-            <div className="bg-brand-surface/30 border border-brand-border rounded-xl p-6">
-              <div className="text-[10px] font-bold tracking-widest uppercase text-brand-muted mb-4">DISTRIBUCIÓN DE GASTOS EJECUTADOS (EXCLUYE PASIVOS/IMPUESTOS)</div>
-              
-              <div className="h-1.5 w-full flex rounded-full overflow-hidden bg-brand-border">
-                {distSorted.map(item => (
-                  <div key={item.name} className={`h-full ${item.bgClass}`} style={{ width: `${item.pct}%` }} title={item.name}></div>
-                ))}
-              </div>
-              
-              <div className="flex flex-wrap gap-6 mt-4 text-[10px] uppercase tracking-widest font-mono font-bold">
-                {distSorted.map(item => (
-                  <span key={item.name} className={`flex items-center gap-2 ${item.textClass}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${item.bgClass} inline-block`}></span> {item.name} ({item.pct.toFixed(0)}%)
-                  </span>
-                ))}
-              </div>
-            </div>
-
             {/* ZONA C: TABLA VIVA SIMPLIFICADA */}
             <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden mt-8">
               <div className="px-6 py-5 border-b border-brand-border flex justify-between items-center bg-brand-bg/50">
-                <h3 className="text-[10px] font-bold tracking-[0.2em] uppercase text-brand-text">Tabla Viva Consolidada</h3>
+                <h3 className="text-[10px] font-bold tracking-[0.2em] uppercase text-brand-text">Tabla Viva Consolidada (Agrupación Mensual)</h3>
                 <div className="text-[10px] text-brand-muted tracking-widest uppercase font-bold">
                   {yearData.openDaysCount > 0 ? (
                     <span className="text-brand-accent flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-brand-accent animate-pulse"></span>
-                      {yearData.openDaysCount} Jornadas Vivas (Proyección)
+                      CONTIENE JORNADAS ABIERTAS
                     </span>
                   ) : (
                     "AÑO TOTALMENTE CERRADO"
@@ -398,44 +459,40 @@ export default function AnnualReportModule({ onNavigate }) {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-brand-border">
-                      <th className="px-6 py-4 text-[10px] font-bold tracking-widest uppercase text-brand-muted whitespace-nowrap">Fecha</th>
-                      <th className="px-6 py-4 text-[10px] font-bold tracking-widest uppercase text-brand-muted whitespace-nowrap">Evento</th>
+                      <th className="px-6 py-4 text-[10px] font-bold tracking-widest uppercase text-brand-muted whitespace-nowrap">Mes</th>
                       <th className="px-6 py-4 text-[10px] font-bold tracking-widest uppercase text-brand-muted whitespace-nowrap text-right">Ingreso Total</th>
                       <th className="px-6 py-4 text-[10px] font-bold tracking-widest uppercase text-brand-muted whitespace-nowrap text-right">Egreso Total</th>
                       <th className="px-6 py-4 text-[10px] font-bold tracking-widest uppercase text-brand-muted whitespace-nowrap text-right">Resultado Neto</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-brand-border">
-                    {yearData.breakdowns.map((wd) => (
-                      <tr key={wd.id} className="hover:bg-brand-bg transition-colors">
-                        <td className="px-6 py-4 text-[11px] font-mono text-brand-muted whitespace-nowrap">
-                          {dayjs(wd.date).format('DD/MM/YYYY')}
-                        </td>
+                    {yearData.breakdowns.map((month) => (
+                      <tr key={month.id} className="hover:bg-brand-bg transition-colors">
                         <td className="px-6 py-4 text-xs font-bold text-brand-text whitespace-nowrap uppercase tracking-wider flex items-center gap-3">
-                          {wd.name}
-                          {wd.status === 'open' && (
+                          {month.name}
+                          {month.hasOpenDays && (
                             <span className="text-[9px] bg-brand-accent/10 text-brand-accent px-2 py-0.5 rounded border border-brand-accent/20 tracking-widest">
-                              VIVA
+                              PROYECTADO
                             </span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-xs font-mono text-brand-text text-right whitespace-nowrap">
-                          {formatCurrency(wd.revenue)}
+                          {formatCurrency(month.revenue)}
                         </td>
                         <td className="px-6 py-4 text-xs font-mono text-brand-muted text-right whitespace-nowrap">
-                          -{formatCurrency(wd.costs)}
+                          -{formatCurrency(month.costs)}
                         </td>
                         <td className={`px-6 py-4 text-xs font-mono font-bold text-right whitespace-nowrap ${
-                          wd.net >= 0 ? 'text-brand-success' : 'text-brand-error'
+                          month.net >= 0 ? 'text-brand-success' : 'text-brand-error'
                         }`}>
-                          {formatCurrency(wd.net)}
+                          {formatCurrency(month.net)}
                         </td>
                       </tr>
                     ))}
                     {yearData.breakdowns.length === 0 && (
                       <tr>
-                        <td colSpan="5" className="px-6 py-8 text-center text-brand-muted text-xs uppercase tracking-widest">
-                          Sin jornadas registradas en este año
+                        <td colSpan="4" className="px-6 py-8 text-center text-brand-muted text-xs uppercase tracking-widest">
+                          Sin operaciones registradas en este año
                         </td>
                       </tr>
                     )}

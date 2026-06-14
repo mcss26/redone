@@ -8,6 +8,8 @@
 - **UX/UI:** Inyección masiva del atributo `autoComplete="off"` a más de 50 inputs a lo largo de todos los Slide-Overs para evitar el auto-relleno del navegador y preservar la estética brutalista.
 - **Kiosk Mode:** Configurado `index.html` con bloqueos de zoom (`user-scalable=no`, `maximum-scale=1.0`) y meta-etiquetas de PWA para permitir instalar la aplicación fullscreen en iOS/Android.
 - **PWA:** Creado `public/manifest.json` para definir la experiencia nativa de la aplicación (ícono, colores `Deep Void` #0A0A0A, nombre `MC OS`).
+- **Global Refactor (UX/Resilience):** Inyectados los estados `isFetchingBackground` y `window.UI.toast` en los bloques catch de los 20 módulos transaccionales. Esto previene parpadeos de tabla completos (Regla #66) y expone visualmente los mensajes de error de Supabase al cajero (Regla #42).
+- **Cleanup & Production Build:** Eliminados +10 archivos temporales (`scratch_*.js`, `.bak`, `.csv`) y ejecutada con éxito la compilación final estricta (`npm run build`) validando la estabilidad total.
 
 # Midnight Club - Master Changelog
 
@@ -81,3 +83,13 @@
 ### UI/UX: Reestructuración de Fase Night Chief
 - **System:** Se trasladó el módulo de Auditoría (`auditoria_barra`) desde la fase `REPORTES` a la fase operativa `NIGHT CHIEF` en el enrutador global (`AdminIndex.jsx`), ordenando el flujo: `NIGHT CHIEF` -> `AUDITORIA CONSUMO` -> `APERTURA/CIERRE BARRA`.
 - **UI:** Se creó una nueva sub-navegación superior (`App.jsx`) exclusiva para Administradores, conectando dinámicamente estas tres vistas críticas para facilitar el cuadre en vivo de la operación nocturna.
+
+### Feature: Refactor KPIs Reporte Mensual (R. MES)
+- **UI/UX:** Se reestructuró la ZONA A del módulo `MonthlyReportModule.jsx` reemplazando los KPIs antiguos por el nuevo estándar contable: `INGRESO BRUTO`, `EGRESOS TOTALES` y `MARGEN NETO`.
+- **System:** Implementado desglose de ingresos separando Efectivo (POS), Digital (POS + Passline) y Otros/Ajustes (Sobrantes de caja/barra + Ajustes manuales).
+- **System:** Implementado desglose de egresos separando Costos de Semana, Costos Fijos Mensuales, Impuestos Proyectados, Mermas de Barra y Diferencias de Arqueo. Las diferencias netas de auditoría y arqueo ahora alimentan correctamente las matemáticas del mes total de la misma manera que en el Reporte de Noche.
+
+### Feature: Refactor Estructural Reporte Anual (R. ANUAL)
+- **UI/UX:** Se reestructuró `AnnualReportModule.jsx` para adoptar el estándar visual Bimodal de 3 Columnas (`TOTAL EGRESOS`, `TOTAL INGRESOS`, `MARGEN NETO`) eliminando gráficos y métricas redundantes de Distribución.
+- **System:** Se estandarizó la agregación matemática en el bloque `fetchYearDetails` para que utilice el mismo bucle de conciliación de Caja, Passline, Arqueos, Auditoría de Barra y Costos Fijos Mensuales que el R. MES.
+- **UI:** La Tabla Viva Histórica en el Reporte Anual fue rediseñada para agrupar los resultados por mes (12 filas máximo) en lugar de evento individual, garantizando rendimiento escalable al finalizar el año.

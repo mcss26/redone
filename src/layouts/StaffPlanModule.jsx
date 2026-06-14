@@ -11,6 +11,7 @@ export default function StaffPlanModule({ onNavigate }) {
   const [staffPlans, setStaffPlans] = useState([]);
   const [staffRoles, setStaffRoles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isFetchingBackground, setIsFetchingBackground] = useState(false);
   
   const [slideOver, setSlideOver] = useState(null); // null | 'create' | plan object
   const [form, setForm] = useState({ role_id: '', quantity_requested: '1', quantity_approved: '0', status: 'draft' });
@@ -63,6 +64,7 @@ export default function StaffPlanModule({ onNavigate }) {
     } catch (err) {
       console.error('Error fetching plans:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
       setLoading(false);
     }
@@ -116,6 +118,7 @@ export default function StaffPlanModule({ onNavigate }) {
     } catch (err) {
       console.error('Error saving plan:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
       setSaving(false);
     }
@@ -132,6 +135,7 @@ export default function StaffPlanModule({ onNavigate }) {
     } catch (err) {
       console.error('Error deleting plan:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     }
   };
 
@@ -154,6 +158,7 @@ export default function StaffPlanModule({ onNavigate }) {
     } catch (err) {
       console.error('Error approving all plans:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
       setSaving(false);
     }
@@ -175,7 +180,7 @@ export default function StaffPlanModule({ onNavigate }) {
     <div className="h-full flex relative">
       {/* Interaction Flash Overlay */}
       {flashColor && <div className={`absolute inset-0 z-50 pointer-events-none opacity-10 transition-opacity duration-150 ${flashColor}`}></div>}
-      <div className="flex-1 overflow-y-auto p-6 md:p-8">
+      <div className={`flex-1 overflow-y-auto p-6 md:p-8 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
         
         {/* Actions & Title (Above Table) */}
         <div className="flex items-end justify-between mb-4">
@@ -310,7 +315,7 @@ export default function StaffPlanModule({ onNavigate }) {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <div className={`flex-1 overflow-y-auto p-6 space-y-6 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
               
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Rol Requerido *</label>

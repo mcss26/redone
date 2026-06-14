@@ -18,6 +18,7 @@ const parseCsvLine = (line, separator) => {
 
 export default function AuditoriaBarraModule({ onNavigate }) {
   const [loading, setLoading] = useState(true);
+  const [isFetchingBackground, setIsFetchingBackground] = useState(false);
   const [workDays, setWorkDays] = useState([]);
   const [selectedWorkDayId, setSelectedWorkDayId] = useState('');
   
@@ -338,7 +339,7 @@ export default function AuditoriaBarraModule({ onNavigate }) {
       <div className="shrink-0 p-6 border-b border-brand-border/30 bg-[#0A0A0A] z-10 flex justify-between items-center">
         <div className="flex items-center gap-4">
           <div>
-            <h2 className="text-[10px] md:text-[11px] font-extrabold tracking-[0.4em] uppercase text-brand-text">AUDITORIA CONSUMO</h2>
+            <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">AUDITORIA CONSUMO</h2>
             <p className="text-[8px] text-brand-muted/50 tracking-[0.3em] mt-1 uppercase">CONCILIACIÓN SISTEMA VS REAL</p>
           </div>
         </div>
@@ -371,7 +372,7 @@ export default function AuditoriaBarraModule({ onNavigate }) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-32">
+      <div className={`flex-1 overflow-y-auto p-4 md:p-6 pb-32 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
         {loading ? (
           <div className="flex justify-center items-center h-full text-brand-muted">
             <Loader2 className="animate-spin" size={24} />

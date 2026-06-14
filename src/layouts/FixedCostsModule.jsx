@@ -13,6 +13,7 @@ export default function FixedCostsModule() {
   const [costs, setCosts] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isFetchingBackground, setIsFetchingBackground] = useState(false);
   
   const [slideOver, setSlideOver] = useState(null); // null | 'create' | cost object
   const [form, setForm] = useState({ title: '', supplier_id: '', amount: '0' });
@@ -70,6 +71,7 @@ export default function FixedCostsModule() {
     } catch (err) {
       console.error('Error fetching costs:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
       if (!silent) setLoading(false);
     }
@@ -117,6 +119,7 @@ export default function FixedCostsModule() {
       } catch (err) {
         console.error('Error fetching costs:', err);
         if (isMounted) triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -165,6 +168,7 @@ export default function FixedCostsModule() {
     } catch (err) {
       console.error('Error saving cost:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
       setSaving(false);
     }
@@ -180,6 +184,7 @@ export default function FixedCostsModule() {
     } catch (err) {
       console.error('Error deleting cost:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     }
   };
 
@@ -192,6 +197,7 @@ export default function FixedCostsModule() {
     } catch (err) {
       console.error('Error updating cost status:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     }
   };
 
@@ -211,7 +217,7 @@ export default function FixedCostsModule() {
       {/* Interaction Flash Overlay */}
       {flashColor && <div className={`absolute inset-0 z-50 pointer-events-none opacity-10 transition-opacity duration-150 ${flashColor}`}></div>}
 
-      <div className="flex-1 overflow-y-auto p-6 md:p-8">
+      <div className={`flex-1 overflow-y-auto p-6 md:p-8 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
         
         {/* Actions & Title (Above Table) */}
         <div className="flex items-end justify-between mb-4">
@@ -349,7 +355,7 @@ export default function FixedCostsModule() {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-8 mt-4">
+            <div className={`flex-1 overflow-y-auto p-6 space-y-8 mt-4 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">SERVICIO / CONCEPTO *</label>
                 <input autoComplete="off"

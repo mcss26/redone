@@ -6,6 +6,7 @@ import { Plus, X, Save, ArrowLeft, Pencil, DollarSign, Search, Trash2, Loader2 }
 export default function StaffRolesModule({ onNavigate }) {
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isFetchingBackground, setIsFetchingBackground] = useState(false);
   const [search, setSearch] = useState('');
   const [flashColor, setFlashColor] = useState('');
   const [slideOver, setSlideOver] = useState(null); // null | 'create' | role object
@@ -29,6 +30,7 @@ export default function StaffRolesModule({ onNavigate }) {
     } catch (err) {
       console.error('Error fetching roles:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
       setLoading(false);
     }
@@ -74,6 +76,7 @@ export default function StaffRolesModule({ onNavigate }) {
     } catch (err) {
       console.error('Error saving role:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
       setSaving(false);
     }
@@ -91,6 +94,7 @@ export default function StaffRolesModule({ onNavigate }) {
     } catch (err) {
       console.error('Error deleting role:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
       setSaving(false);
     }
@@ -105,6 +109,7 @@ export default function StaffRolesModule({ onNavigate }) {
     } catch (err) {
       console.error('Error toggling active:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     }
   };
 
@@ -122,7 +127,7 @@ export default function StaffRolesModule({ onNavigate }) {
       {flashColor && <div className={`absolute inset-0 z-50 pointer-events-none opacity-10 transition-opacity duration-150 ${flashColor}`}></div>}
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto p-6 md:p-8">
+      <div className={`flex-1 overflow-y-auto p-6 md:p-8 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
         
         {/* Actions & Title (Above Table) */}
         <div className="flex items-end justify-between mb-4">
@@ -213,7 +218,7 @@ export default function StaffRolesModule({ onNavigate }) {
             </div>
 
             {/* Panel Body */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-5">
+            <div className={`flex-1 overflow-y-auto p-6 space-y-5 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
               
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Nombre del Rol *</label>

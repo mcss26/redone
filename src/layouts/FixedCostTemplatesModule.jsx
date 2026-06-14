@@ -6,6 +6,7 @@ export default function FixedCostTemplatesModule({ onNavigate }) {
   const [templates, setTemplates] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isFetchingBackground, setIsFetchingBackground] = useState(false);
   
   const [slideOver, setSlideOver] = useState(null); // null | 'create' | template object
   const [form, setForm] = useState({ title: '', supplier_id: '', default_amount: '', sort_order: '0' });
@@ -44,6 +45,7 @@ export default function FixedCostTemplatesModule({ onNavigate }) {
     } catch (err) {
       console.error('Error fetching data:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
       setLoading(false);
     }
@@ -94,6 +96,7 @@ export default function FixedCostTemplatesModule({ onNavigate }) {
       console.error('Error saving template:', err);
       alert('Error de BD: ' + err.message);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     } finally {
       setSaving(false);
     }
@@ -108,6 +111,7 @@ export default function FixedCostTemplatesModule({ onNavigate }) {
     } catch (err) {
       console.error('Error toggling active:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
     }
   };
 
@@ -119,7 +123,7 @@ export default function FixedCostTemplatesModule({ onNavigate }) {
       {flashColor && <div className={`absolute inset-0 z-50 pointer-events-none opacity-10 transition-opacity duration-150 ${flashColor}`}></div>}
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto p-6 md:p-8">
+      <div className={`flex-1 overflow-y-auto p-6 md:p-8 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
         
         {/* Actions & Title (Above Table) */}
         <div className="flex items-end justify-between mb-4">
@@ -205,7 +209,7 @@ export default function FixedCostTemplatesModule({ onNavigate }) {
             </div>
 
             {/* Panel Body */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <div className={`flex-1 overflow-y-auto p-6 space-y-6 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
               
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Concepto de Estructura *</label>

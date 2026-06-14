@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "business-analytics-reporter": {
+      "source": "ailabs-393/ai-labs-claude-skills",
+      "sourceType": "github",
+      "skillPath": "packages/skills/business-analytics-reporter/SKILL.md",
+      "computedHash": "3459d868688db776d94f247d621264db60471d4a9a92df7f98b239cc6333e0b5"
+    },
     "context-compressor": {
       "source": "toonight/get-shit-done-for-antigravity",
       "sourceType": "github",
