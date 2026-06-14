@@ -321,7 +321,7 @@ export default function StaffPlanModule({ onNavigate }) {
             <div className={`flex-1 overflow-y-auto p-6 space-y-6 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
               
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Rol Requerido *</label>
+                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Rol *</label>
                 <select id="sp_role"
                   value={form.role_id}
                   onChange={(e) => {
@@ -346,7 +346,7 @@ export default function StaffPlanModule({ onNavigate }) {
               </div>
 
               <div>
-                <label htmlFor="sp_qty" className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Cantidad Solicitada *</label>
+                <label htmlFor="sp_qty" className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Solicitado *</label>
                 <input autoComplete="off"
                   type="number"
                   min="1"
@@ -359,7 +359,7 @@ export default function StaffPlanModule({ onNavigate }) {
               {slideOver !== 'create' && (
                 <>
                   <div className="pt-6 border-t border-brand-border/30 mt-6">
-                    <h4 className="text-[10px] font-bold tracking-[0.3em] uppercase text-brand-accent/70 mb-6">Aprobación (Admin)</h4>
+                    <h4 className="text-[10px] font-bold tracking-[0.3em] uppercase text-brand-accent/70 mb-6">Aprobación</h4>
                     
                     <div className="space-y-6">
                       <div>
@@ -384,7 +384,7 @@ export default function StaffPlanModule({ onNavigate }) {
 
                       {form.status === 'approved' && (
                         <div>
-                          <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-success mb-2">Cantidad Aprobada</label>
+                          <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-success mb-2">Aprobado</label>
                           <input autoComplete="off"
                             type="number"
                             min="0"

@@ -312,7 +312,7 @@ export default function StockRequestsModule({ onNavigate }) {
                     {r.supplier_id ? (
                       <span className="bg-brand-border/30 px-2 py-1 rounded text-brand-text">{suppliers.find(s => s.id === r.supplier_id)?.name || 'Desconocido'}</span>
                     ) : r.skus?.supplier_id ? (
-                      <span className="bg-brand-border/30 px-2 py-1 rounded text-brand-text/50" title="Heredado del SKU">{suppliers.find(s => s.id === r.skus.supplier_id)?.name || 'Predeterminado'}</span>
+                      <span className="bg-brand-border/30 px-2 py-1 rounded text-brand-text/50" title="Heredado del SKU">{suppliers.find(s => s.id === r.skus.supplier_id)?.name || 'Default'}</span>
                     ) : (
                       <span className="text-brand-muted/50">—</span>
                     )}
@@ -387,7 +387,7 @@ export default function StockRequestsModule({ onNavigate }) {
             <div className={`flex-1 overflow-y-auto p-6 space-y-6 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
               
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">SKU Requerido *</label>
+                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">SKU *</label>
                 <select
                   value={form.sku_id}
                   onChange={(e) => {
@@ -419,7 +419,7 @@ export default function StockRequestsModule({ onNavigate }) {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Cantidad Solicitada *</label>
+                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Cantidad *</label>
                 <input autoComplete="off"
                   type="number"
                   min="0"
@@ -431,13 +431,13 @@ export default function StockRequestsModule({ onNavigate }) {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Notas Operativas</label>
+                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Notas</label>
                 <input autoComplete="off"
                   type="text"
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
                   className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
-                  placeholder="Opcional..."
+                  placeholder="Opcional"
                 />
               </div>
 
@@ -447,7 +447,7 @@ export default function StockRequestsModule({ onNavigate }) {
               {slideOver !== 'create' && user?.role === 'admin' && (
                 <>
                   <div className="pt-6 border-t border-brand-border mt-6">
-                    <h4 className="text-[10px] font-bold tracking-[0.3em] uppercase text-brand-accent mb-4">Aprobación (Admin)</h4>
+                    <h4 className="text-[10px] font-bold tracking-[0.3em] uppercase text-brand-accent mb-4">Aprobación</h4>
                   </div>
                   
                   <div>
@@ -472,7 +472,7 @@ export default function StockRequestsModule({ onNavigate }) {
 
                   {form.status === 'approved' && (
                     <div>
-                      <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Cantidad Aprobada</label>
+                      <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Aprobado</label>
                       <input autoComplete="off"
                         type="number"
                         min="0"

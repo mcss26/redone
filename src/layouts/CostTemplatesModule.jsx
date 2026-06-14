@@ -243,7 +243,7 @@ export default function CostTemplatesModule({ onNavigate }) {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Costo Base Predeterminado</label>
+                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Monto base</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-muted font-mono">$</span>
                   <input autoComplete="off"
@@ -260,7 +260,7 @@ export default function CostTemplatesModule({ onNavigate }) {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Proveedor Vinculado</label>
+                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Proveedor</label>
                 <select
                   value={form.supplier_id}
                   onChange={(e) => setForm({ ...form, supplier_id: e.target.value })}
@@ -274,7 +274,7 @@ export default function CostTemplatesModule({ onNavigate }) {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Orden de Visualización</label>
+                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Orden</label>
                 <input autoComplete="off"
                   type="number"
                   value={form.sort_order}

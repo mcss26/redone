@@ -343,7 +343,6 @@ export default function AuditoriaBarraModule({ onNavigate }) {
         <div className="flex items-center gap-4">
           <div>
             <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">AUDITORIA CONSUMO</h2>
-            <p className="text-[8px] text-brand-muted/50 tracking-[0.3em] mt-1 uppercase">CONCILIACIÓN SISTEMA VS REAL</p>
           </div>
         </div>
 
@@ -370,7 +369,7 @@ export default function AuditoriaBarraModule({ onNavigate }) {
             className={`flex items-center gap-2 border-b pb-1 text-[9px] font-extrabold tracking-[0.3em] uppercase transition-all cursor-pointer disabled:opacity-50 hover:opacity-80 ${isConsolidated ? 'border-brand-warning text-brand-warning' : 'border-brand-accent text-brand-accent'}`}
           >
             <Upload size={12} />
-            {isConsolidated ? 'RESUBIR CSV' : 'SUBIR CSV SISTEMA'}
+            {isConsolidated ? 'RESUBIR CSV' : 'SUBIR CSV'}
           </button>
         </div>
       </div>
@@ -396,7 +395,7 @@ export default function AuditoriaBarraModule({ onNavigate }) {
                   {totalMonetizedDiff > 0 ? '+' : ''}{formatCurrency(totalMonetizedDiff)}
                 </div>
                 <div className="text-[9px] uppercase tracking-widest text-brand-muted/70 mt-2">
-                  Negativos: FALTANTE (Consumo Físico \u003e Sistema). Positivos: SOBRANTE.
+                  FALTANTE / SOBRANTE
                 </div>
               </div>
               <div className="mt-6 md:mt-0 flex flex-col items-end gap-3">

@@ -362,7 +362,7 @@ export default function FixedCostsModule() {
 
             <div className={`flex-1 overflow-y-auto p-6 space-y-8 mt-4 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">SERVICIO / CONCEPTO *</label>
+                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Concepto *</label>
                 <input id="fc_title" autoComplete="off"
                   type="text"
                   value={form.title}
@@ -374,7 +374,7 @@ export default function FixedCostsModule() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">MONTO FIJO</label>
+                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Monto</label>
                 <div className="relative">
                   <span className="absolute left-0 top-1/2 -translate-y-1/2 text-brand-muted font-mono">$</span>
                   <input id="fc_amount" autoComplete="off"
@@ -389,7 +389,7 @@ export default function FixedCostsModule() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">PROVEEDOR ASOCIADO (OPCIONAL)</label>
+                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Proveedor</label>
                 <select id="fc_supplier"
                   value={form.supplier_id}
                   onChange={(e) => setForm({ ...form, supplier_id: e.target.value })}

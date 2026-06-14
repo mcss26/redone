@@ -190,7 +190,6 @@ export default function BarInventoryModule({ onNavigate }) {
         <div className="flex items-center gap-4 mb-4">
           <div>
             <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">APERTURA/CIERRE BARRA</h2>
-            <p className="text-[10px] text-brand-muted/50 tracking-wide mt-0.5">Control físico de mercadería</p>
           </div>
         </div>
 

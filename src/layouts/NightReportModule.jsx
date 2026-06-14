@@ -295,7 +295,6 @@ export default function NightReportModule({ onNavigate }) {
           <div className="flex items-center gap-4">
             <div>
               <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">R. NOCHE</h2>
-              <p className="text-[10px] text-brand-muted/40 tracking-wide mt-0.5">Reporte Consolidado (Lunes)</p>
             </div>
           </div>
           

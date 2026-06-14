@@ -313,7 +313,7 @@ export default function PaymentsModule() {
                 <div className="text-[9px] font-bold tracking-[0.3em] text-brand-muted uppercase mb-1">Costo Estimado</div>
                 <div className="text-sm font-semibold text-brand-text mb-6">{slideOver.title}</div>
                 
-                <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">Monto Final a Pagar *</label>
+                <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">Monto final *</label>
                 <div className="relative">
                   <span className="absolute left-0 top-1/2 -translate-y-1/2 text-brand-warning font-mono">$</span>
                   <input autoComplete="off"
@@ -325,7 +325,6 @@ export default function PaymentsModule() {
                     className="w-full bg-transparent border-b border-brand-warning/30 pl-4 pr-0 py-2 text-lg font-mono text-brand-warning focus:outline-none focus:border-brand-warning transition-colors"
                   />
                 </div>
-                <p className="text-[8px] text-brand-muted mt-2 uppercase tracking-widest">Podés ajustar el monto si difiere del original.</p>
               </div>
 
               {slideOver.suppliers && (
@@ -362,7 +361,7 @@ export default function PaymentsModule() {
               )}
 
               <div>
-                <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">Método de Pago *</label>
+                <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">Método *</label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => setForm({ ...form, payment_method: 'digital' })}
@@ -388,7 +387,7 @@ export default function PaymentsModule() {
               </div>
 
               <div>
-                <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">Tipo de Comprobante *</label>
+                <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">Comprobante *</label>
                 <select
                   value={form.voucher_type}
                   onChange={(e) => setForm({ ...form, voucher_type: e.target.value })}
@@ -402,13 +401,13 @@ export default function PaymentsModule() {
               </div>
 
               <div>
-                <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">Notas de Pago</label>
+                <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">Notas</label>
                 <input autoComplete="off"
                   type="text"
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
                   className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
-                  placeholder="Ref. de transferencia, etc."
+                  placeholder="Referencia"
                 />
               </div>
 

@@ -95,7 +95,7 @@ export default function GlobalMessagesBoard() {
       {/* Header */}
       <div className="flex items-end justify-between py-2 border-b border-brand-border/30 shrink-0">
         <h3 className="text-[10px] font-bold tracking-[0.3em] uppercase text-brand-muted/50">
-          BITACORA DEL SISTEMA // ASYNC
+          BITACORA
         </h3>
         <span className="flex items-center gap-2 text-[8px] font-bold tracking-[0.3em] uppercase text-brand-success/70">
           <span className="w-1.5 h-1.5 rounded-full bg-brand-success shadow-[0_0_6px_rgba(74,222,128,0.5)]" />
@@ -106,7 +106,7 @@ export default function GlobalMessagesBoard() {
       {/* Message List (Terminal Aesthetic) */}
       <div className="flex-1 overflow-y-auto py-4 space-y-1 custom-scrollbar text-[11px] md:text-xs font-mono h-32 md:h-40 relative">
         {loading ? (
-          <div className="text-brand-muted/50 flex items-center gap-2"><Loader2 size={12} className="animate-spin" /> CARGANDO_FLUJO</div>
+          <div className="text-brand-muted/50 flex items-center gap-2"><Loader2 size={12} className="animate-spin" /> CARGANDO</div>
         ) : messages.length === 0 ? (
           <div className="text-brand-muted/30 italic">Sin registros en el flujo.</div>
         ) : (
@@ -128,7 +128,7 @@ export default function GlobalMessagesBoard() {
           type="text"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="TRANSMITIR MENSAJE..."
+          placeholder="MENSAJE..."
           className="flex-1 bg-transparent border-none text-xs text-brand-text font-mono focus:outline-none placeholder:text-brand-muted/30 uppercase tracking-widest"
           disabled={saving}
           autoComplete="off"

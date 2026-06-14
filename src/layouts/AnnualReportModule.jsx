@@ -351,7 +351,6 @@ export default function AnnualReportModule({ onNavigate }) {
           <div className="flex items-center gap-4">
             <div>
               <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">R. ANUAL</h2>
-              <p className="text-[10px] text-brand-muted/40 tracking-wide mt-0.5">Reporte Consolidado Vivo</p>
             </div>
           </div>
           
@@ -465,7 +464,7 @@ export default function AnnualReportModule({ onNavigate }) {
             
             {/* Tendencia Historica Mes */}
             <div className="bg-brand-surface/30 border border-brand-border rounded-xl p-6 flex flex-col justify-between min-h-[220px]">
-              <div className="text-[10px] font-bold tracking-widest uppercase text-brand-muted mb-6">TENDENCIA HISTÓRICA ANUAL (INGRESOS vs EGRESOS POR MES)</div>
+              <div className="text-[10px] font-bold tracking-widest uppercase text-brand-muted mb-6">TENDENCIA</div>
               <div className="flex-1 w-full flex items-end justify-center relative">
                 {yearData.breakdowns.length >= 2 ? renderTrendLine() : (
                   <div className="text-[10px] text-brand-muted uppercase tracking-widest h-full flex items-center">NO HAY SUFICIENTES DATOS AÚN</div>
@@ -480,15 +479,15 @@ export default function AnnualReportModule({ onNavigate }) {
             {/* ZONA C: TABLA VIVA SIMPLIFICADA */}
             <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden mt-8">
               <div className="px-6 py-5 border-b border-brand-border flex justify-between items-center bg-brand-bg/50">
-                <h3 className="text-[10px] font-bold tracking-[0.2em] uppercase text-brand-text">Tabla Viva Consolidada (Agrupación Mensual)</h3>
+                <h3 className="text-[10px] font-bold tracking-[0.2em] uppercase text-brand-text">CONSOLIDADO</h3>
                 <div className="text-[10px] text-brand-muted tracking-widest uppercase font-bold">
                   {yearData.openDaysCount > 0 ? (
                     <span className="text-brand-accent flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-brand-accent animate-pulse"></span>
-                      CONTIENE JORNADAS ABIERTAS
+                      ABIERTAS
                     </span>
                   ) : (
-                    "AÑO TOTALMENTE CERRADO"
+                    "CERRADO"
                   )}
                 </div>
               </div>
@@ -546,10 +545,10 @@ export default function AnnualReportModule({ onNavigate }) {
                 <div className="p-4 md:p-6 border-b border-brand-border/50 bg-brand-surface/20">
                   <h3 className="text-base font-black text-brand-text uppercase tracking-widest flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-brand-accent"></span>
-                    RENDIMIENTO CAJAS
+                    CAJAS
                   </h3>
                   <div className="text-[9px] text-brand-muted/70 tracking-widest mt-2 uppercase">
-                    Desvíos Netos Acumulados
+                    DESVIOS
                   </div>
                 </div>
                 <div className="flex-1 overflow-x-auto">
@@ -586,10 +585,10 @@ export default function AnnualReportModule({ onNavigate }) {
                 <div className="p-4 md:p-6 border-b border-brand-border/50 bg-brand-surface/20">
                   <h3 className="text-base font-black text-brand-text uppercase tracking-widest flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-brand-warning"></span>
-                    DETALLE MERMAS
+                    MERMAS
                   </h3>
                   <div className="text-[9px] text-brand-muted/70 tracking-widest mt-2 uppercase">
-                    Auditorías de Consumo Acumuladas
+                    CONSUMO
                   </div>
                 </div>
                 <div className="flex-1 overflow-x-auto">
@@ -597,7 +596,7 @@ export default function AnnualReportModule({ onNavigate }) {
                     <thead>
                       <tr className="border-b border-brand-border">
                         <th className="px-6 py-4 text-[10px] font-bold tracking-widest uppercase text-brand-muted">Artículo</th>
-                        <th className="px-6 py-4 text-[10px] font-bold tracking-widest uppercase text-brand-muted text-right">Monto Monetizado</th>
+                        <th className="px-6 py-4 text-[10px] font-bold tracking-widest uppercase text-brand-muted text-right">Monto</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-brand-border">

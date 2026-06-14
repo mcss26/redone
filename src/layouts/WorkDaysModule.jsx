@@ -269,7 +269,7 @@ export default function WorkDaysModule({ onNavigate }) {
 
 
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Fecha Operativa *</label>
+                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Fecha *</label>
                 <input autoComplete="off"
                   type="date"
                   value={form.work_date}
@@ -279,13 +279,13 @@ export default function WorkDaysModule({ onNavigate }) {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Nombre del Evento (Opcional)</label>
+                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Evento</label>
                 <input autoComplete="off"
                   type="text"
                   value={form.event_name}
                   onChange={(e) => setForm({ ...form, event_name: e.target.value })}
                   className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
-                  placeholder="Ej: Fiesta de Disfraces"
+                  placeholder="Nombre"
                 />
               </div>
 

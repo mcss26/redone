@@ -215,7 +215,7 @@ export default function FixedCostTemplatesModule({ onNavigate }) {
             <div className={`flex-1 overflow-y-auto p-6 space-y-6 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
               
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Concepto de Estructura *</label>
+                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Concepto *</label>
                 <input autoComplete="off"
                   type="text"
                   value={form.title}
@@ -227,7 +227,7 @@ export default function FixedCostTemplatesModule({ onNavigate }) {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Costo Fijo Mensual</label>
+                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Monto fijo</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-muted font-mono">$</span>
                   <input autoComplete="off"
@@ -240,11 +240,10 @@ export default function FixedCostTemplatesModule({ onNavigate }) {
                     placeholder="0"
                   />
                 </div>
-                <p className="text-[10px] text-brand-muted mt-1.5 ml-1">Monto que se pre-cargará cada mes.</p>
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Proveedor Vinculado (Opcional)</label>
+                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Proveedor</label>
                 <select
                   value={form.supplier_id}
                   onChange={(e) => setForm({ ...form, supplier_id: e.target.value })}
@@ -258,7 +257,7 @@ export default function FixedCostTemplatesModule({ onNavigate }) {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Orden de Visualización</label>
+                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Orden</label>
                 <input autoComplete="off"
                   type="number"
                   value={form.sort_order}
