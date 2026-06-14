@@ -19,9 +19,16 @@ export default function FixedCostsModule() {
   const [isFetchingBackground, setIsFetchingBackground] = useState(false);
   
   const [slideOver, setSlideOver] = useState(null); // null | 'create' | cost object
-  const [form, setForm] = useState({ title: '', supplier_id: '', amount: '0' });
+  const [slideOverType, setSlideOverType] = useState(null); // 'create' | 'edit' | 'pay'
+  const [form, setForm] = useState({ title: '', supplier_id: '', amount: '0', payment_method: 'digital', voucher_type: '' });
   const [saving, setSaving] = useState(false);
   const [flashColor, setFlashColor] = useState('');
+  const [vouchers, setVouchers] = useState([]);
+
+  useEffect(() => {
+    supabase.from('voucher_types').select('*').eq('active', true).order('name')
+      .then(({data}) => setVouchers(data || []));
+  }, []);
 
   const triggerFlash = (type) => {
     setFlashColor(type === 'success' ? 'bg-brand-success' : 'bg-brand-error');
@@ -133,20 +140,49 @@ export default function FixedCostsModule() {
 
   const openCreate = () => {
     if (!selectedMonth) return;
-    setForm({ title: '', supplier_id: '', amount: '0' });
+    setForm({ title: '', supplier_id: '', amount: '0', payment_method: 'digital', voucher_type: '' });
     setSlideOver('create');
+    setSlideOverType('create');
   };
 
   const openEdit = (c) => {
     setForm({ 
       title: c.title, 
       supplier_id: c.supplier_id || '', 
-      amount: c.amount.toString()
+      amount: c.amount.toString(),
+      payment_method: 'digital',
+      voucher_type: ''
     });
     setSlideOver(c);
+    setSlideOverType('edit');
   };
 
   const handleSave = async () => {
+    if (slideOverType === 'pay') {
+      try {
+        setSaving(true);
+        const payload = {
+          status: 'paid',
+          payment_method: form.payment_method || null,
+          voucher_type: form.voucher_type || null,
+          paid_at: new Date().toISOString()
+        };
+        const { error } = await supabase.from('monthly_fixed_costs').update(sanitizePayload(payload)).eq('id', slideOver.id);
+        if (error) throw error;
+        triggerFlash('success');
+        setSlideOver(null);
+        setSlideOverType(null);
+        fetchCosts(true);
+      } catch (err) {
+        console.error('Error saving payment:', err);
+        triggerFlash('error');
+        window.UI?.toast?.(err.message || "Error al procesar", 'danger');
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
+
     if (!form.title.trim()) return;
     try {
       setSaving(true);
@@ -157,7 +193,7 @@ export default function FixedCostsModule() {
         amount: parseFloat(form.amount) || 0,
       };
 
-      if (slideOver === 'create') {
+      if (slideOverType === 'create') {
         const { error } = await supabase.from('monthly_fixed_costs').insert(sanitizePayload({ ...payload, status: 'pending' }));
         if (error) throw error;
       } else {
@@ -167,6 +203,7 @@ export default function FixedCostsModule() {
 
       triggerFlash('success');
       setSlideOver(null);
+      setSlideOverType(null);
       fetchCosts(true);
     } catch (err) {
       console.error('Error saving cost:', err);
@@ -191,17 +228,16 @@ export default function FixedCostsModule() {
     }
   };
 
-  const handleMarkPaid = async (id) => {
-    try {
-      const { error } = await supabase.from('monthly_fixed_costs').update({ status: 'paid' }).eq('id', id);
-      if (error) throw error;
-      triggerFlash('success');
-      fetchCosts(true);
-    } catch (err) {
-      console.error('Error updating cost status:', err);
-      triggerFlash('error');
-      window.UI?.toast?.(err.message || "Error al procesar", 'danger');
-    }
+  const handleMarkPaid = (c) => {
+    setForm({ 
+      title: c.title,
+      supplier_id: c.supplier_id || '',
+      amount: c.amount.toString(),
+      payment_method: 'digital',
+      voucher_type: vouchers.length > 0 ? vouchers[0].code : ''
+    });
+    setSlideOver(c);
+    setSlideOverType('pay');
   };
 
   const formatCurrency = (val) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(val);
@@ -303,7 +339,7 @@ export default function FixedCostsModule() {
                     <td className="px-5 py-2 text-right">
                       <div className="flex items-center justify-end">
                         {c.status === 'pending' && (
-                          <button onClick={() => handleMarkPaid(c.id)} className="text-brand-success/70 hover:text-brand-success transition-colors cursor-pointer p-3 min-w-[44px] min-h-[44px] flex items-center justify-center" title="Marcar como Pagado">
+                          <button onClick={() => handleMarkPaid(c)} className="text-brand-success/70 hover:text-brand-success transition-colors cursor-pointer p-3 min-w-[44px] min-h-[44px] flex items-center justify-center" title="Marcar como Pagado">
                             <CheckCircle2 size={14} />
                           </button>
                         )}
@@ -361,56 +397,110 @@ export default function FixedCostsModule() {
             </div>
 
             <div className={`flex-1 overflow-y-auto p-6 space-y-8 mt-4 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
-              <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Concepto *</label>
-                <input id="fc_title" autoComplete="off"
-                  type="text"
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
-                  placeholder="Ej: Alquiler, Edenor..."
-                  autoFocus
-                />
-              </div>
+              {slideOverType === 'pay' ? (
+                <>
+                  <div className="mb-6">
+                    <div className="text-[9px] font-bold tracking-[0.3em] text-brand-muted uppercase mb-1">Costo Estimado</div>
+                    <div className="text-sm font-semibold text-brand-text mb-6">{slideOver.title}</div>
+                    
+                    <div className="text-[9px] font-bold tracking-[0.3em] text-brand-muted uppercase mb-1">Monto a Pagar</div>
+                    <div className="text-2xl font-mono text-brand-warning mb-6">${Number(form.amount).toLocaleString()}</div>
+                  </div>
 
-              <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Monto</label>
-                <div className="relative">
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 text-brand-muted font-mono">$</span>
-                  <input id="fc_amount" autoComplete="off"
-                    type="number"
-                    min="0"
-                    step="100"
-                    value={form.amount}
-                    onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                    className="w-full bg-transparent border-b border-brand-border/50 pl-4 pr-0 py-2 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
-                  />
-                </div>
-              </div>
+                  <div>
+                    <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">Método *</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={() => setForm({ ...form, payment_method: 'digital' })}
+                        className={`flex items-center justify-center gap-2 rounded-xl py-3 border text-[10px] font-bold uppercase tracking-[0.2em] transition-colors ${
+                          form.payment_method === 'digital' 
+                            ? 'bg-brand-surface border-brand-text text-brand-text' 
+                            : 'bg-transparent border-brand-border/50 text-brand-muted hover:border-brand-muted'
+                        }`}
+                      >
+                        Digital
+                      </button>
+                      <button
+                        onClick={() => setForm({ ...form, payment_method: 'efectivo' })}
+                        className={`flex items-center justify-center gap-2 rounded-xl py-3 border text-[10px] font-bold uppercase tracking-[0.2em] transition-colors ${
+                          form.payment_method === 'efectivo' 
+                            ? 'bg-brand-surface border-brand-text text-brand-text' 
+                            : 'bg-transparent border-brand-border/50 text-brand-muted hover:border-brand-muted'
+                        }`}
+                      >
+                        Efectivo
+                      </button>
+                    </div>
+                  </div>
 
-              <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Proveedor</label>
-                <select id="fc_supplier"
-                  value={form.supplier_id}
-                  onChange={(e) => setForm({ ...form, supplier_id: e.target.value })}
-                  className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none cursor-pointer"
-                >
-                  <option value="" className="bg-brand-bg text-brand-text">-- Sin proveedor --</option>
-                  {suppliers.map(s => (
-                    <option key={s.id} value={s.id} className="bg-brand-bg text-brand-text">{s.name}</option>
-                  ))}
-                </select>
-              </div>
+                  <div>
+                    <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">Comprobante</label>
+                    <select
+                      value={form.voucher_type}
+                      onChange={(e) => setForm({ ...form, voucher_type: e.target.value })}
+                      className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none cursor-pointer"
+                    >
+                      <option value="" className="bg-brand-bg text-brand-text">SIN DETALLE</option>
+                      {vouchers.map(v => (
+                        <option key={v.id} value={v.code} className="bg-brand-bg text-brand-text">{v.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Concepto *</label>
+                    <input id="fc_title" autoComplete="off"
+                      type="text"
+                      value={form.title}
+                      onChange={(e) => setForm({ ...form, title: e.target.value })}
+                      className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
+                      placeholder="Ej: Alquiler, Edenor..."
+                      autoFocus
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Monto</label>
+                    <div className="relative">
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 text-brand-muted font-mono">$</span>
+                      <input id="fc_amount" autoComplete="off"
+                        type="number"
+                        min="0"
+                        step="100"
+                        value={form.amount}
+                        onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                        className="w-full bg-transparent border-b border-brand-border/50 pl-4 pr-0 py-2 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Proveedor</label>
+                    <select id="fc_supplier"
+                      value={form.supplier_id}
+                      onChange={(e) => setForm({ ...form, supplier_id: e.target.value })}
+                      className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none cursor-pointer"
+                    >
+                      <option value="" className="bg-brand-bg text-brand-text">-- Sin proveedor --</option>
+                      {suppliers.map(s => (
+                        <option key={s.id} value={s.id} className="bg-brand-bg text-brand-text">{s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="border-t border-brand-border shrink-0 flex">
               <button
                 onClick={handleSave}
-                disabled={saving || !form.title.trim()}
+                disabled={saving || (slideOverType !== 'pay' && !form.title.trim())}
                 className="flex-1 flex items-center justify-center gap-2 bg-brand-text text-brand-bg py-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
               >
-                {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
-                {saving ? 'GUARDANDO...' : 'GUARDAR COSTO FIJO'}
+                {saving ? <Loader2 size={13} className="animate-spin" /> : (slideOverType === 'pay' ? <CheckCircle2 size={13} /> : <Save size={13} />)}
+                {saving ? 'PROCESANDO...' : (slideOverType === 'pay' ? 'CONFIRMAR PAGO' : 'GUARDAR COSTO FIJO')}
               </button>
             </div>
           </div>

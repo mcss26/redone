@@ -98,6 +98,11 @@
 - **UI:** La Tabla Viva Histórica en el Reporte Anual fue rediseñada para agrupar los resultados por mes (12 filas máximo) en lugar de evento individual, garantizando rendimiento escalable al finalizar el año.
 
 - 2026-06-14 - Refactor UI/UX Auditoría: Eliminado window.confirm, implementado GlobalUI, remediado Container Purge y dependencias huérfanas en módulos CRUD. Añadido isMountedRef en useEffects para seguridad asíncrona.
+
+### 2026-06-14: Payments Report Module & Fixed Costs Payment UX
+- **Module Added**: `PaymentsReportModule.jsx` created to consolidate payments from `opening_costs` and `monthly_fixed_costs`.
+- **Refactor**: Modified `FixedCostsModule.jsx` to trigger a Slide-Over upon paying a cost, allowing users to select `payment_method` and `voucher_type`.
+- **Routing**: Added `r_pagos` to `App.jsx` sub-nav and `ContadorIndex.jsx`.
 - 2026-06-14 - Mantenimiento: Limpieza de archivos temporales y scripts de pruebas en la raíz del proyecto para cumplir con los estándares de higiene del repositorio.
 - 2026-06-14 - Hotfix: Resolución de errores de sintaxis masivos provocados por migración de window.confirm. Añadidos los paréntesis de cierre en condicionales asíncronos en 13 módulos. Vite ahora compila exitosamente.
 - 2026-06-14 - UX Architecture: Refactorización masiva de 19 módulos para erradicar las recargas destructivas de tablas. Se reemplazó setLoading(true) por isFetchingBackground(true) en todas las recargas asíncronas para eliminar los Layout Shifts y generar una percepción de red instantánea.

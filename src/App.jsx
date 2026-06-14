@@ -27,6 +27,7 @@ const NightReportModule = React.lazy(() => import('./layouts/NightReportModule')
 const AuditoriaBarraModule = React.lazy(() => import('./layouts/AuditoriaBarraModule'));
 const MonthlyReportModule = React.lazy(() => import('./layouts/MonthlyReportModule'));
 const AnnualReportModule = React.lazy(() => import('./layouts/AnnualReportModule'));
+const PaymentsReportModule = React.lazy(() => import('./layouts/PaymentsReportModule'));
 const FixedCostsModule = React.lazy(() => import('./layouts/FixedCostsModule'));
 
 function AppShell() {
@@ -100,6 +101,7 @@ function AppShell() {
     auditoria_barra: AuditoriaBarraModule,
     monthly_report: MonthlyReportModule,
     annual_report:  AnnualReportModule,
+    r_pagos:        PaymentsReportModule,
   };
 
   const renderView = () => {
@@ -230,23 +232,19 @@ function AppShell() {
         )}
 
         {/* Center: Reportes Sub-Nav */}
-        {activeView !== 'index' && ['night_report', 'monthly_report', 'annual_report'].includes(activeView) && (
-          <div className="flex-1 flex items-center justify-start md:justify-center gap-4 md:gap-6 overflow-x-auto no-scrollbar animate-fade-in px-4">
-            {[
-              { id: 'night_report', label: 'R. NOCHE' },
-              { id: 'monthly_report', label: 'R. MES' },
-              { id: 'annual_report', label: 'R. ANUAL' },
-            ].map(mod => (
-              <button
-                key={mod.id}
-                onClick={() => handleNavigation(mod.id)}
-                className={`text-[9px] font-bold tracking-[0.2em] uppercase transition-colors cursor-pointer ${
-                  activeView === mod.id ? 'text-brand-text' : 'text-brand-muted hover:text-brand-text'
-                }`}
-              >
-                {mod.label}
-              </button>
-            ))}
+        {activeView !== 'index' && ['night_report', 'monthly_report', 'annual_report', 'r_pagos'].includes(activeView) && (
+          <div className="flex-1 flex items-center justify-start md:justify-center gap-2 overflow-x-auto no-scrollbar animate-fade-in px-4">
+            <div className="flex bg-brand-surface p-1 rounded-xl">
+              {['night_report', 'monthly_report', 'annual_report', 'r_pagos'].map(r => (
+                <button
+                  key={r}
+                  onClick={() => handleNavigation(r)}
+                  className={`px-4 py-2 text-[10px] uppercase font-bold tracking-widest rounded-lg transition-colors ${activeView === r ? 'bg-brand-text text-brand-bg' : 'text-brand-muted hover:text-brand-text'}`}
+                >
+                  {r === 'night_report' ? 'R. JORNADA' : r === 'monthly_report' ? 'R. MENSUAL' : r === 'annual_report' ? 'R. ANUAL' : 'R. PAGOS'}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
