@@ -185,7 +185,7 @@ export default function BarInventoryModule({ onNavigate }) {
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h2 className="text-sm md:text-xs font-extrabold tracking-[0.3em] uppercase text-brand-text">INVENTARIO BARRA</h2>
+            <h2 className="text-sm md:text-xs font-extrabold tracking-[0.3em] uppercase text-brand-text">APERTURA/CIERRE BARRA</h2>
             <p className="text-[10px] text-brand-muted/50 tracking-wide mt-0.5">Control físico de mercadería</p>
           </div>
         </div>

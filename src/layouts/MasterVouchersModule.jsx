@@ -100,7 +100,7 @@ export default function MasterVouchersModule({ onNavigate }) {
         <div className="flex items-end justify-between mb-4">
           <div className="flex flex-col">
             <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">
-              MASTER COMPROBANTES
+              COMPROBANTES
             </h2>
           </div>
 

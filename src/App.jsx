@@ -119,15 +119,14 @@ function AppShell() {
           MIDNIGHT CLUB
         </button>
 
-        {/* Center: Operative Sub-Nav */}
-        {activeView !== 'index' && ['work_days', 'opening_costs', 'stock_requests', 'staff_plan', 'sku'].includes(activeView) && (
+        {/* Center: Operative Sub-Nav (Admin Only) */}
+        {user?.role === 'admin' && activeView !== 'index' && ['work_days', 'opening_costs', 'stock_requests', 'staff_plan'].includes(activeView) && (
           <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-8 animate-fade-in">
             {[
               { id: 'work_days', label: 'WORKDAYS' },
-              { id: 'opening_costs', label: 'COSTOS DE APERTURA' },
+              { id: 'opening_costs', label: 'COST. APERTURA' },
               { id: 'stock_requests', label: 'PEDIDOS' },
               { id: 'staff_plan', label: 'STAFF' },
-              { id: 'sku', label: 'CONFIG' },
             ].map(mod => (
               <button
                 key={mod.id}
@@ -142,14 +141,53 @@ function AppShell() {
           </div>
         )}
 
-        {/* Center: Contador Sub-Nav */}
-        {activeView !== 'index' && ['payments', 'fixed_costs', 'night_report', 'monthly_report', 'annual_report'].includes(activeView) && (
+        {/* Center: Night Chief Sub-Nav (Admin Only) */}
+        {user?.role === 'admin' && activeView !== 'index' && ['workday', 'auditoria_barra', 'bar_inventory'].includes(activeView) && (
+          <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-8 animate-fade-in">
+            {[
+              { id: 'workday', label: 'NIGHT CHIEF' },
+              { id: 'auditoria_barra', label: 'AUDITORIA CONSUMO' },
+              { id: 'bar_inventory', label: 'APERTURA/CIERRE BARRA' },
+            ].map(mod => (
+              <button
+                key={mod.id}
+                onClick={() => handleNavigation(mod.id)}
+                className={`text-[9px] font-bold tracking-[0.2em] uppercase transition-colors cursor-pointer ${
+                  activeView === mod.id ? 'text-brand-text' : 'text-brand-muted hover:text-brand-text'
+                }`}
+              >
+                {mod.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Center: Pagos Sub-Nav (Admin Only) */}
+        {user?.role === 'admin' && activeView !== 'index' && ['payments', 'fixed_costs'].includes(activeView) && (
+          <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-8 animate-fade-in">
+            {[
+              { id: 'payments', label: 'PAGOS SEMANA' },
+              { id: 'fixed_costs', label: 'PAGOS MES' },
+            ].map(mod => (
+              <button
+                key={mod.id}
+                onClick={() => handleNavigation(mod.id)}
+                className={`text-[9px] font-bold tracking-[0.2em] uppercase transition-colors cursor-pointer ${
+                  activeView === mod.id ? 'text-brand-text' : 'text-brand-muted hover:text-brand-text'
+                }`}
+              >
+                {mod.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Center: Reportes Sub-Nav */}
+        {activeView !== 'index' && ['night_report', 'monthly_report', 'annual_report'].includes(activeView) && (
           <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-6 animate-fade-in">
             {[
-              { id: 'payments', label: 'P. VARIABLES' },
-              { id: 'fixed_costs', label: 'GASTOS FIJOS' },
               { id: 'night_report', label: 'R. NOCHE' },
-              { id: 'monthly_report', label: 'R. MENSUAL' },
+              { id: 'monthly_report', label: 'R. MES' },
               { id: 'annual_report', label: 'R. ANUAL' },
             ].map(mod => (
               <button

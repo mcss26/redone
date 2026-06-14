@@ -288,7 +288,7 @@ export default function MonthlyReportModule({ onNavigate }) {
               <ArrowLeft size={16} />
             </button>
             <div>
-              <h2 className="text-xs font-extrabold tracking-[0.3em] uppercase text-brand-muted">AUDITORÍA MENSUAL</h2>
+              <h2 className="text-xs font-extrabold tracking-[0.3em] uppercase text-brand-muted">R. MES</h2>
               <p className="text-[10px] text-brand-muted/40 tracking-wide mt-0.5">Reporte Consolidado Vivo</p>
             </div>
           </div>

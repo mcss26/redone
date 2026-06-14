@@ -50,13 +50,13 @@ export default function ContadorIndex({ onNavigate }) {
   const firstName = user?.full_name ? user.full_name.split(' ')[0].toUpperCase() : 'CONTADOR';
 
   const PRIMARY_MODULES = [
-    { id: 'payments',    label: 'PAGOS VARIABLES' },
-    { id: 'fixed_costs', label: 'GASTOS FIJOS' },
+    { id: 'payments',    label: 'PAGOS SEMANA' },
+    { id: 'fixed_costs', label: 'PAGOS MES' },
   ];
 
   const REPORT_MODULES = [
-    { id: 'night_report',   label: 'REPORTE DE NOCHE' },
-    { id: 'monthly_report', label: 'REPORTE MENSUAL' },
+    { id: 'night_report',   label: 'R. NOCHE' },
+    { id: 'monthly_report', label: 'R. MES' },
     { id: 'annual_report',  label: 'REPORTE ANUAL' },
   ];
 

@@ -56,3 +56,30 @@
 1. **Zero-Intrusion on First Access:** Never lazy load the primary role indexes (`AdminIndex`, `OperativoIndex`, etc.) or the `Login` screen. These must remain statically bound to the main bundle to guarantee 0ms latency upon authentication or initial load.
 2. **Immersive Suspense Fallback:** The `<Suspense>` fallback must not be a generic white screen or a standard spinner. It must use `<ViewLoader />`, an immersive component aligned with the "Midnight Club" aesthetic (dark overlay, pulse/blur effects, functional typography) to mask the loading phase naturally.
 **Rationale:** This surgically reduces the initial JavaScript payload size and runtime memory consumption without compromising the perceived instantaneous speed of the application's main entry points.
+
+## 2026-06-14: Estandarización del Glosario Front-End (UI Labels)
+**Context:** The application had fragmented module display names across different roles (e.g., `work_days` was "JORNADAS" in Admin, but "WORKDAYS" in Operativo). Also, `App.jsx` sub-navigation required shorter labels to avoid layout breakage.
+**Decision:** Establishment of a Bimodal UI Glossary. A "Full Title" is strictly used for global Dashboard routing (`*Index.jsx`) and internal module headers (`<h2>`). A "Short Title" is strictly used for the top sub-navigation bar in `App.jsx`.
+**Technical Pattern Guidelines:**
+1. **Module Registry:** 
+   - `work_days`: WORKDAYS (Short: WORKDAYS)
+   - `opening_costs`: COST. APERTURA (Short: COST. APERTURA)
+   - `staff_plan`: PLAN DE STAFF (Short: STAFF)
+   - `stock_requests`: PEDIDOS DE STOCK (Short: PEDIDOS)
+   - `sku`: CATÁLOGO SKU (Short: CAT. SKU)
+   - `payments`: PAGOS SEMANA (Short: PAGOS SEMANA)
+   - `fixed_costs`: PAGOS MES (Short: PAGOS MES)
+   - `night_report`: R. NOCHE (Short: R. NOCHE)
+   - `monthly_report`: R. MES (Short: R. MES)
+   - `annual_report`: REPORTE ANUAL (Short: R. ANUAL)
+   - `bar_inventory`: APERTURA/CIERRE BARRA (Short: APERT./CIERRE BARRA)
+   - `workday`: NIGHT CHIEF (Short: NIGHT CHIEF)
+   - `auditoria_barra`: AUDITORIA CONSUMO (Short: AUDITORIA CONSUMO)
+   - `profiles`: PERFILES (Short: PERFILES)
+   - `suppliers`: PROVEEDORES (Short: PROVEEDORES)
+   - `staff_roles`: TARIFARIO (Short: TARIFARIO)
+   - `cost_templates`: COSTOS SEMANA (Short: COSTOS SEMANA)
+   - `fixed_cost_templates`: COSTOS MES (Short: COSTOS MES)
+   - `pos_terminals`: PUNTOS DE VENTA (Short: PUNTOS DE VENTA)
+   - `master_vouchers`: COMPROBANTES (Short: COMPROBANTES)
+2. **Implementation Mandate:** Any future module MUST adhere to this exact registry. If a new module is created, its name must be added here and follow the Bimodal (Full/Short) paradigm.

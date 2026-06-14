@@ -338,7 +338,7 @@ export default function AuditoriaBarraModule({ onNavigate }) {
       <div className="shrink-0 p-6 border-b border-brand-border/30 bg-[#0A0A0A] z-10 flex justify-between items-center">
         <div className="flex items-center gap-4">
           <div>
-            <h2 className="text-[10px] md:text-[11px] font-extrabold tracking-[0.4em] uppercase text-brand-text">AUDITORÍA BARRA</h2>
+            <h2 className="text-[10px] md:text-[11px] font-extrabold tracking-[0.4em] uppercase text-brand-text">AUDITORIA CONSUMO</h2>
             <p className="text-[8px] text-brand-muted/50 tracking-[0.3em] mt-1 uppercase">CONCILIACIÓN SISTEMA VS REAL</p>
           </div>
         </div>

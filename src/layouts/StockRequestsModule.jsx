@@ -228,7 +228,7 @@ export default function StockRequestsModule({ onNavigate }) {
         {/* Actions & Title (Above Table) */}
         <div className="flex items-end justify-between mb-4">
           <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">
-            SOLICITUD DE MERCADERÍA
+            PEDIDOS DE STOCK
           </h2>
 
           <div className="flex items-center gap-6">

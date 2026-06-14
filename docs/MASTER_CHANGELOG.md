@@ -51,3 +51,22 @@
 - **Architecture:** Se garantiza la idempotencia (los ajustes antiguos de barra para esa jornada se eliminan automáticamente antes de insertar los nuevos). El Night Report los lee nativamente y los impacta en el P&L final de forma transparente.
 - **UI:** Añadida tabla de alta densidad visual con cálculo de diferencias en unidades y su monetización automática (usando `skus.cost`).
 - **Feature:** Modificado `BarInventoryModule.jsx` para permitir el ingreso de valores decimales (comas y puntos) en el conteo de stock físico.
+
+## 2026-06-14
+### Refactor: Estricta Unificación de Glosario Front-End
+- **UI:** Refactorización masiva de la nomenclatura visible de la aplicación (20 módulos) para adherirse al Glosario Front-End Bimodal documentado en `MASTER_DECISIONS.md`.
+- **System:** Actualizados todos los ruteadores globales (`AdminIndex`, `OperativoIndex`, `ContadorIndex`, `EncargadoIndex`) para usar los Títulos Completos, unificando la experiencia visual entre roles.
+- **UI:** Actualizados los menúes superiores de `<AppShell />` (`App.jsx`) para usar los Títulos Cortos, previniendo el colapso visual en pantallas pequeñas.
+- **UI:** Reemplazados todos los encabezados internos (`<h2>`) dentro de la carpeta `src/layouts/*Module.jsx` para alinear con exactitud milimétrica al título oficial aprobado por cada módulo.
+
+### UI/UX: Admin-Exclusive Sub-Navigation (Workdays Phase)
+- **UI:** Modificada la barra superior de navegación (`App.jsx`) para los módulos de la fase operativa (`work_days`, `opening_costs`, `stock_requests`, `staff_plan`). Ahora esta sub-navegación es visible exclusivamente para el rol de Administrador (`user.role === 'admin'`).
+- **UI:** Se eliminó el módulo `CAT. SKU` de esta barra superior, dejando únicamente los 4 módulos operativos que comprenden el ciclo de la jornada. Se mantuvo el resaltado visual del módulo activo para mantener el contexto espacial ("Wayfinding").
+
+### UI/UX: Admin-Exclusive Sub-Navigation (Pagos Phase)
+- **UI:** Se dividió la barra superior compartida de `Contador Sub-Nav` en dos. Se creó una nueva barra exclusiva para Administradores (`user.role === 'admin'`) que vincula interactivamente los módulos de la fase PAGOS (`payments` [PAGOS SEMANA] y `fixed_costs` [PAGOS MES]).
+- **UI:** Los módulos de reportes (`night_report`, `monthly_report`, `annual_report`) se aislaron en su propia barra superior para no mezclarse con la operativa de pagos.
+
+### UI/UX: Reestructuración de Fase Night Chief
+- **System:** Se trasladó el módulo de Auditoría (`auditoria_barra`) desde la fase `REPORTES` a la fase operativa `NIGHT CHIEF` en el enrutador global (`AdminIndex.jsx`), ordenando el flujo: `NIGHT CHIEF` -> `AUDITORIA CONSUMO` -> `APERTURA/CIERRE BARRA`.
+- **UI:** Se creó una nueva sub-navegación superior (`App.jsx`) exclusiva para Administradores, conectando dinámicamente estas tres vistas críticas para facilitar el cuadre en vivo de la operación nocturna.

@@ -52,10 +52,10 @@ export default function OperativoIndex({ onNavigate }) {
 
   const MODULES = [
     { id: 'work_days',      label: 'WORKDAYS' },
-    { id: 'opening_costs',  label: 'COSTOS DE APERTURA' },
-    { id: 'stock_requests', label: 'PEDIDOS' },
-    { id: 'staff_plan',     label: 'STAFF' },
-    { id: 'sku',            label: 'CONFIG' },
+    { id: 'opening_costs',  label: 'COST. APERTURA' },
+    { id: 'stock_requests', label: 'PEDIDOS DE STOCK' },
+    { id: 'staff_plan',     label: 'PLAN DE STAFF' },
+    { id: 'sku',            label: 'CATÁLOGO SKU' },
   ];
 
   return (

@@ -47,7 +47,8 @@ export default function EncargadoIndex({ onNavigate }) {
   const firstName = user?.full_name ? user.full_name.split(' ')[0].toUpperCase() : 'ENCARGADO';
 
   const MODULES = [
-    { id: 'bar_inventory', label: 'INVENTARIO BARRA' },
+    { id: 'bar_inventory', label: 'APERTURA/CIERRE BARRA' },
+    { id: 'workday',       label: 'NIGHT CHIEF' },
   ];
 
   return (

@@ -8,46 +8,46 @@ const MODULE_MAP = [
   {
     phase: 'WORKDAYS',
     modules: [
-      { id: 'work_days',       label: 'JORNADAS' },
-      { id: 'opening_costs',   label: 'COSTOS APERTURA' },
-      { id: 'staff_plan',      label: 'PLAN STAFF' },
-      { id: 'stock_requests',  label: 'SOLICITUD STOCK' },
+      { id: 'work_days',       label: 'WORKDAYS' },
+      { id: 'opening_costs',   label: 'COST. APERTURA' },
+      { id: 'staff_plan',      label: 'PLAN DE STAFF' },
+      { id: 'stock_requests',  label: 'PEDIDOS DE STOCK' },
     ]
   },
   {
     phase: 'PAGOS',
     modules: [
-      { id: 'payments',       label: 'PAGOS VARIABLES' },
-      { id: 'fixed_costs',    label: 'GASTOS FIJOS' },
+      { id: 'payments',       label: 'PAGOS SEMANA' },
+      { id: 'fixed_costs',    label: 'PAGOS MES' },
     ]
   },
   {
     phase: 'NIGHT CHIEF',
     modules: [
-      { id: 'bar_inventory',  label: 'INVENTARIO BARRA' },
-      { id: 'workday',        label: 'OPERACIÓN NOCTURNA' },
+      { id: 'workday',        label: 'NIGHT CHIEF' },
+      { id: 'auditoria_barra',label: 'AUDITORIA CONSUMO' },
+      { id: 'bar_inventory',  label: 'APERTURA/CIERRE BARRA' },
     ]
   },
   {
     phase: 'REPORTES',
     modules: [
-      { id: 'night_report',   label: 'AUDITORÍA JORNADA' },
-      { id: 'auditoria_barra',label: 'AUDITORÍA BARRA' },
-      { id: 'monthly_report', label: 'REPORTE MENSUAL' },
-      { id: 'annual_report',  label: 'AUDITORÍA ANUAL' },
+      { id: 'night_report',   label: 'R. NOCHE' },
+      { id: 'monthly_report', label: 'R. MES' },
+      { id: 'annual_report',  label: 'REPORTE ANUAL' },
     ]
   },
   {
     phase: 'MASTERS',
     modules: [
-      { id: 'profiles',       label: 'EQUIPO' },
+      { id: 'profiles',       label: 'PERFILES' },
       { id: 'suppliers',      label: 'PROVEEDORES' },
       { id: 'sku',            label: 'CATÁLOGO SKU' },
-      { id: 'staff_roles',    label: 'TARIFARIO STAFF' },
-      { id: 'cost_templates', label: 'MASTER COSTOS (VAR)' },
-      { id: 'fixed_cost_templates', label: 'MASTER ESTRUCTURA' },
-      { id: 'pos_terminals',  label: 'TERMINALES POS' },
-      { id: 'master_vouchers',label: 'TIPOS COMPROBANTE' },
+      { id: 'staff_roles',    label: 'TARIFARIO' },
+      { id: 'cost_templates', label: 'COSTOS SEMANA' },
+      { id: 'fixed_cost_templates', label: 'COSTOS MES' },
+      { id: 'pos_terminals',  label: 'PUNTOS DE VENTA' },
+      { id: 'master_vouchers',label: 'COMPROBANTES' },
     ]
   },
 ];

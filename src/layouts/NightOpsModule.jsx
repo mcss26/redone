@@ -434,7 +434,7 @@ export default function NightOpsModule({ onNavigate }) {
             <ArrowLeft size={16} />
           </button>
           <div>
-            <h2 className="text-xs font-extrabold tracking-[0.3em] uppercase text-brand-muted">NIGHT OPS</h2>
+            <h2 className="text-xs font-extrabold tracking-[0.3em] uppercase text-brand-muted">NIGHT CHIEF</h2>
           </div>
         </div>
         
