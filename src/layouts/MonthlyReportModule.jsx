@@ -24,7 +24,9 @@ export default function MonthlyReportModule({ onNavigate }) {
     netProfit: 0,
     margin: 0,
     expenseDistribution: { staff: 0, supply: 0, recurrent: 0, adHoc: 0, fixed: 0 },
-    breakdowns: []
+    breakdowns: [],
+    terminalPerformance: [],
+    mermasDetail: []
   });
 
   const fetchAvailableMonths = useCallback(async () => {
@@ -102,12 +104,13 @@ export default function MonthlyReportModule({ onNavigate }) {
       const wdIds = wds.map(w => w.id);
       const wdDates = wds.map(w => w.work_date);
 
-      const [closingRes, passlineRes, costsRes, staffRes, adjRes] = await Promise.all([
-        fetchAll(supabase.from('night_cash_closing').select('work_day_id, system_cash, system_digital, diff_cash, diff_digital').in('work_day_id', wdIds)),
+      const [closingRes, passlineRes, costsRes, staffRes, adjRes, posRes] = await Promise.all([
+        fetchAll(supabase.from('night_cash_closing').select('work_day_id, terminal_id, system_cash, system_digital, diff_cash, diff_digital').in('work_day_id', wdIds)),
         fetchAll(supabase.from('stg_passline_tickets').select('operational_date, total_raw, tipo_ticket').in('operational_date', wdDates)),
         fetchAll(supabase.from('opening_costs').select('work_day_id, amount, status, template_id, title').in('status', ['paid', 'approved']).in('work_day_id', wdIds)),
         fetchAll(supabase.from('staff_plan').select('work_day_id, quantity_approved, staff_roles(base_rate)').in('work_day_id', wdIds)),
-        fetchAll(supabase.from('financial_adjustments').select('work_day_id, amount, type, category').in('work_day_id', wdIds))
+        fetchAll(supabase.from('financial_adjustments').select('work_day_id, amount, type, category, description').in('work_day_id', wdIds)),
+        supabase.from('pos_terminals').select('id, name')
       ]);
 
       if (closingRes.error) throw closingRes.error;
@@ -115,6 +118,7 @@ export default function MonthlyReportModule({ onNavigate }) {
       if (costsRes.error) throw costsRes.error;
       if (staffRes.error) throw staffRes.error;
       if (adjRes.error) throw adjRes.error;
+      if (posRes.error) throw posRes.error;
 
       let grandInflows = { total: 0, cash: 0, digital: 0, surplus: 0 };
       let grandOutflows = { total: 0, weeklyCosts: 0, monthlyCosts: totalFixedCosts, taxes: 0, stockDiscrepancies: 0, tillDiscrepancies: 0 };
@@ -224,6 +228,34 @@ export default function MonthlyReportModule({ onNavigate }) {
       grandNet -= totalFixedCosts;
       const margin = grandInflows.total > 0 ? (grandNet / grandInflows.total) * 100 : 0;
 
+      const posMap = {};
+      (posRes.data || []).forEach(p => posMap[p.id] = p.name);
+
+      const terminalSums = {};
+      (closingRes.data || []).forEach(c => {
+        if (!c.terminal_id) return;
+        if (!terminalSums[c.terminal_id]) terminalSums[c.terminal_id] = 0;
+        terminalSums[c.terminal_id] += (Number(c.diff_cash) || 0) + (Number(c.diff_digital) || 0);
+      });
+      const terminalPerformance = Object.entries(terminalSums)
+        .map(([id, val]) => ({ name: posMap[id] || `Caja ${id}`, net: val }))
+        .filter(t => Math.abs(t.net) > 0.01)
+        .sort((a, b) => a.net - b.net);
+
+      const mermasSums = {};
+      (adjRes.data || []).filter(a => a.category === 'auditoria_barra').forEach(a => {
+        const desc = a.description || '';
+        const match = desc.match(/Ajuste Barra:\s*(.*)\s*\(([-+0-9.]+)\s*unidades\)/);
+        const name = match ? match[1].trim() : (desc.replace('Ajuste Barra: ', '').trim() || 'Ítem Desconocido');
+        const val = a.type === 'income' ? Number(a.amount) : -Number(a.amount);
+        if (!mermasSums[name]) mermasSums[name] = 0;
+        mermasSums[name] += val;
+      });
+      const mermasDetail = Object.entries(mermasSums)
+        .map(([name, val]) => ({ name, net: val }))
+        .filter(m => Math.abs(m.net) > 0.01)
+        .sort((a, b) => a.net - b.net);
+
       setMonthData({
         workDaysCount: wds.length,
         openDaysCount: openCount,
@@ -232,7 +264,9 @@ export default function MonthlyReportModule({ onNavigate }) {
         netProfit: grandNet,
         margin: margin,
         expenseDistribution: { staff: distStaff, supply: distSupply, recurrent: distRecurrent, adHoc: distAdHoc, fixed: totalFixedCosts },
-        breakdowns
+        breakdowns,
+        terminalPerformance,
+        mermasDetail
       });
     } catch (error) {
       console.error('Error fetching month details:', error);
@@ -486,6 +520,91 @@ export default function MonthlyReportModule({ onNavigate }) {
                   </tbody>
                 </table>
               </div>
+            </div>
+
+            {/* ZONA D: ANÁLISIS OPERATIVO */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+              
+              {/* RENDIMIENTO CAJAS */}
+              <div className="bg-[#0A0A0A] border border-brand-border/50 rounded-2xl overflow-hidden shadow-2xl flex flex-col">
+                <div className="p-4 md:p-6 border-b border-brand-border/50 bg-brand-surface/20">
+                  <h3 className="text-base font-black text-brand-text uppercase tracking-widest flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-brand-accent"></span>
+                    RENDIMIENTO CAJAS
+                  </h3>
+                  <div className="text-[9px] text-brand-muted/70 tracking-widest mt-2 uppercase">
+                    Desvíos Netos Acumulados
+                  </div>
+                </div>
+                <div className="flex-1 overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-brand-border">
+                        <th className="px-6 py-4 text-[10px] font-bold tracking-widest uppercase text-brand-muted">Terminal</th>
+                        <th className="px-6 py-4 text-[10px] font-bold tracking-widest uppercase text-brand-muted text-right">Desvío Neto</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-brand-border">
+                      {monthData.terminalPerformance.map((t) => (
+                        <tr key={t.name} className="hover:bg-brand-bg transition-colors">
+                          <td className="px-6 py-4 text-xs font-bold text-brand-text uppercase tracking-wider">{t.name}</td>
+                          <td className={`px-6 py-4 text-xs font-mono font-bold text-right ${t.net < 0 ? 'text-brand-error' : 'text-brand-success'}`}>
+                            {t.net > 0 ? '+' : ''}{formatCurrency(t.net)}
+                          </td>
+                        </tr>
+                      ))}
+                      {monthData.terminalPerformance.length === 0 && (
+                        <tr>
+                          <td colSpan="2" className="px-6 py-8 text-center text-brand-muted text-xs uppercase tracking-widest">
+                            SIN DESVÍOS OPERATIVOS RELEVANTES
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* DETALLE MERMAS */}
+              <div className="bg-[#0A0A0A] border border-brand-border/50 rounded-2xl overflow-hidden shadow-2xl flex flex-col">
+                <div className="p-4 md:p-6 border-b border-brand-border/50 bg-brand-surface/20">
+                  <h3 className="text-base font-black text-brand-text uppercase tracking-widest flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-brand-warning"></span>
+                    DETALLE MERMAS
+                  </h3>
+                  <div className="text-[9px] text-brand-muted/70 tracking-widest mt-2 uppercase">
+                    Auditorías de Consumo Acumuladas
+                  </div>
+                </div>
+                <div className="flex-1 overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-brand-border">
+                        <th className="px-6 py-4 text-[10px] font-bold tracking-widest uppercase text-brand-muted">Artículo</th>
+                        <th className="px-6 py-4 text-[10px] font-bold tracking-widest uppercase text-brand-muted text-right">Monto Monetizado</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-brand-border">
+                      {monthData.mermasDetail.map((m) => (
+                        <tr key={m.name} className="hover:bg-brand-bg transition-colors">
+                          <td className="px-6 py-4 text-xs font-bold text-brand-text uppercase tracking-wider">{m.name}</td>
+                          <td className={`px-6 py-4 text-xs font-mono font-bold text-right ${m.net < 0 ? 'text-brand-error' : 'text-brand-success'}`}>
+                            {m.net > 0 ? '+' : ''}{formatCurrency(m.net)}
+                          </td>
+                        </tr>
+                      ))}
+                      {monthData.mermasDetail.length === 0 && (
+                        <tr>
+                          <td colSpan="2" className="px-6 py-8 text-center text-brand-muted text-xs uppercase tracking-widest">
+                            SIN DESVÍOS DE STOCK RELEVANTES
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
             </div>
             
           </div>

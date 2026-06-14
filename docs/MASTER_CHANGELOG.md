@@ -87,7 +87,8 @@
 ### Feature: Refactor KPIs Reporte Mensual (R. MES)
 - **UI/UX:** Se reestructuró la ZONA A del módulo `MonthlyReportModule.jsx` reemplazando los KPIs antiguos por el nuevo estándar contable: `INGRESO BRUTO`, `EGRESOS TOTALES` y `MARGEN NETO`.
 - **System:** Implementado desglose de ingresos separando Efectivo (POS), Digital (POS + Passline) y Otros/Ajustes (Sobrantes de caja/barra + Ajustes manuales).
-- **System:** Implementado desglose de egresos separando Costos de Semana, Costos Fijos Mensuales, Impuestos Proyectados, Mermas de Barra y Diferencias de Arqueo. Las diferencias netas de auditoría y arqueo ahora alimentan correctamente las matemáticas del mes total de la misma manera que en el Reporte de Noche.
+- **System:** Implementado desglose de egresos separando Costos de Semana, Costos Fijos Mensuales, Impuestos (38% cupones), Mermas de Stock (Auditorías) y Diferencias de Arqueo.
+- **Reports:** Agregada "ZONA D: ANÁLISIS OPERATIVO" en R. MES y R. ANUAL. Incluye tablas analíticas de Rendimiento de Cajas (ordenadas por mayor faltante) y Detalle de Mermas (ordenadas por mayor faltante). Las diferencias netas de auditoría y arqueo ahora alimentan correctamente las matemáticas del mes total de la misma manera que en el Reporte de Noche.
 
 ### Feature: Refactor Estructural Reporte Anual (R. ANUAL)
 - **UI/UX:** Se reestructuró `AnnualReportModule.jsx` para adoptar el estándar visual Bimodal de 3 Columnas (`TOTAL EGRESOS`, `TOTAL INGRESOS`, `MARGEN NETO`) eliminando gráficos y métricas redundantes de Distribución.
