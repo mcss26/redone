@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useRef,  useState, useEffect, useCallback  } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { Plus, X, Save, ArrowLeft, Pencil, Package, CheckCircle2, Trash2, Loader2 } from 'lucide-react';
+import { Plus, X, Save, Pencil, Package, CheckCircle2, Trash2, Loader2 } from 'lucide-react';
 import dayjs from 'dayjs';
 
 export default function StockRequestsModule({ onNavigate }) {
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
   const { user } = useAuth();
   const [workDays, setWorkDays] = useState([]);
   const [selectedWorkDayId, setSelectedWorkDayId] = useState('');
@@ -150,7 +153,7 @@ export default function StockRequestsModule({ onNavigate }) {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('¿Eliminar esta solicitud de stock?')) return;
+    if (!(await window.UI.confirm())) return;
     try {
       const { error } = await supabase.from('stock_requests').delete().eq('id', id);
       if (error) throw error;
@@ -164,7 +167,7 @@ export default function StockRequestsModule({ onNavigate }) {
   };
 
   const approveAll = async () => {
-    if (!window.confirm('¿Aprobar todas las solicitudes en borrador? Se generarán los pagos agrupados por proveedor.')) return;
+    if (!(await window.UI.confirm())) return;
     
     try {
       const draftRequests = stockRequests.filter(r => r.status === 'draft');

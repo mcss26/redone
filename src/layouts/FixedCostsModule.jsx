@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useRef,  useState, useEffect, useCallback  } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { Plus, X, Save, Pencil, Calendar, CheckCircle2, Trash2, Loader2 } from 'lucide-react';
 import dayjs from 'dayjs';
 
 export default function FixedCostsModule() {
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
   const { canMutate } = useAuth();
   const hasMutateAccess = canMutate('fixed_costs');
 
@@ -175,7 +178,7 @@ export default function FixedCostsModule() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('¿Eliminar este costo fijo mensual?')) return;
+    if (!(await window.UI.confirm())) return;
     try {
       const { error } = await supabase.from('monthly_fixed_costs').delete().eq('id', id);
       if (error) throw error;
@@ -297,18 +300,20 @@ export default function FixedCostsModule() {
                     </div>
                   </td>
                   {hasMutateAccess && (
-                    <td className="px-5 py-3.5 text-right flex justify-end gap-3 items-center">
-                      {c.status === 'pending' && (
-                        <button onClick={() => handleMarkPaid(c.id)} className="text-brand-success/70 hover:text-brand-success transition-colors cursor-pointer" title="Marcar como Pagado">
-                          <CheckCircle2 size={14} />
+                    <td className="px-5 py-2 text-right">
+                      <div className="flex items-center justify-end">
+                        {c.status === 'pending' && (
+                          <button onClick={() => handleMarkPaid(c.id)} className="text-brand-success/70 hover:text-brand-success transition-colors cursor-pointer p-3 min-w-[44px] min-h-[44px] flex items-center justify-center" title="Marcar como Pagado">
+                            <CheckCircle2 size={14} />
+                          </button>
+                        )}
+                        <button onClick={() => openEdit(c)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer p-3 min-w-[44px] min-h-[44px] flex items-center justify-center" title="Editar Costo">
+                          <Pencil size={14} />
                         </button>
-                      )}
-                      <button onClick={() => openEdit(c)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer" title="Editar Costo">
-                        <Pencil size={14} />
-                      </button>
-                      <button onClick={() => handleDelete(c.id)} className="text-brand-error/50 hover:text-brand-error transition-colors cursor-pointer" title="Eliminar Costo">
-                        <Trash2 size={14} />
-                      </button>
+                        <button onClick={() => handleDelete(c.id)} className="text-brand-error/50 hover:text-brand-error transition-colors cursor-pointer p-3 min-w-[44px] min-h-[44px] flex items-center justify-center" title="Eliminar Costo">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </td>
                   )}
                 </tr>
@@ -362,7 +367,7 @@ export default function FixedCostsModule() {
                   type="text"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
+                  className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
                   placeholder="Ej: Alquiler, Edenor..."
                   autoFocus
                 />
@@ -371,14 +376,14 @@ export default function FixedCostsModule() {
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">MONTO FIJO</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-muted font-mono">$</span>
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 text-brand-muted font-mono">$</span>
                   <input autoComplete="off"
                     type="number"
                     min="0"
                     step="100"
                     value={form.amount}
                     onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                    className="w-full bg-brand-surface border border-brand-border rounded-xl pl-8 pr-4 py-3 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
+                    className="w-full bg-transparent border-b border-brand-border/50 pl-4 pr-0 py-2 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
                   />
                 </div>
               </div>
@@ -388,7 +393,7 @@ export default function FixedCostsModule() {
                 <select
                   value={form.supplier_id}
                   onChange={(e) => setForm({ ...form, supplier_id: e.target.value })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none cursor-pointer"
+                  className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none cursor-pointer"
                 >
                   <option value="" className="bg-brand-bg text-brand-text">-- Sin proveedor --</option>
                   {suppliers.map(s => (
@@ -398,11 +403,11 @@ export default function FixedCostsModule() {
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-brand-border shrink-0 flex gap-3">
+            <div className="border-t border-brand-border shrink-0 flex">
               <button
                 onClick={handleSave}
                 disabled={saving || !form.title.trim()}
-                className="flex-1 flex items-center justify-center gap-2 bg-brand-text text-brand-bg rounded-xl py-3 text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 bg-brand-text text-brand-bg py-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
               >
                 {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
                 {saving ? 'GUARDANDO...' : 'GUARDAR COSTO FIJO'}

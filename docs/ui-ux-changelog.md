@@ -1,6 +1,11 @@
 # Midnight Club - UI/UX Changelog
 
 ## 2026-06-14
+### Mass Remediation: Standardizing Inputs and Touch Targets
+- **Modules:** `WorkDaysModule.jsx`, `NightReportModule.jsx`, `ProfilesModule.jsx`, `SkuModule.jsx`, `OpeningCostsModule.jsx`, `FixedCostsModule.jsx`, `PaymentsModule.jsx`
+- **Action:** Standardized all inputs across slide-over panels to use the `border-b` brutalist style (`bg-transparent border-b border-brand-border/50`). Removed any remaining native `alert()` or `console.error` calls and replaced them with the unified `window.UI.toast`. Increased touch target size for primary action buttons inside tables to a minimum of 44x44px.
+- **Reason:** To adhere to the "Functional Brutalism" constraints, maximizing accessibility (larger touch areas) and maintaining uniform feedback mechanisms without blocking UI threads.
+
 ### Payments & Fixed Costs UI Alignment
 - **Modules:** `PaymentsModule.jsx`, `FixedCostsModule.jsx`
 - **Action:** Replaced the pure brutalist (transparent border-b) form inputs in the slide-overs with the curved surface inputs (`bg-brand-surface rounded-xl border border-brand-border`) to perfectly align with the `OpeningCostsModule` and `StaffPlanModule` standards. Added KPI grids at the bottom of the tables with `text-2xl` values. Standardized the Neon Status Dots so that 'paid' is universally blue (`bg-blue-500` with matching shadow glow) and 'pending'/'approved' is yellow. Added hover highlight to table rows and fixed table cell paddings. Added `rounded-xl` to Slide-Over footer buttons.
@@ -45,3 +50,16 @@
 - **Module:** `src/layouts/AuditoriaBarraModule.jsx`
 - **Action:** Aplicación estricta de las reglas de Functional Brutalism. Se eliminó el botón explícito `< VOLVER` (`<ArrowLeft>`). Se eliminaron los contenedores de tarjetas (`bg-brand-surface`, `rounded-2xl`) alrededor de la tabla y del resumen superior, haciendo que los datos fluyan directamente sobre el fondo (`Container Purge`). Se ajustaron las tipografías de los selectores, inputs y botones para ser transparentes con solo bordes inferiores, y se hizo uso intensivo de `tracking-widest` y `uppercase` con tamaños comprimidos (`text-[8px]`, `text-[10px]`).
 - **Reason:** Alineación total con el manual de estilo `.agents/rules/frontend-rules.md`, maximizando la densidad de datos y eliminando el ruido visual en módulos de reporte.
+
+### Correcciones de Auditoría UI/UX (Accesibilidad, Animaciones y Encoding)
+- **Modules:** `index.css`, `index.html`, `ProfilesModule.jsx`, `SkuModule.jsx`, `AdminIndex.jsx`, `ContadorIndex.jsx`, `GlobalMessagesBoard.jsx`, `Login.jsx`
+- **Action:** 
+  1. Se agregó `--color-brand-danger` y `.animate-slide-in` en `index.css`.
+  2. Se agregó la utilidad `.no-scrollbar` para ocultar nativamente la barra de scroll en navegaciones horizontales.
+  3. Se removieron todas las tildes y caracteres especiales de los títulos principales (ej. `CATÁLOGO` -> `CATALOGO`, `BITÁCORA` -> `BITACORA`, `▼` -> ícono `<ChevronDown />`) para resolver permanentemente bugs de encoding en el build y consolidar el diseño *Raw Brutalism*.
+  4. Se corrigió la accesibilidad modificando el `lang="es"` y permitiendo zoom de usuario en `index.html`.
+  5. Se agregaron pares `htmlFor`/`id` a los formularios de Perfiles y SKU para lectores de pantalla.
+- **Reason:** Atender las advertencias críticas, altas y medias de la última auditoría, y refinar la interacción (slide-in) y accesibilidad sin sacrificar la homogeneidad visual de la app.
+
+- 2026-06-14 - Refactor UI/UX Auditoría: Eliminado window.confirm, implementado GlobalUI, remediado Container Purge y dependencias huérfanas en módulos CRUD. Añadido isMountedRef en useEffects para seguridad asíncrona.
+- 2026-06-14 - Hotfix: Resolución de errores de sintaxis masivos provocados por migración de window.confirm. Añadidos los paréntesis de cierre en condicionales asíncronos en 13 módulos. Vite ahora compila exitosamente.

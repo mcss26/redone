@@ -36,6 +36,26 @@ function AppShell() {
   });
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const avatarRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (avatarRef.current && !avatarRef.current.contains(event.target)) {
+        setIsAvatarOpen(false);
+      }
+    };
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') setIsAvatarOpen(false);
+    };
+    if (isAvatarOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isAvatarOpen]);
 
   React.useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -148,7 +168,7 @@ function AppShell() {
 
         {/* Center: Operative Sub-Nav (Admin Only) */}
         {user?.role === 'admin' && activeView !== 'index' && ['work_days', 'opening_costs', 'stock_requests', 'staff_plan'].includes(activeView) && (
-          <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-8 animate-fade-in">
+          <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-start md:justify-center gap-4 md:gap-8 w-[50vw] md:w-auto overflow-x-auto no-scrollbar animate-fade-in">
             {[
               { id: 'work_days', label: 'WORKDAYS' },
               { id: 'opening_costs', label: 'COST. APERTURA' },
@@ -170,7 +190,7 @@ function AppShell() {
 
         {/* Center: Night Chief Sub-Nav (Admin Only) */}
         {user?.role === 'admin' && activeView !== 'index' && ['workday', 'auditoria_barra', 'bar_inventory'].includes(activeView) && (
-          <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-8 animate-fade-in">
+          <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-start md:justify-center gap-4 md:gap-8 w-[50vw] md:w-auto overflow-x-auto no-scrollbar animate-fade-in">
             {[
               { id: 'workday', label: 'NIGHT CHIEF' },
               { id: 'auditoria_barra', label: 'AUDITORIA CONSUMO' },
@@ -191,7 +211,7 @@ function AppShell() {
 
         {/* Center: Pagos Sub-Nav (Admin Only) */}
         {user?.role === 'admin' && activeView !== 'index' && ['payments', 'fixed_costs'].includes(activeView) && (
-          <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-8 animate-fade-in">
+          <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-start md:justify-center gap-4 md:gap-8 w-[50vw] md:w-auto overflow-x-auto no-scrollbar animate-fade-in">
             {[
               { id: 'payments', label: 'PAGOS SEMANA' },
               { id: 'fixed_costs', label: 'PAGOS MES' },
@@ -211,7 +231,7 @@ function AppShell() {
 
         {/* Center: Reportes Sub-Nav */}
         {activeView !== 'index' && ['night_report', 'monthly_report', 'annual_report'].includes(activeView) && (
-          <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-6 animate-fade-in">
+          <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-start md:justify-center gap-4 md:gap-6 w-[50vw] md:w-auto overflow-x-auto no-scrollbar animate-fade-in">
             {[
               { id: 'night_report', label: 'R. NOCHE' },
               { id: 'monthly_report', label: 'R. MES' },
@@ -231,13 +251,13 @@ function AppShell() {
         )}
 
         {/* Right: User */}
-        <div className="relative">
+        <div className="relative" ref={avatarRef}>
           <button 
             onClick={() => setIsAvatarOpen(!isAvatarOpen)}
-            className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-brand-surface transition-colors cursor-pointer"
+            className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-brand-surface transition-colors cursor-pointer group"
           >
             <div className="w-7 h-7 rounded-full bg-brand-surface border border-brand-border flex items-center justify-center group-hover:bg-brand-muted/10">
-              <User size={12} className="text-brand-muted" />
+              <User size={12} className="text-brand-muted group-hover:text-brand-text transition-colors" />
             </div>
           </button>
 

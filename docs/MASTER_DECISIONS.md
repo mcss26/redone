@@ -1,5 +1,13 @@
 # Midnight Club - Master Decisions Log
 
+## 2026-06-14: Database-Driven Inventory Min-Stock Calculation
+**Context:** Need to keep the SKU minimum stock threshold automatically tied to real consumption, removing manual estimation.
+**Decision:** `stock_min` calculation was migrated from manual UI input to a Supabase PostgreSQL Trigger logic (`trg_update_stock_min`).
+**Technical Pattern Guidelines:**
+1. **Dynamic Rolling Average:** The logic strictly averages `stock_open - stock_close` over the last 10 active dates (`LIMIT 10`).
+2. **Database Hardening:** Offloading this to the database ensures that any historic or retroactive modification of `bar_inventory` instantly self-corrects the minimum stock threshold without needing to hit a frontend API.
+3. **Read-Only Context:** The UI input for `stock_min` was modified to `readOnly` with a functional visual badge, removing ambiguity for operators and enforcing the single source of truth from the DB.
+
 ## 2026-06-06: Establishment of the "Index Screen" Golden Standard
 **Context:** Initiation of a clean documentation and module review phase.
 **Decision:** `src/layouts/OperativoIndex.jsx` is officially designated as the architectural and structural standard for all Role-Based Index screens.

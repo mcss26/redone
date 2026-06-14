@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
-import { ArrowLeft, Loader2, Upload, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Loader2, Upload, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import dayjs from 'dayjs';
 
 const parseCsvLine = (line, separator) => {
@@ -17,6 +17,9 @@ const parseCsvLine = (line, separator) => {
 };
 
 export default function AuditoriaBarraModule({ onNavigate }) {
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
   const [loading, setLoading] = useState(true);
   const [isFetchingBackground, setIsFetchingBackground] = useState(false);
   const [workDays, setWorkDays] = useState([]);
@@ -247,7 +250,7 @@ export default function AuditoriaBarraModule({ onNavigate }) {
 
   const handleSaveAuditoria = async () => {
     if (!selectedWorkDayId) return;
-    if (!window.confirm('¿Deseas consolidar esta auditoría en la caja de la jornada seleccionada? Esto sobrescribirá cualquier auditoría de barra previa para esta jornada.')) return;
+    if (!(await window.UI.confirm())) return;
 
     setSaving(true);
     try {

@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useRef,  useState, useEffect, useCallback  } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { Plus, X, Save, DollarSign, Wallet, FileText, CheckCircle2, Loader2 } from 'lucide-react';
 import dayjs from 'dayjs';
 
 export default function PaymentsModule() {
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
   const { canMutate } = useAuth();
   const hasMutateAccess = canMutate('payments');
 
@@ -245,19 +248,21 @@ export default function PaymentsModule() {
                     </div>
                   </td>
                   {hasMutateAccess && (
-                    <td className="px-5 py-3.5 text-right">
-                      {c.status === 'approved' ? (
-                        <button 
-                          onClick={() => openPayment(c)} 
-                          className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer text-[10px] font-bold tracking-[0.2em] uppercase"
-                        >
-                          PAGAR
-                        </button>
-                      ) : (
-                        <span className="text-brand-success flex justify-end">
-                          <CheckCircle2 size={16} />
-                        </span>
-                      )}
+                    <td className="px-5 py-2 text-right">
+                      <div className="flex justify-end">
+                        {c.status === 'approved' ? (
+                          <button 
+                            onClick={() => openPayment(c)} 
+                            className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer text-[10px] font-bold tracking-[0.2em] uppercase p-3 min-w-[60px] flex items-center justify-center"
+                          >
+                            PAGAR
+                          </button>
+                        ) : (
+                          <span className="text-brand-success flex justify-end items-center p-3 min-w-[60px]">
+                            <CheckCircle2 size={16} />
+                          </span>
+                        )}
+                      </div>
                     </td>
                   )}
                 </tr>
@@ -310,14 +315,14 @@ export default function PaymentsModule() {
                 
                 <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">Monto Final a Pagar *</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-warning font-mono">$</span>
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 text-brand-warning font-mono">$</span>
                   <input autoComplete="off"
                     type="number"
                     min="0"
                     step="0.01"
                     value={form.amount}
                     onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                    className="w-full bg-brand-surface border border-brand-warning/30 rounded-xl pl-8 pr-4 py-3 text-lg font-mono text-brand-warning focus:outline-none focus:border-brand-warning transition-colors"
+                    className="w-full bg-transparent border-b border-brand-warning/30 pl-4 pr-0 py-2 text-lg font-mono text-brand-warning focus:outline-none focus:border-brand-warning transition-colors"
                   />
                 </div>
                 <p className="text-[8px] text-brand-muted mt-2 uppercase tracking-widest">Podés ajustar el monto si difiere del original.</p>
@@ -387,7 +392,7 @@ export default function PaymentsModule() {
                 <select
                   value={form.voucher_type}
                   onChange={(e) => setForm({ ...form, voucher_type: e.target.value })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none cursor-pointer"
+                  className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none cursor-pointer"
                 >
                   {vouchers.length === 0 && <option value="" className="bg-brand-bg text-brand-text">Sin comprobantes configurados</option>}
                   {vouchers.map(v => (
@@ -402,18 +407,18 @@ export default function PaymentsModule() {
                   type="text"
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
+                  className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
                   placeholder="Ref. de transferencia, etc."
                 />
               </div>
 
             </div>
 
-            <div className="px-6 py-4 border-t border-brand-border shrink-0 flex gap-3">
+            <div className="border-t border-brand-border shrink-0 flex">
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex-1 flex items-center justify-center gap-2 bg-brand-text text-brand-bg rounded-xl py-3 text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 bg-brand-text text-brand-bg py-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-white transition-colors disabled:opacity-30 cursor-pointer w-full"
               >
                 {saving ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={13} />}
                 {saving ? 'PROCESANDO...' : 'CONFIRMAR PAGO'}

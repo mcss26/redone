@@ -42,7 +42,7 @@ const MODULE_MAP = [
     modules: [
       { id: 'profiles',       label: 'PERFILES' },
       { id: 'suppliers',      label: 'PROVEEDORES' },
-      { id: 'sku',            label: 'CATÁLOGO SKU' },
+      { id: 'sku',            label: 'CATALOGO SKU' },
       { id: 'staff_roles',    label: 'TARIFARIO' },
       { id: 'cost_templates', label: 'COSTOS SEMANA' },
       { id: 'fixed_cost_templates', label: 'COSTOS MES' },

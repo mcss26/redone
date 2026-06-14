@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useRef,  useState, useEffect, useCallback  } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Plus, X, Save, ArrowLeft, Pencil, DollarSign, Search, Trash2, Loader2 } from 'lucide-react';
+import { Plus, X, Save, Pencil, DollarSign, Search, Trash2, Loader2 } from 'lucide-react';
 
 
 export default function StaffRolesModule({ onNavigate }) {
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isFetchingBackground, setIsFetchingBackground] = useState(false);
@@ -83,7 +86,7 @@ export default function StaffRolesModule({ onNavigate }) {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm(`¿Eliminar permanentemente el rol "${form.name}"?`)) return;
+    if (!(await window.UI.confirm())) return;
     try {
       setSaving(true);
       const { error } = await supabase.from('staff_roles').delete().eq('id', slideOver.id);

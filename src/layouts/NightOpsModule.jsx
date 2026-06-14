@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import { createClient } from '@supabase/supabase-js';
 import { GbolService } from '../../lib/gbolService';
-import { Plus, X, Save, ArrowLeft, TerminalSquare, Receipt, Lock, CheckCircle2, AlertTriangle, Upload, Ticket, Users, Loader2, Copy } from 'lucide-react';
+import { Plus, X, Save, TerminalSquare, Receipt, Lock, CheckCircle2, AlertTriangle, Upload, Ticket, Users, Loader2, Copy } from 'lucide-react';
 import dayjs from 'dayjs';
 
 const publicSupabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY, {
@@ -23,6 +23,9 @@ const parseCsvLine = (line, separator) => {
 };
 
 export default function NightOpsModule({ onNavigate }) {
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
   const [workDays, setWorkDays] = useState([]);
   const [selectedWorkDay, setSelectedWorkDay] = useState(null);
   const [terminals, setTerminals] = useState([]);
@@ -207,7 +210,7 @@ export default function NightOpsModule({ onNavigate }) {
 
   const handleReplicateSystem = async () => {
     if (!selectedWorkDay) return;
-    if (!window.confirm('¿Seguro deseas auto-completar el Arqueo Físico usando los valores del sistema? Esto sobrescribirá lo que hayas ingresado.')) return;
+    if (!(await window.UI.confirm())) return;
     
     setSaving(true);
     try {

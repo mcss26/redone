@@ -32,7 +32,7 @@ export default function Login() {
         {/* Brand */}
         <div className="text-center mb-16 md:mb-24 animate-fade-in delay-100 flex flex-col items-center">
           <span className="text-[8px] md:text-[10px] font-bold tracking-[0.4em] uppercase text-brand-muted mb-4 md:mb-6">
-            SYSTEM ACCESS // CONTROL PANEL
+            ACCESO AL SISTEMA // PANEL DE CONTROL
           </span>
           <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-[7rem] leading-none font-extrabold tracking-[0.1em] uppercase text-brand-text whitespace-nowrap">
             MIDNIGHT CLUB
@@ -84,7 +84,7 @@ export default function Login() {
         {/* Footer info */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-fade-in delay-500 w-full text-center">
           <p className="text-[9px] font-mono text-brand-muted/30 uppercase tracking-[0.4em]">
-            {new Date().getFullYear()} © SYSTEM V2.0
+            {new Date().getFullYear()} (C) SISTEMA V2.0
           </p>
         </div>
       </div>

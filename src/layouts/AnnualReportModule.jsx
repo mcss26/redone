@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useRef,  useState, useEffect, useCallback  } from 'react';
 import { supabase } from '../../lib/supabase';
 import { fetchAll } from '../../lib/queryHelper';
-import { ArrowLeft, Calendar, Loader2 } from 'lucide-react';
+import { Calendar, Loader2 } from 'lucide-react';
 import dayjs from 'dayjs';
 
 export default function AnnualReportModule({ onNavigate }) {
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
   const [years, setYears] = useState([]);
   const [selectedYear, setSelectedYear] = useState('');
   const [loading, setLoading] = useState(true);
@@ -383,14 +386,14 @@ export default function AnnualReportModule({ onNavigate }) {
               
               {/* COL 1: EGRESOS */}
               <div className="flex flex-col gap-4">
-                <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 relative">
+                <div className="border border-brand-border p-6 relative">
                   <div className="text-[10px] font-extrabold tracking-widest uppercase text-brand-muted mb-2">TOTAL EGRESOS</div>
                   <div className="text-4xl font-mono text-brand-text">
                     -{formatCurrency(yearData.outflows.total)}
                   </div>
                 </div>
                 
-                <div className="bg-brand-surface/30 border border-brand-border/50 rounded-2xl p-4">
+                <div className="border-t border-brand-border/50 pt-4 mt-4">
                   <table className="w-full text-xs font-mono">
                     <tbody className="divide-y divide-brand-border/30">
                       <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Costos Semana (Inc. RRHH)</td><td className="py-3 text-right">-{formatCurrency(yearData.outflows.weeklyCosts)}</td></tr>
@@ -409,14 +412,14 @@ export default function AnnualReportModule({ onNavigate }) {
 
               {/* COL 2: INGRESOS */}
               <div className="flex flex-col gap-4">
-                <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 relative">
+                <div className="border border-brand-border p-6 relative">
                   <div className="text-[10px] font-extrabold tracking-widest uppercase text-brand-muted mb-2">TOTAL INGRESOS</div>
                   <div className="text-4xl font-mono text-brand-success">
                     {formatCurrency(yearData.inflows.total)}
                   </div>
                 </div>
                 
-                <div className="bg-brand-surface/30 border border-brand-border/50 rounded-2xl p-4">
+                <div className="border-t border-brand-border/50 pt-4 mt-4">
                   <table className="w-full text-xs font-mono">
                     <tbody className="divide-y divide-brand-border/30">
                       <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Efectivo (POS)</td><td className="py-3 text-right">{formatCurrency(yearData.inflows.cash)}</td></tr>
@@ -445,7 +448,7 @@ export default function AnnualReportModule({ onNavigate }) {
                   </div>
                 </div>
 
-                <div className="bg-brand-surface/30 border border-brand-border/50 rounded-2xl p-4">
+                <div className="border-t border-brand-border/50 pt-4 mt-4">
                   <table className="w-full text-xs font-mono">
                     <tbody className="divide-y divide-brand-border/30">
                       <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Ingresos Totales</td><td className="py-3 text-right text-brand-success">{formatCurrency(yearData.inflows.total)}</td></tr>

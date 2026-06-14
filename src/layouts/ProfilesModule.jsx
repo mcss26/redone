@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useRef,  useState, useEffect, useCallback  } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Plus, X, Save, UserPlus, ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import { Plus, X, Save, UserPlus, Pencil, Trash2 } from 'lucide-react';
 
 const ROLES = ['admin', 'operativo', 'contador', 'encargado', 'viewer'];
 
 export default function ProfilesModule({ onNavigate }) {
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isFetchingBackground, setIsFetchingBackground] = useState(false);
@@ -85,7 +88,7 @@ export default function ProfilesModule({ onNavigate }) {
   };
 
   const handleDelete = async (profile) => {
-    const confirmed = window.confirm(`¿Eliminar permanentemente a "${profile.full_name}"?`);
+    const confirmed = await window.UI.confirm();
     if (!confirmed) return;
     try {
       const { error } = await supabase.from('profiles').delete().eq('id', profile.id);
@@ -157,17 +160,17 @@ export default function ProfilesModule({ onNavigate }) {
                   </td>
                   <td className="px-5 py-3.5 text-xs text-brand-muted font-mono">{p.phone || '—'}</td>
                   <td className="px-5 py-3.5 text-xs text-brand-muted font-mono">{p.pin ? '••••' : '—'}</td>
-                  <td className="px-5 py-3.5 text-center">
-                    <button onClick={() => toggleActive(p)} className="cursor-pointer" title={p.active ? 'Activo' : 'Inactivo'}>
-                      <div className={`w-2 h-2 rounded-full mx-auto ${p.active ? 'bg-brand-success' : 'bg-brand-error'}`} />
+                  <td className="px-5 py-2 text-center">
+                    <button onClick={() => toggleActive(p)} className="cursor-pointer p-3 min-w-[44px] min-h-[44px] flex items-center justify-center mx-auto" title={p.active ? 'Activo' : 'Inactivo'}>
+                      <div className={`w-2 h-2 rounded-full ${p.active ? 'bg-brand-success' : 'bg-brand-error'}`} />
                     </button>
                   </td>
-                  <td className="px-5 py-3.5 text-right">
-                    <div className="flex items-center justify-end gap-3">
-                      <button onClick={() => openEdit(p)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer" title="Editar">
+                  <td className="px-5 py-2 text-right">
+                    <div className="flex items-center justify-end">
+                      <button onClick={() => openEdit(p)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer p-3 min-w-[44px] min-h-[44px] flex items-center justify-center" title="Editar">
                         <Pencil size={13} />
                       </button>
-                      <button onClick={() => handleDelete(p)} className="text-brand-muted hover:text-red-500 transition-colors cursor-pointer" title="Eliminar">
+                      <button onClick={() => handleDelete(p)} className="text-brand-muted hover:text-red-500 transition-colors cursor-pointer p-3 min-w-[44px] min-h-[44px] flex items-center justify-center" title="Eliminar">
                         <Trash2 size={13} />
                       </button>
                     </div>
@@ -199,8 +202,8 @@ export default function ProfilesModule({ onNavigate }) {
             <div className={`flex-1 overflow-y-auto p-6 space-y-5 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
               {/* Full Name */}
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Nombre completo</label>
-                <input autoComplete="off"
+                <label htmlFor="profile_fullname" className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Nombre completo</label>
+                <input id="profile_fullname" autoComplete="off"
                   type="text"
                   value={form.full_name}
                   onChange={(e) => setForm({ ...form, full_name: e.target.value })}
@@ -231,8 +234,8 @@ export default function ProfilesModule({ onNavigate }) {
 
               {/* Phone */}
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Teléfono</label>
-                <input autoComplete="off"
+                <label htmlFor="profile_phone" className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Teléfono</label>
+                <input id="profile_phone" autoComplete="off"
                   type="text"
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -243,8 +246,8 @@ export default function ProfilesModule({ onNavigate }) {
 
               {/* PIN */}
               <div>
-                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">PIN de acceso</label>
-                <input autoComplete="off"
+                <label htmlFor="profile_pin" className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">PIN de acceso</label>
+                <input id="profile_pin" autoComplete="off"
                   type="text"
                   inputMode="numeric"
                   value={form.pin}

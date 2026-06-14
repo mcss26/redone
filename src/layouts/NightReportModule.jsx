@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import { fetchAll } from '../../lib/queryHelper';
-import { ArrowLeft, TrendingUp, TrendingDown, DollarSign, Package, AlertTriangle, CheckCircle2, Lock, Upload, Loader2, Save, Plus, X, Copy } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Package, AlertTriangle, CheckCircle2, Lock, Upload, Loader2, Save, Plus, X, Copy } from 'lucide-react';
 import dayjs from 'dayjs';
 
 const parseCsvLine = (text, sep = ',') => {
@@ -19,11 +19,15 @@ const parseCsvLine = (text, sep = ',') => {
 };
 
 export default function NightReportModule({ onNavigate }) {
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
   const [workDays, setWorkDays] = useState([]);
   const [selectedWorkDay, setSelectedWorkDay] = useState(null);
   const [loading, setLoading] = useState(true);
   const [closing, setClosing] = useState(false);
   const [flashColor, setFlashColor] = useState(null);
+  const [closeConfirm, setCloseConfirm] = useState(false);
   
   const [isAdjOpen, setIsAdjOpen] = useState(false);
   const [adjType, setAdjType] = useState('income');
@@ -78,6 +82,7 @@ export default function NightReportModule({ onNavigate }) {
     } catch (err) {
       console.error('Error in fetchData:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al cargar datos", 'danger');
       setLoading(false);
     }
   }, [selectedWorkDay]);
@@ -199,6 +204,7 @@ export default function NightReportModule({ onNavigate }) {
     } catch (err) {
       console.error('Error fetching report data:', err);
       triggerFlash('error');
+      window.UI?.toast?.(err.message || "Error al cargar reporte", 'danger');
       setLoading(false);
     }
   }, [selectedWorkDay, globalSettings]);
@@ -211,7 +217,12 @@ export default function NightReportModule({ onNavigate }) {
 
   const handleCloseDay = async () => {
     if (!selectedWorkDay || selectedWorkDay.status === 'closed') return;
-    if (!window.confirm('¿Desea cerrar definitivamente la jornada? Esto congelará el cálculo de impuestos y volverá los datos inmutables.')) return;
+    
+    if (!closeConfirm) {
+      setCloseConfirm(true);
+      setTimeout(() => setCloseConfirm(false), 3000);
+      return;
+    }
     
     setClosing(true);
     try {
@@ -234,16 +245,18 @@ export default function NightReportModule({ onNavigate }) {
       triggerFlash('success');
       fetchData();
     } catch(err) {
+      console.error('Error closing day:', err);
       triggerFlash('error');
-      alert("Error al cerrar: " + err.message);
+      window.UI?.toast?.(err.message || "Error al cerrar la jornada", 'danger');
     } finally {
       setClosing(false);
+      setCloseConfirm(false);
     }
   };
 
   const saveAdjustment = async () => {
     if (!selectedWorkDay || selectedWorkDay.status === 'closed') return;
-    if (!adjDesc || !adjAmount) return alert("Completá descripción y monto.");
+    if (!adjDesc || !adjAmount) return window.UI?.toast?.("Completá descripción y monto.", 'danger');
     
     setSavingAdj(true);
     try {
@@ -261,8 +274,9 @@ export default function NightReportModule({ onNavigate }) {
       setAdjAmount('');
       fetchReportData();
     } catch (err) {
+      console.error('Error saving adjustment:', err);
       triggerFlash('error');
-      alert("Error: " + err.message);
+      window.UI?.toast?.(err.message || "Error al guardar el ajuste", 'danger');
     } finally {
       setSavingAdj(false);
     }
@@ -321,7 +335,7 @@ export default function NightReportModule({ onNavigate }) {
               
               {/* COL 1: EGRESOS */}
               <div className="flex flex-col gap-4">
-                <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 relative">
+                <div className="border border-brand-border p-6 relative">
                   <div className="text-[10px] font-extrabold tracking-widest uppercase text-brand-muted mb-2">TOTAL EGRESOS</div>
                   <div className="text-4xl font-mono text-brand-text">
                     -{formatCurrency(reportData.outflows.total)}
@@ -333,7 +347,7 @@ export default function NightReportModule({ onNavigate }) {
                   )}
                 </div>
                 
-                <div className="bg-brand-surface/30 border border-brand-border/50 rounded-2xl p-4">
+                <div className="border-t border-brand-border/50 pt-4 mt-4">
                   <table className="w-full text-xs font-mono">
                     <tbody className="divide-y divide-brand-border/30">
                       <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Costos Recurrentes Pagados</td><td className="py-3 text-right">{formatCurrency(reportData.outflows.recurrentCostsPaid)}</td></tr>
@@ -359,7 +373,7 @@ export default function NightReportModule({ onNavigate }) {
 
               {/* COL 2: INGRESOS */}
               <div className="flex flex-col gap-4">
-                <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 relative">
+                <div className="border border-brand-border p-6 relative">
                   <div className="text-[10px] font-extrabold tracking-widest uppercase text-brand-muted mb-2">TOTAL INGRESOS</div>
                   <div className="text-4xl font-mono text-brand-success">
                     {formatCurrency(reportData.inflows.total)}
@@ -371,7 +385,7 @@ export default function NightReportModule({ onNavigate }) {
                   )}
                 </div>
                 
-                <div className="bg-brand-surface/30 border border-brand-border/50 rounded-2xl p-4">
+                <div className="border-t border-brand-border/50 pt-4 mt-4">
                   <table className="w-full text-xs font-mono">
                     <tbody className="divide-y divide-brand-border/30">
                       <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">POS Físico (Efectivo)</td><td className="py-3 text-right">{formatCurrency(reportData.inflows.posCash)}</td></tr>
@@ -412,7 +426,7 @@ export default function NightReportModule({ onNavigate }) {
                   </div>
                 </div>
 
-                <div className="bg-brand-surface/30 border border-brand-border/50 rounded-2xl p-4">
+                <div className="border-t border-brand-border/50 pt-4 mt-4">
                   <table className="w-full text-xs font-mono">
                     <tbody className="divide-y divide-brand-border/30">
                       <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Ingresos Totales</td><td className="py-3 text-right text-brand-success">{formatCurrency(reportData.inflows.total)}</td></tr>
@@ -425,10 +439,10 @@ export default function NightReportModule({ onNavigate }) {
                     <button
                       onClick={handleCloseDay}
                       disabled={closing}
-                      className="w-full mt-4 px-6 py-4 bg-brand-text text-[#0A0A0A] font-black uppercase tracking-widest text-xs rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(229,229,229,0.3)] disabled:opacity-50"
+                      className={`w-full mt-4 px-6 py-4 font-black uppercase tracking-widest text-xs rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(229,229,229,0.3)] disabled:opacity-50 ${closeConfirm ? 'bg-brand-error text-white shadow-brand-error/20' : 'bg-brand-text text-[#0A0A0A] hover:opacity-90'}`}
                     >
                       {closing ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                      CONSOLIDAR Y CERRAR
+                      {closeConfirm ? 'CONFIRMAR CIERRE' : 'CONSOLIDAR Y CERRAR'}
                     </button>
                   )}
                 </div>
@@ -438,7 +452,7 @@ export default function NightReportModule({ onNavigate }) {
 
 
             {selectedWorkDay.status === 'closed' && (
-              <div className="bg-brand-surface border border-brand-border rounded-xl p-6 opacity-60 hover:opacity-100 transition-opacity">
+              <div className="border border-brand-border p-6 opacity-60 hover:opacity-100 transition-opacity">
                 <h3 className="text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-4 flex items-center gap-2">
                   <CheckCircle2 size={14} /> Auditoría Final Lock
                 </h3>

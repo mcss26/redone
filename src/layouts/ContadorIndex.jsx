@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import dayjs from 'dayjs';
+import { ChevronDown } from 'lucide-react';
 import GlobalMessagesBoard from '../components/GlobalMessagesBoard';
 
 export default function ContadorIndex({ onNavigate }) {
@@ -98,7 +99,7 @@ export default function ContadorIndex({ onNavigate }) {
               className={`text-xs md:text-sm font-bold tracking-[0.3em] uppercase transition-colors duration-200 cursor-pointer flex items-center gap-2 ${isReportesOpen ? 'text-brand-text' : 'text-brand-muted hover:text-brand-text'}`}
             >
               REPORTES
-              <span className={`text-[8px] transform transition-transform duration-300 ${isReportesOpen ? 'rotate-180' : ''}`}>▼</span>
+              <ChevronDown size={12} className={`transform transition-transform duration-300 ${isReportesOpen ? 'rotate-180' : ''}`} />
             </button>
           </div>
 

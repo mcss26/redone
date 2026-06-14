@@ -1,8 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useRef,  useState, useEffect, useCallback  } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Plus, X, Save, ArrowLeft, Pencil, ClipboardList, Trash2 } from 'lucide-react';
+import { Plus, X, Save, Pencil, ClipboardList, Trash2 } from 'lucide-react';
 
 export default function CostTemplatesModule({ onNavigate }) {
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
   const [templates, setTemplates] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -115,7 +118,7 @@ export default function CostTemplatesModule({ onNavigate }) {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('¿Eliminar permanentemente esta plantilla?')) return;
+    if (!(await window.UI.confirm())) return;
     try {
       const { error } = await supabase.from('cost_templates').delete().eq('id', id);
       if (error) throw error;

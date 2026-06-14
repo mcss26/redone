@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useRef,  useState, useEffect, useCallback  } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { Plus, X, Save, ArrowLeft, Pencil, DollarSign, CheckCircle2, AlertCircle, Trash2, Loader2 } from 'lucide-react';
+import { Plus, X, Save, Pencil, DollarSign, CheckCircle2, AlertCircle, Trash2, Loader2 } from 'lucide-react';
 import dayjs from 'dayjs';
 
 export default function OpeningCostsModule({ onNavigate }) {
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
   const { user } = useAuth();
   const [workDays, setWorkDays] = useState([]);
   const [selectedWorkDayId, setSelectedWorkDayId] = useState('');
@@ -123,7 +126,7 @@ export default function OpeningCostsModule({ onNavigate }) {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('¿Eliminar este costo?')) return;
+    if (!(await window.UI.confirm())) return;
     try {
       const { error } = await supabase.from('opening_costs').delete().eq('id', id);
       if (error) throw error;
@@ -137,7 +140,7 @@ export default function OpeningCostsModule({ onNavigate }) {
   };
 
   const handleApprove = async (id) => {
-    if (!window.confirm('¿Aprobar este costo para pago?')) return;
+    if (!(await window.UI.confirm())) return;
     try {
       const { error } = await supabase.from('opening_costs').update({ status: 'approved' }).eq('id', id);
       if (error) throw error;
@@ -151,7 +154,7 @@ export default function OpeningCostsModule({ onNavigate }) {
   };
 
   const handleApproveAll = async () => {
-    if (!window.confirm('¿Aprobar TODOS los costos pendientes para pago?')) return;
+    if (!(await window.UI.confirm())) return;
     try {
       const draftIds = costs.filter(c => c.status === 'draft').map(c => c.id);
       if (draftIds.length === 0) return;
@@ -329,7 +332,7 @@ export default function OpeningCostsModule({ onNavigate }) {
                   type="text"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
+                  className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
                   placeholder="Ej: Flete adicional..."
                   autoFocus
                 />
@@ -338,14 +341,14 @@ export default function OpeningCostsModule({ onNavigate }) {
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Monto</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-muted font-mono">$</span>
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 text-brand-muted font-mono">$</span>
                   <input autoComplete="off"
                     type="number"
                     min="0"
                     step="100"
                     value={form.amount}
                     onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                    className="w-full bg-brand-surface border border-brand-border rounded-xl pl-8 pr-4 py-3 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
+                    className="w-full bg-transparent border-b border-brand-border/50 pl-4 pr-0 py-2 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
                   />
                 </div>
               </div>
@@ -355,7 +358,7 @@ export default function OpeningCostsModule({ onNavigate }) {
                 <select
                   value={form.supplier_id}
                   onChange={(e) => setForm({ ...form, supplier_id: e.target.value })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none"
+                  className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none"
                 >
                   <option value="">-- Sin proveedor fijo --</option>
                   {suppliers.map(s => (
@@ -365,11 +368,11 @@ export default function OpeningCostsModule({ onNavigate }) {
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-brand-border shrink-0">
+            <div className="border-t border-brand-border shrink-0 flex">
               <button
                 onClick={handleSave}
                 disabled={saving || !form.title.trim()}
-                className="w-full flex items-center justify-center gap-2 bg-brand-text text-brand-bg rounded-xl py-3 text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 bg-brand-text text-brand-bg py-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-white transition-colors disabled:opacity-30 cursor-pointer w-full"
               >
                 {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
                 {saving ? 'GUARDANDO...' : 'GUARDAR COSTO'}

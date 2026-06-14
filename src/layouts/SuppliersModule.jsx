@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useRef,  useState, useEffect, useCallback  } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Plus, X, Save, ArrowLeft, Pencil, Truck, Search, Loader2, Building2, User, CreditCard, FileText, Trash2 } from 'lucide-react';
+import { Plus, X, Save, Pencil, Truck, Search, Loader2, Building2, User, CreditCard, FileText, Trash2 } from 'lucide-react';
 
 const CATEGORIES = ['bar', 'limpieza', 'servicios', 'estructura', 'otros'];
 
 export default function SuppliersModule({ onNavigate }) {
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isFetchingBackground, setIsFetchingBackground] = useState(false);
@@ -102,7 +105,7 @@ export default function SuppliersModule({ onNavigate }) {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm(`¿Eliminar permanentemente al proveedor "${form.name}"?`)) return;
+    if (!(await window.UI.confirm())) return;
     try {
       setSaving(true);
       const { error } = await supabase.from('suppliers').delete().eq('id', slideOver.id);

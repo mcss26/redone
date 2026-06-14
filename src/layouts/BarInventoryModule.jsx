@@ -1,8 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useRef,  useState, useEffect, useCallback  } from 'react';
 import { supabase } from '../../lib/supabase';
-import { ArrowLeft, Loader2, PackageCheck, Save, Lock } from 'lucide-react';
+import { Loader2, PackageCheck, Save, Lock } from 'lucide-react';
 
 export default function BarInventoryModule({ onNavigate }) {
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
   const [loading, setLoading] = useState(true);
   const [isFetchingBackground, setIsFetchingBackground] = useState(false);
   const [workDays, setWorkDays] = useState([]);

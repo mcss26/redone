@@ -20,3 +20,7 @@ supabase/.temp/
 
 supabase-cli-executor.js
 scratch_*.js
+
+# Archivos temporales y scripts de remediacion
+*.csv
+scripts/*.cjs

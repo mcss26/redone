@@ -1,8 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useRef,  useState, useEffect, useCallback  } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Plus, X, Save, ArrowLeft, Pencil, CreditCard, Search, Trash2, Loader2 } from 'lucide-react';
+import { Plus, X, Save, Pencil, CreditCard, Search, Trash2, Loader2 } from 'lucide-react';
 
 export default function PosTerminalsModule({ onNavigate }) {
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
   const [terminals, setTerminals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isFetchingBackground, setIsFetchingBackground] = useState(false);
@@ -81,7 +84,7 @@ export default function PosTerminalsModule({ onNavigate }) {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm(`¿Eliminar permanentemente la terminal "${form.name}"?`)) return;
+    if (!(await window.UI.confirm())) return;
     try {
       setSaving(true);
       const { error } = await supabase.from('pos_terminals').delete().eq('id', slideOver.id);

@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useRef,  useState, useEffect, useCallback  } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Plus, X, Save, ArrowLeft, Pencil, ChevronRight, CalendarDays, Trash2, Loader2, Search } from 'lucide-react';
+import { Plus, X, Save, Pencil, ChevronRight, CalendarDays, Trash2, Loader2, Search } from 'lucide-react';
 import dayjs from 'dayjs';
 
 export default function WorkDaysModule({ onNavigate }) {
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
   const [workDays, setWorkDays] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isFetchingBackground, setIsFetchingBackground] = useState(false);
@@ -144,7 +147,7 @@ export default function WorkDaysModule({ onNavigate }) {
   const handleDelete = async (id) => {
     const dayId = id || selectedDay?.id;
     if (!dayId) return;
-    if (!window.confirm('¿Estás seguro de eliminar esta jornada permanentemente? Se eliminarán los costos asociados.')) return;
+    if (!(await window.UI.confirm())) return;
     
     setSaving(true);
     try {

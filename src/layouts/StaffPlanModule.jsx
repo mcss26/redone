@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useRef,  useState, useEffect, useCallback  } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { Plus, X, Save, ArrowLeft, Pencil, Users, CheckCircle2, Trash2, Loader2 } from 'lucide-react';
+import { Plus, X, Save, Pencil, Users, CheckCircle2, Trash2, Loader2 } from 'lucide-react';
 import dayjs from 'dayjs';
 
 export default function StaffPlanModule({ onNavigate }) {
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
   const { user } = useAuth();
   const [workDays, setWorkDays] = useState([]);
   const [selectedWorkDayId, setSelectedWorkDayId] = useState('');
@@ -125,7 +128,7 @@ export default function StaffPlanModule({ onNavigate }) {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('¿Eliminar esta solicitud de staff?')) return;
+    if (!(await window.UI.confirm())) return;
     try {
       const { error } = await supabase.from('staff_plan').delete().eq('id', id);
       if (error) throw error;
@@ -140,7 +143,7 @@ export default function StaffPlanModule({ onNavigate }) {
   };
 
   const handleApproveAll = async () => {
-    if (!window.confirm('¿Aprobar TODAS las solicitudes pendientes de staff usando la cantidad solicitada?')) return;
+    if (!(await window.UI.confirm())) return;
     
     try {
       setSaving(true);

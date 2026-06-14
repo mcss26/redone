@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef,  useState, useEffect  } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Search, X, Save, Pencil, Trash2, Loader2, Package } from 'lucide-react';
 
 const UNITS = ['botella', 'caja', 'pack', 'kg', 'litro', 'unidad'];
 
 export default function SkuModule({ onNavigate }) {
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
   const [skus, setSkus] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [search, setSearch] = useState('');
@@ -116,7 +119,6 @@ export default function SkuModule({ onNavigate }) {
         unit: form.unit,
         cost: parseFloat(form.cost) || 0,
         volume_ml: parseFloat(form.volume_ml) || null,
-        stock_min: parseInt(form.stock_min, 10) || 0,
         active: form.active
       };
 
@@ -141,7 +143,7 @@ export default function SkuModule({ onNavigate }) {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm(`¿Eliminar permanentemente el SKU "${form.name}"?`)) return;
+    if (!(await window.UI.confirm())) return;
     try {
       setSaving(true);
       const { error } = await supabase.from('skus').delete().eq('id', form.id);
@@ -305,17 +307,19 @@ export default function SkuModule({ onNavigate }) {
                           ${Number(sku.cost).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                         </div>
                       </td>
-                      <td className="px-5 py-3.5">
+                      <td className="px-5 py-2">
                         <div className="flex justify-center w-full">
-                          <button onClick={() => toggleActive(sku)} className="cursor-pointer p-1" title={sku.active ? 'ACTIVO' : 'INACTIVO'}>
+                          <button onClick={() => toggleActive(sku)} className="cursor-pointer p-3 min-w-[44px] min-h-[44px] flex items-center justify-center" title={sku.active ? 'ACTIVO' : 'INACTIVO'}>
                             <div className={`w-2 h-2 rounded-full ${sku.active ? 'bg-brand-success shadow-[0_0_6px_rgba(74,222,128,0.5)]' : 'bg-brand-error shadow-[0_0_6px_rgba(248,113,113,0.5)]'}`} />
                           </button>
                         </div>
                       </td>
-                      <td className="px-5 py-3.5 text-right flex justify-end gap-2">
-                        <button onClick={() => openEdit(sku)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer p-1">
-                          <Pencil size={13} />
-                        </button>
+                      <td className="px-5 py-2 text-right">
+                        <div className="flex items-center justify-end">
+                          <button onClick={() => openEdit(sku)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer p-3 min-w-[44px] min-h-[44px] flex items-center justify-center">
+                            <Pencil size={13} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -346,8 +350,8 @@ export default function SkuModule({ onNavigate }) {
               
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">Nombre del Item *</label>
-                  <input autoComplete="off"
+                  <label htmlFor="sku_name" className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">Nombre del Item *</label>
+                  <input id="sku_name" autoComplete="off"
                     type="text"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -357,8 +361,8 @@ export default function SkuModule({ onNavigate }) {
                   />
                 </div>
                 <div>
-                  <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">ID Sistema (POS)</label>
-                  <input autoComplete="off"
+                  <label htmlFor="sku_system_id" className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">ID Sistema (POS)</label>
+                  <input id="sku_system_id" autoComplete="off"
                     type="text"
                     value={form.system_id}
                     onChange={(e) => setForm({ ...form, system_id: e.target.value })}
@@ -370,8 +374,9 @@ export default function SkuModule({ onNavigate }) {
               </div>
 
               <div>
-                <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">Proveedor Principal *</label>
+                <label htmlFor="sku_supplier" className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">Proveedor Principal *</label>
                 <select
+                  id="sku_supplier"
                   value={form.supplier_id}
                   onChange={(e) => setForm({ ...form, supplier_id: e.target.value })}
                   className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text font-semibold focus:outline-none focus:border-brand-muted transition-colors appearance-none"
@@ -385,8 +390,8 @@ export default function SkuModule({ onNavigate }) {
 
               <div className="grid grid-cols-1 gap-6">
                 <div>
-                  <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">Costo Base ($) *</label>
-                  <input autoComplete="off"
+                  <label htmlFor="sku_cost" className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">Costo Base ($) *</label>
+                  <input id="sku_cost" autoComplete="off"
                     type="number"
                     step="0.01"
                     min="0"
@@ -400,8 +405,8 @@ export default function SkuModule({ onNavigate }) {
 
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">Volumen (ml)</label>
-                  <input autoComplete="off"
+                  <label htmlFor="sku_volume" className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">Volumen (ml)</label>
+                  <input id="sku_volume" autoComplete="off"
                     type="number"
                     min="0"
                     value={form.volume_ml}
@@ -411,14 +416,18 @@ export default function SkuModule({ onNavigate }) {
                   />
                 </div>
                 <div>
-                  <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">Stock Mínimo</label>
-                  <input autoComplete="off"
+                  <div className="flex justify-between items-center mb-1">
+                    <label htmlFor="sku_stock_min" className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50">Stock Mínimo</label>
+                    <span className="text-[8px] tracking-[0.2em] text-brand-muted/30 uppercase bg-brand-surface px-1.5 py-0.5 rounded">Auto</span>
+                  </div>
+                  <input id="sku_stock_min" autoComplete="off"
                     type="number"
                     min="0"
-                    value={form.stock_min}
-                    onChange={(e) => setForm({ ...form, stock_min: e.target.value })}
-                    className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-text font-mono placeholder:text-brand-muted/30 focus:outline-none focus:border-brand-muted transition-colors"
-                    placeholder="0"
+                    value={form.stock_min || ''}
+                    readOnly
+                    className="w-full bg-transparent border-b border-brand-border/50 px-0 py-2 text-sm text-brand-muted font-mono focus:outline-none cursor-not-allowed opacity-70"
+                    placeholder="Calculado Automáticamente"
+                    title="Este valor se calcula automáticamente en base al promedio de las últimas 10 fechas"
                   />
                 </div>
               </div>

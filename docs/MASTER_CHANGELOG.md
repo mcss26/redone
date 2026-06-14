@@ -1,6 +1,8 @@
 # Midnight Club OS - Master Changelog
 
 ## 2026-06-14 (Production Ready - Phase 1)
+- **System / Database:** Implementada la función `update_sku_stock_min` y el trigger `trg_update_stock_min` en Supabase para calcular y mantener actualizado automáticamente el `stock_min` de cada SKU. El cálculo promedia dinámicamente el consumo real de las últimas 10 fechas activas (`CEIL(consumo_total / fechas)`).
+- **UI:** Modificado el módulo `SkuModule.jsx` para convertir el campo `stock_min` en solo-lectura (`readOnly`) reflejando su nueva naturaleza autogestionada por el backend, incluyendo badges visuales ("Auto").
 - **Feature:** Implementado `GlobalErrorBoundary.jsx` estético para prevenir pantallas blancas en crasheos de React, alineado con el Functional Brutalism.
 - **Feature:** Implementado detector Offline en `App.jsx` que inyecta dinámicamente un banner top (`SYS_OFFLINE`) cuando el POS pierde conexión de red.
 - **Security:** Modificado `AuthContext.jsx` para verificar pasivamente si el `id` del usuario en localStorage sigue existiendo y estando `active` en la base de datos de Supabase. Si no es así, fuerza un auto-logout para limpiar la sesión en las tablets.
@@ -94,3 +96,7 @@
 - **UI/UX:** Se reestructuró `AnnualReportModule.jsx` para adoptar el estándar visual Bimodal de 3 Columnas (`TOTAL EGRESOS`, `TOTAL INGRESOS`, `MARGEN NETO`) eliminando gráficos y métricas redundantes de Distribución.
 - **System:** Se estandarizó la agregación matemática en el bloque `fetchYearDetails` para que utilice el mismo bucle de conciliación de Caja, Passline, Arqueos, Auditoría de Barra y Costos Fijos Mensuales que el R. MES.
 - **UI:** La Tabla Viva Histórica en el Reporte Anual fue rediseñada para agrupar los resultados por mes (12 filas máximo) en lugar de evento individual, garantizando rendimiento escalable al finalizar el año.
+
+- 2026-06-14 - Refactor UI/UX Auditoría: Eliminado window.confirm, implementado GlobalUI, remediado Container Purge y dependencias huérfanas en módulos CRUD. Añadido isMountedRef en useEffects para seguridad asíncrona.
+- 2026-06-14 - Mantenimiento: Limpieza de archivos temporales y scripts de pruebas en la raíz del proyecto para cumplir con los estándares de higiene del repositorio.
+- 2026-06-14 - Hotfix: Resolución de errores de sintaxis masivos provocados por migración de window.confirm. Añadidos los paréntesis de cierre en condicionales asíncronos en 13 módulos. Vite ahora compila exitosamente.
