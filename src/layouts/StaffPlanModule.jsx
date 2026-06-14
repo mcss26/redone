@@ -103,10 +103,10 @@ export default function StaffPlanModule({ onNavigate }) {
       };
 
       if (slideOver === 'create') {
-        const { error } = await supabase.from('staff_plan').insert(payload);
+        const { error } = await supabase.from('staff_plan').insert(sanitizePayload(payload));
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('staff_plan').update(payload).eq('id', slideOver.id);
+        const { error } = await supabase.from('staff_plan').update(sanitizePayload(payload)).eq('id', slideOver.id);
         if (error) throw error;
       }
 
@@ -339,7 +339,7 @@ export default function StaffPlanModule({ onNavigate }) {
 
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Cantidad Solicitada *</label>
-                <input
+                <input autoComplete="off"
                   type="number"
                   min="1"
                   value={form.quantity_requested}
@@ -377,7 +377,7 @@ export default function StaffPlanModule({ onNavigate }) {
                       {form.status === 'approved' && (
                         <div>
                           <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-success mb-2">Cantidad Aprobada</label>
-                          <input
+                          <input autoComplete="off"
                             type="number"
                             min="0"
                             value={form.quantity_approved}

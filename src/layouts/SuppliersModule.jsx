@@ -81,10 +81,10 @@ export default function SuppliersModule({ onNavigate }) {
       };
 
       if (slideOver === 'create') {
-        const { error } = await supabase.from('suppliers').insert([payload]);
+        const { error } = await supabase.from('suppliers').insert([sanitizePayload(payload)]);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('suppliers').update(payload).eq('id', slideOver.id);
+        const { error } = await supabase.from('suppliers').update(sanitizePayload(payload)).eq('id', slideOver.id);
         if (error) throw error;
       }
 
@@ -153,7 +153,7 @@ export default function SuppliersModule({ onNavigate }) {
           <div className="flex items-center gap-6">
             <div className="relative">
               <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-muted/50" />
-              <input 
+              <input autoComplete="off" 
                 type="text" 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -246,7 +246,7 @@ export default function SuppliersModule({ onNavigate }) {
               
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Razón Social *</label>
-                <input
+                <input autoComplete="off"
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -257,7 +257,7 @@ export default function SuppliersModule({ onNavigate }) {
 
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">CUIT</label>
-                <input
+                <input autoComplete="off"
                   type="text"
                   value={form.tax_id}
                   onChange={(e) => setForm({ ...form, tax_id: e.target.value })}
@@ -269,7 +269,7 @@ export default function SuppliersModule({ onNavigate }) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Contacto</label>
-                  <input
+                  <input autoComplete="off"
                     type="text"
                     value={form.contact_name}
                     onChange={(e) => setForm({ ...form, contact_name: e.target.value })}
@@ -279,7 +279,7 @@ export default function SuppliersModule({ onNavigate }) {
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Teléfono</label>
-                  <input
+                  <input autoComplete="off"
                     type="text"
                     value={form.contact_phone}
                     onChange={(e) => setForm({ ...form, contact_phone: e.target.value })}
@@ -291,7 +291,7 @@ export default function SuppliersModule({ onNavigate }) {
 
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Correo Electrónico</label>
-                <input
+                <input autoComplete="off"
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -303,7 +303,7 @@ export default function SuppliersModule({ onNavigate }) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Banco</label>
-                  <input
+                  <input autoComplete="off"
                     type="text"
                     value={form.bank_name}
                     onChange={(e) => setForm({ ...form, bank_name: e.target.value })}
@@ -313,7 +313,7 @@ export default function SuppliersModule({ onNavigate }) {
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Alias / CBU</label>
-                  <input
+                  <input autoComplete="off"
                     type="text"
                     value={form.bank_alias}
                     onChange={(e) => setForm({ ...form, bank_alias: e.target.value })}
@@ -325,7 +325,7 @@ export default function SuppliersModule({ onNavigate }) {
 
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Notas</label>
-                <textarea
+                <textarea autoComplete="off"
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
                   className="w-full bg-transparent border-b border-brand-border/50 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors resize-none h-20"

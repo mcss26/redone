@@ -6,6 +6,18 @@
       "sourceType": "github",
       "skillPath": ".agents/skills/context-compressor/SKILL.md",
       "computedHash": "0c94f2ed604b4b370e741b019fd2a8cfc7fe7b061077cebfb11cb9d0f8a261fe"
+    },
+    "frontend-expert": {
+      "source": "oimiragieo/agent-studio",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/frontend-expert/SKILL.md",
+      "computedHash": "5e9ef3ee22639c6d327a90f9c912170b28f51ae565421cfeeef6c76c6f3b6bc0"
+    },
+    "review-and-refactor": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "skillPath": "skills/review-and-refactor/SKILL.md",
+      "computedHash": "9236d06a1500089ddb46975b866e9a63478e502afe7095b1980c618678a7c7fe"
     }
   }
 }

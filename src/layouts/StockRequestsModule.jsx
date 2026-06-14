@@ -112,10 +112,10 @@ export default function StockRequestsModule({ onNavigate }) {
       };
 
       if (slideOver === 'create') {
-        const { error } = await supabase.from('stock_requests').insert(payload);
+        const { error } = await supabase.from('stock_requests').insert(sanitizePayload(payload));
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('stock_requests').update(payload).eq('id', slideOver.id);
+        const { error } = await supabase.from('stock_requests').update(sanitizePayload(payload)).eq('id', slideOver.id);
         if (error) throw error;
       }
 
@@ -194,7 +194,7 @@ export default function StockRequestsModule({ onNavigate }) {
       }));
 
       if (costsToInsert.length > 0) {
-        const { error } = await supabase.from('opening_costs').insert(costsToInsert);
+        const { error } = await supabase.from('opening_costs').insert(sanitizePayload(costsToInsert));
         if (error) throw error;
       }
       
@@ -412,7 +412,7 @@ export default function StockRequestsModule({ onNavigate }) {
 
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Cantidad Solicitada *</label>
-                <input
+                <input autoComplete="off"
                   type="number"
                   min="0"
                   step="0.01"
@@ -424,7 +424,7 @@ export default function StockRequestsModule({ onNavigate }) {
 
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Notas Operativas</label>
-                <input
+                <input autoComplete="off"
                   type="text"
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
@@ -465,7 +465,7 @@ export default function StockRequestsModule({ onNavigate }) {
                   {form.status === 'approved' && (
                     <div>
                       <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Cantidad Aprobada</label>
-                      <input
+                      <input autoComplete="off"
                         type="number"
                         min="0"
                         step="0.01"

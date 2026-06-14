@@ -59,10 +59,10 @@ export default function PosTerminalsModule({ onNavigate }) {
       };
 
       if (slideOver === 'create') {
-        const { error } = await supabase.from('pos_terminals').insert(payload);
+        const { error } = await supabase.from('pos_terminals').insert(sanitizePayload(payload));
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('pos_terminals').update(payload).eq('id', slideOver.id);
+        const { error } = await supabase.from('pos_terminals').update(sanitizePayload(payload)).eq('id', slideOver.id);
         if (error) throw error;
       }
 
@@ -130,7 +130,7 @@ export default function PosTerminalsModule({ onNavigate }) {
           <div className="flex items-center gap-6">
             <div className="relative">
               <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-muted/50" />
-              <input 
+              <input autoComplete="off" 
                 type="text" 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -207,7 +207,7 @@ export default function PosTerminalsModule({ onNavigate }) {
               
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Nombre de Caja *</label>
-                <input
+                <input autoComplete="off"
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value.toUpperCase() })}
@@ -219,7 +219,7 @@ export default function PosTerminalsModule({ onNavigate }) {
 
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">ID de Terminal</label>
-                <input
+                <input autoComplete="off"
                   type="text"
                   value={form.terminal_id}
                   onChange={(e) => setForm({ ...form, terminal_id: e.target.value.toUpperCase() })}

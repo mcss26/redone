@@ -53,9 +53,9 @@ export default function ProfilesModule({ onNavigate }) {
     try {
       let result;
       if (slideOver === 'create') {
-        result = await supabase.from('profiles').insert(payload);
+        result = await supabase.from('profiles').insert(sanitizePayload(payload));
       } else {
-        result = await supabase.from('profiles').update(payload).eq('id', slideOver.id);
+        result = await supabase.from('profiles').update(sanitizePayload(payload)).eq('id', slideOver.id);
       }
       if (result.error) throw result.error;
       flash('#22c55e');
@@ -199,7 +199,7 @@ export default function ProfilesModule({ onNavigate }) {
               {/* Full Name */}
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Nombre completo</label>
-                <input
+                <input autoComplete="off"
                   type="text"
                   value={form.full_name}
                   onChange={(e) => setForm({ ...form, full_name: e.target.value })}
@@ -231,7 +231,7 @@ export default function ProfilesModule({ onNavigate }) {
               {/* Phone */}
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Teléfono</label>
-                <input
+                <input autoComplete="off"
                   type="text"
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -243,7 +243,7 @@ export default function ProfilesModule({ onNavigate }) {
               {/* PIN */}
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">PIN de acceso</label>
-                <input
+                <input autoComplete="off"
                   type="text"
                   inputMode="numeric"
                   value={form.pin}

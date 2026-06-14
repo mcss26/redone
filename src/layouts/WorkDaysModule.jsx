@@ -95,7 +95,7 @@ export default function WorkDaysModule({ onNavigate }) {
             status: 'draft'
           }));
 
-          const { error: ocError } = await supabase.from('opening_costs').insert(openingCostsPayload);
+          const { error: ocError } = await supabase.from('opening_costs').insert(sanitizePayload(openingCostsPayload));
           if (ocError) {
             console.error('Error auto-populating costs:', ocError);
             throw new Error(`Error carga automática de costos: ${ocError.message}`);
@@ -119,7 +119,7 @@ export default function WorkDaysModule({ onNavigate }) {
             status: 'draft'
           }));
 
-          const { error: spError } = await supabase.from('staff_plan').insert(staffPlanPayload);
+          const { error: spError } = await supabase.from('staff_plan').insert(sanitizePayload(staffPlanPayload));
           if (spError) {
             console.error('Error auto-populating staff plan:', spError);
             throw new Error(`Error carga automática de staff: ${spError.message}`);
@@ -264,7 +264,7 @@ export default function WorkDaysModule({ onNavigate }) {
 
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Fecha Operativa *</label>
-                <input
+                <input autoComplete="off"
                   type="date"
                   value={form.work_date}
                   onChange={(e) => setForm({ ...form, work_date: e.target.value })}
@@ -274,7 +274,7 @@ export default function WorkDaysModule({ onNavigate }) {
 
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Nombre del Evento (Opcional)</label>
-                <input
+                <input autoComplete="off"
                   type="text"
                   value={form.event_name}
                   onChange={(e) => setForm({ ...form, event_name: e.target.value })}

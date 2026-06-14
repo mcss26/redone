@@ -499,7 +499,7 @@ export default function NightOpsModule({ onNavigate }) {
                       {saving ? <Loader2 size={14} className="animate-spin" /> : <Copy size={14} />}
                       IGUALAR SISTEMA
                     </button>
-                    <input type="file" accept=".csv" ref={gbolCsvRef} onChange={handleCsvUpload} className="hidden" />
+                    <input autoComplete="off" type="file" accept=".csv" ref={gbolCsvRef} onChange={handleCsvUpload} className="hidden" />
                     <button 
                       onClick={() => gbolCsvRef.current?.click()}
                       disabled={syncingGbol || saving}
@@ -533,7 +533,7 @@ export default function NightOpsModule({ onNavigate }) {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex justify-end">
-                            <input 
+                            <input autoComplete="off" 
                               type="number"
                               disabled={!isActive}
                               value={t.declared_cash === undefined ? '' : t.declared_cash}
@@ -546,7 +546,7 @@ export default function NightOpsModule({ onNavigate }) {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex justify-end">
-                            <input 
+                            <input autoComplete="off" 
                               type="number"
                               disabled={!isActive}
                               value={t.declared_digital === undefined ? '' : t.declared_digital}
@@ -631,7 +631,7 @@ export default function NightOpsModule({ onNavigate }) {
                   </div>
                   {isActive && (
                     <div>
-                      <input type="file" accept=".csv" ref={membersCsvRef} onChange={handleMembersCsv} className="hidden" />
+                      <input autoComplete="off" type="file" accept=".csv" ref={membersCsvRef} onChange={handleMembersCsv} className="hidden" />
                       <button 
                         onClick={() => membersCsvRef.current?.click()}
                         disabled={saving}
@@ -680,7 +680,7 @@ export default function NightOpsModule({ onNavigate }) {
                   </div>
                   {isActive && (
                     <div>
-                      <input type="file" accept=".csv" ref={generalCsvRef} onChange={handleGeneralCsv} className="hidden" />
+                      <input autoComplete="off" type="file" accept=".csv" ref={generalCsvRef} onChange={handleGeneralCsv} className="hidden" />
                       <button 
                         onClick={() => generalCsvRef.current?.click()}
                         disabled={saving}

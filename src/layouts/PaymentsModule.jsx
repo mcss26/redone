@@ -132,7 +132,7 @@ export default function PaymentsModule() {
         payload.notes = slideOver.notes ? `${slideOver.notes} | Pago: ${form.notes.trim()}` : form.notes.trim();
       }
 
-      const { error } = await supabase.from('opening_costs').update(payload).eq('id', slideOver.id);
+      const { error } = await supabase.from('opening_costs').update(sanitizePayload(payload)).eq('id', slideOver.id);
       if (error) throw error;
 
       triggerFlash('success');
@@ -145,6 +145,10 @@ export default function PaymentsModule() {
       setSaving(false);
     }
   };
+
+  const totalAmount = approvedCosts.reduce((sum, c) => sum + Number(c.amount), 0);
+  const paidAmount = approvedCosts.filter(c => c.status === 'paid').reduce((sum, c) => sum + Number(c.amount), 0);
+  const pendingAmount = totalAmount - paidAmount;
 
   return (
     <div className="h-full flex relative">
@@ -257,6 +261,26 @@ export default function PaymentsModule() {
             </tbody>
           </table>
         </div>
+
+        {/* Cost KPI */}
+        {selectedWorkDayId && approvedCosts.length > 0 && (
+          <div className="mt-8 flex justify-end border-t border-brand-border/30 pt-4">
+            <div className="flex items-center gap-12">
+              <div className="text-right">
+                <div className="text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-1">PAGADO</div>
+                <div className="text-2xl font-mono font-bold text-blue-500">${paidAmount.toLocaleString()}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-1">PENDIENTE</div>
+                <div className="text-2xl font-mono font-bold text-brand-warning">${pendingAmount.toLocaleString()}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-1">TOTAL A PAGAR</div>
+                <div className="text-2xl font-mono font-bold text-brand-text">${totalAmount.toLocaleString()}</div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Slide-Over Panel */}
@@ -265,8 +289,8 @@ export default function PaymentsModule() {
           <div className="absolute inset-0 bg-black/30 z-40" onClick={() => setSlideOver(null)} />
           <div className="absolute top-0 right-0 h-full w-full max-w-sm bg-brand-bg border-l border-brand-border z-50 flex flex-col animate-slide-in">
             
-            <div className="flex items-center justify-between px-6 py-5 border-b border-brand-border/30 shrink-0">
-              <h3 className="text-[10px] font-bold tracking-[0.3em] uppercase text-brand-muted">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-brand-border shrink-0">
+              <h3 className="text-xs font-bold tracking-[0.2em] uppercase text-brand-muted">
                 REGISTRAR PAGO
               </h3>
               <button onClick={() => setSlideOver(null)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer">
@@ -282,14 +306,14 @@ export default function PaymentsModule() {
                 
                 <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">Monto Final a Pagar *</label>
                 <div className="relative">
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 text-brand-muted font-mono">$</span>
-                  <input
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-warning font-mono">$</span>
+                  <input autoComplete="off"
                     type="number"
                     min="0"
                     step="0.01"
                     value={form.amount}
                     onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                    className="w-full bg-transparent border-b border-brand-warning/50 pl-6 py-2 text-lg font-mono text-brand-warning focus:outline-none focus:border-brand-warning transition-colors"
+                    className="w-full bg-brand-surface border border-brand-warning/30 rounded-xl pl-8 pr-4 py-3 text-lg font-mono text-brand-warning focus:outline-none focus:border-brand-warning transition-colors"
                   />
                 </div>
                 <p className="text-[8px] text-brand-muted mt-2 uppercase tracking-widest">Podés ajustar el monto si difiere del original.</p>
@@ -333,20 +357,20 @@ export default function PaymentsModule() {
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => setForm({ ...form, payment_method: 'digital' })}
-                    className={`flex items-center justify-center gap-2 py-2 border-b text-[10px] font-bold uppercase tracking-[0.2em] transition-colors ${
+                    className={`flex items-center justify-center gap-2 rounded-xl py-3 border text-[10px] font-bold uppercase tracking-[0.2em] transition-colors ${
                       form.payment_method === 'digital' 
-                        ? 'border-brand-text text-brand-text' 
-                        : 'border-brand-border/50 text-brand-muted hover:border-brand-muted'
+                        ? 'bg-brand-surface border-brand-text text-brand-text' 
+                        : 'bg-transparent border-brand-border/50 text-brand-muted hover:border-brand-muted'
                     }`}
                   >
                     <Wallet size={12} /> Digital
                   </button>
                   <button
                     onClick={() => setForm({ ...form, payment_method: 'efectivo' })}
-                    className={`flex items-center justify-center gap-2 py-2 border-b text-[10px] font-bold uppercase tracking-[0.2em] transition-colors ${
+                    className={`flex items-center justify-center gap-2 rounded-xl py-3 border text-[10px] font-bold uppercase tracking-[0.2em] transition-colors ${
                       form.payment_method === 'efectivo' 
-                        ? 'border-brand-text text-brand-text' 
-                        : 'border-brand-border/50 text-brand-muted hover:border-brand-muted'
+                        ? 'bg-brand-surface border-brand-text text-brand-text' 
+                        : 'bg-transparent border-brand-border/50 text-brand-muted hover:border-brand-muted'
                     }`}
                   >
                     <DollarSign size={12} /> Efectivo
@@ -359,7 +383,7 @@ export default function PaymentsModule() {
                 <select
                   value={form.voucher_type}
                   onChange={(e) => setForm({ ...form, voucher_type: e.target.value })}
-                  className="w-full bg-transparent border-b border-brand-border/50 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none cursor-pointer"
+                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none cursor-pointer"
                 >
                   {vouchers.length === 0 && <option value="" className="bg-brand-bg text-brand-text">Sin comprobantes configurados</option>}
                   {vouchers.map(v => (
@@ -370,22 +394,22 @@ export default function PaymentsModule() {
 
               <div>
                 <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">Notas de Pago</label>
-                <input
+                <input autoComplete="off"
                   type="text"
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  className="w-full bg-transparent border-b border-brand-border/50 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
+                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
                   placeholder="Ref. de transferencia, etc."
                 />
               </div>
 
             </div>
 
-            <div className="border-t border-brand-border shrink-0 flex">
+            <div className="px-6 py-4 border-t border-brand-border shrink-0 flex gap-3">
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex-1 flex items-center justify-center gap-2 bg-brand-text text-brand-bg py-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 bg-brand-text text-brand-bg rounded-xl py-3 text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
               >
                 {saving ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={13} />}
                 {saving ? 'PROCESANDO...' : 'CONFIRMAR PAGO'}

@@ -279,7 +279,7 @@ export default function BarInventoryModule({ onNavigate }) {
                             <span className="text-xl font-mono">-</span>
                           </button>
                           
-                          <input 
+                          <input autoComplete="off" 
                             type="text"
                             inputMode="decimal"
                             value={value}

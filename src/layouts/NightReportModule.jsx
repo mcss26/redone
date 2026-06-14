@@ -470,7 +470,7 @@ export default function NightReportModule({ onNavigate }) {
           <div className="p-6 flex-1 overflow-y-auto space-y-6">
             <div>
               <label className="block text-[10px] font-bold text-brand-muted uppercase tracking-widest mb-2">Detalle del Ajuste</label>
-              <input
+              <input autoComplete="off"
                 type="text"
                 value={adjDesc}
                 onChange={(e) => setAdjDesc(e.target.value)}
@@ -480,7 +480,7 @@ export default function NightReportModule({ onNavigate }) {
             </div>
             <div>
               <label className="block text-[10px] font-bold text-brand-muted uppercase tracking-widest mb-2">Monto ($)</label>
-              <input
+              <input autoComplete="off"
                 type="number"
                 value={adjAmount}
                 onChange={(e) => setAdjAmount(e.target.value)}

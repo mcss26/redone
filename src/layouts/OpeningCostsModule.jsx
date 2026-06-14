@@ -101,10 +101,10 @@ export default function OpeningCostsModule({ onNavigate }) {
       };
 
       if (slideOver === 'create') {
-        const { error } = await supabase.from('opening_costs').insert({ ...payload, status: 'draft' });
+        const { error } = await supabase.from('opening_costs').insert(sanitizePayload({ ...payload, status: 'draft' }));
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('opening_costs').update(payload).eq('id', slideOver.id);
+        const { error } = await supabase.from('opening_costs').update(sanitizePayload(payload)).eq('id', slideOver.id);
         if (error) throw error;
       }
 
@@ -319,7 +319,7 @@ export default function OpeningCostsModule({ onNavigate }) {
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Concepto *</label>
-                <input
+                <input autoComplete="off"
                   type="text"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
@@ -333,7 +333,7 @@ export default function OpeningCostsModule({ onNavigate }) {
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Monto</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-muted font-mono">$</span>
-                  <input
+                  <input autoComplete="off"
                     type="number"
                     min="0"
                     step="100"

@@ -99,7 +99,7 @@ export default function FixedCostsModule() {
               supplier_id: m.supplier_id,
               status: 'pending'
             }));
-            const { error: insertError } = await supabase.from('monthly_fixed_costs').insert(payload);
+            const { error: insertError } = await supabase.from('monthly_fixed_costs').insert(sanitizePayload(payload));
             
             if (!insertError) {
               const { data: refetched } = await supabase
@@ -152,10 +152,10 @@ export default function FixedCostsModule() {
       };
 
       if (slideOver === 'create') {
-        const { error } = await supabase.from('monthly_fixed_costs').insert({ ...payload, status: 'pending' });
+        const { error } = await supabase.from('monthly_fixed_costs').insert(sanitizePayload({ ...payload, status: 'pending' }));
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('monthly_fixed_costs').update(payload).eq('id', slideOver.id);
+        const { error } = await supabase.from('monthly_fixed_costs').update(sanitizePayload(payload)).eq('id', slideOver.id);
         if (error) throw error;
       }
 
@@ -247,17 +247,17 @@ export default function FixedCostsModule() {
         <div className="mb-6">
           <table className="w-full whitespace-nowrap">
             <thead>
-              <tr className="border-b border-brand-border/50">
-                <th className="text-left text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted/50 pb-3">CONCEPTO / SERVICIO</th>
-                <th className="text-left text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted/50 pb-3">PROVEEDOR</th>
-                <th className="text-right text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted/50 pb-3">MONTO</th>
-                <th className="text-center text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted/50 pb-3 w-24">ESTADO</th>
+              <tr className="border-b border-brand-border">
+                <th className="text-left text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3">CONCEPTO / SERVICIO</th>
+                <th className="text-left text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3">PROVEEDOR</th>
+                <th className="text-right text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3">MONTO</th>
+                <th className="text-center text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3 w-24">ESTADO</th>
                 {hasMutateAccess && (
-                  <th className="text-right text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted/50 pb-3 w-20"></th>
+                  <th className="text-right text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted px-5 py-3 w-20"></th>
                 )}
               </tr>
             </thead>
-            <tbody className="divide-y divide-brand-border/30">
+            <tbody>
               {loading ? (
                 <tr><td colSpan={hasMutateAccess ? 5 : 4} className="text-center py-12 text-brand-muted text-xs uppercase tracking-widest">Cargando...</td></tr>
               ) : !selectedMonth ? (
@@ -265,33 +265,33 @@ export default function FixedCostsModule() {
               ) : costs.length === 0 ? (
                 <tr><td colSpan={hasMutateAccess ? 5 : 4} className="text-center py-12 text-brand-muted/50 text-xs uppercase tracking-widest">NO HAY COSTOS REGISTRADOS ESTE MES.</td></tr>
               ) : costs.map((c) => (
-                <tr key={c.id} className="hover:bg-brand-card/50 transition-colors group">
-                  <td className="py-4 text-sm font-semibold text-brand-text">
+                <tr key={c.id} className="border-b border-brand-border/30 hover:bg-brand-card/50 transition-colors">
+                  <td className="px-5 py-3.5 text-sm font-semibold text-brand-text">
                     <div className="flex items-center gap-2">
                       <Calendar size={12} className="text-brand-muted/50" />
                       {c.title}
                     </div>
                   </td>
-                  <td className="py-4 text-xs text-brand-muted">
+                  <td className="px-5 py-3.5 text-xs text-brand-muted">
                     {c.suppliers?.name ? (
                       <span>{c.suppliers.name}</span>
                     ) : (
                       <span className="text-brand-muted/50">—</span>
                     )}
                   </td>
-                  <td className="py-4 text-sm font-mono text-right text-brand-text">
+                  <td className="px-5 py-3.5 text-sm font-mono text-right text-brand-text">
                     {formatCurrency(c.amount)}
                   </td>
-                  <td className="py-4 text-center">
+                  <td className="px-5 py-3.5 text-center">
                     <div className="flex justify-center">
                       <div 
-                        className={`w-2 h-2 rounded-full shadow-[0_0_6px_rgba(0,0,0,0.5)] ${c.status === 'pending' ? 'bg-brand-warning' : 'bg-brand-success'}`}
+                        className={`w-2 h-2 rounded-full ${c.status === 'pending' ? 'bg-brand-warning shadow-[0_0_6px_rgba(250,204,21,0.5)]' : 'bg-blue-500 shadow-[0_0_6px_rgba(59,130,246,0.5)]'}`}
                         title={c.status === 'pending' ? 'PENDIENTE' : 'PAGADO'}
                       />
                     </div>
                   </td>
                   {hasMutateAccess && (
-                    <td className="py-4 text-right flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <td className="px-5 py-3.5 text-right flex justify-end gap-3 items-center">
                       {c.status === 'pending' && (
                         <button onClick={() => handleMarkPaid(c.id)} className="text-brand-success/70 hover:text-brand-success transition-colors cursor-pointer" title="Marcar como Pagado">
                           <CheckCircle2 size={14} />
@@ -313,19 +313,21 @@ export default function FixedCostsModule() {
 
         {/* Cost KPI Grid (Flattened) */}
         {selectedMonth && costs.length > 0 && (
-          <div className="flex items-center justify-end gap-12 border-t border-brand-border/30 pt-6">
-            <div className="text-right">
-              <div className="text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-1">TOTAL ESTRUCTURA</div>
-              <div className="text-lg font-mono font-bold text-brand-text">{formatCurrency(totalAmount)}</div>
-            </div>
-            <div className="text-right">
-              <div className="text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-1">PAGADO</div>
-              <div className="text-lg font-mono font-bold text-brand-success">{formatCurrency(paidAmount)}</div>
-            </div>
-            <div className="text-right">
-              <div className="text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-1">PENDIENTE (PASIVO)</div>
-              <div className={`text-lg font-mono font-bold ${pendingAmount > 0 ? 'text-brand-warning' : 'text-brand-muted'}`}>
-                {formatCurrency(pendingAmount)}
+          <div className="mt-8 flex justify-end border-t border-brand-border/30 pt-4">
+            <div className="flex items-center gap-12">
+              <div className="text-right">
+                <div className="text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-1">PAGADO</div>
+                <div className="text-2xl font-mono font-bold text-blue-500">{formatCurrency(paidAmount)}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-1">PENDIENTE (PASIVO)</div>
+                <div className={`text-2xl font-mono font-bold ${pendingAmount > 0 ? 'text-brand-warning' : 'text-brand-muted'}`}>
+                  {formatCurrency(pendingAmount)}
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-1">TOTAL ESTRUCTURA</div>
+                <div className="text-2xl font-mono font-bold text-brand-text">{formatCurrency(totalAmount)}</div>
               </div>
             </div>
           </div>
@@ -338,8 +340,8 @@ export default function FixedCostsModule() {
           <div className="absolute inset-0 bg-black/30 z-40" onClick={() => setSlideOver(null)} />
           <div className="absolute top-0 right-0 h-full w-full max-w-sm bg-brand-bg border-l border-brand-border z-50 flex flex-col animate-slide-in">
             
-            <div className="flex items-center justify-between px-6 py-5 border-b border-brand-border/30 shrink-0">
-              <h3 className="text-[10px] font-bold tracking-[0.3em] uppercase text-brand-muted">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-brand-border shrink-0">
+              <h3 className="text-xs font-bold tracking-[0.2em] uppercase text-brand-muted">
                 {slideOver === 'create' ? 'NUEVO GASTO ESTRUCTURAL' : 'EDITAR GASTO FIJO'}
               </h3>
               <button onClick={() => setSlideOver(null)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer">
@@ -349,38 +351,38 @@ export default function FixedCostsModule() {
 
             <div className="flex-1 overflow-y-auto p-6 space-y-8 mt-4">
               <div>
-                <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">SERVICIO / CONCEPTO *</label>
-                <input
+                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">SERVICIO / CONCEPTO *</label>
+                <input autoComplete="off"
                   type="text"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full bg-transparent border-b border-brand-border/50 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
+                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
                   placeholder="Ej: Alquiler, Edenor..."
                   autoFocus
                 />
               </div>
 
               <div>
-                <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">MONTO FIJO</label>
+                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">MONTO FIJO</label>
                 <div className="relative">
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 text-brand-muted font-mono">$</span>
-                  <input
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-muted font-mono">$</span>
+                  <input autoComplete="off"
                     type="number"
                     min="0"
                     step="100"
                     value={form.amount}
                     onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                    className="w-full bg-transparent border-b border-brand-border/50 pl-6 py-2 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
+                    className="w-full bg-brand-surface border border-brand-border rounded-xl pl-8 pr-4 py-3 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-2">PROVEEDOR ASOCIADO (OPCIONAL)</label>
+                <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">PROVEEDOR ASOCIADO (OPCIONAL)</label>
                 <select
                   value={form.supplier_id}
                   onChange={(e) => setForm({ ...form, supplier_id: e.target.value })}
-                  className="w-full bg-transparent border-b border-brand-border/50 py-2 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none cursor-pointer"
+                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none cursor-pointer"
                 >
                   <option value="" className="bg-brand-bg text-brand-text">-- Sin proveedor --</option>
                   {suppliers.map(s => (
@@ -390,11 +392,11 @@ export default function FixedCostsModule() {
               </div>
             </div>
 
-            <div className="border-t border-brand-border shrink-0 flex">
+            <div className="px-6 py-4 border-t border-brand-border shrink-0 flex gap-3">
               <button
                 onClick={handleSave}
                 disabled={saving || !form.title.trim()}
-                className="flex-1 flex items-center justify-center gap-2 bg-brand-text text-brand-bg py-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 bg-brand-text text-brand-bg rounded-xl py-3 text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
               >
                 {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
                 {saving ? 'GUARDANDO...' : 'GUARDAR COSTO FIJO'}

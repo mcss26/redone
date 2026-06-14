@@ -1,5 +1,11 @@
 # Midnight Club - UI/UX Changelog
 
+## 2026-06-14
+### Payments & Fixed Costs UI Alignment
+- **Modules:** `PaymentsModule.jsx`, `FixedCostsModule.jsx`
+- **Action:** Replaced the pure brutalist (transparent border-b) form inputs in the slide-overs with the curved surface inputs (`bg-brand-surface rounded-xl border border-brand-border`) to perfectly align with the `OpeningCostsModule` and `StaffPlanModule` standards. Added KPI grids at the bottom of the tables with `text-2xl` values. Standardized the Neon Status Dots so that 'paid' is universally blue (`bg-blue-500` with matching shadow glow) and 'pending'/'approved' is yellow. Added hover highlight to table rows and fixed table cell paddings. Added `rounded-xl` to Slide-Over footer buttons.
+- **Reason:** To achieve 100% aesthetic homogeneity and consistency across all modules in the "Contador / Pagos" phase versus the "Operaciones" phase.
+
 ## 2026-06-06
 ### StaffPlanModule Table Simplification
 - **Module:** `src/layouts/StaffPlanModule.jsx`

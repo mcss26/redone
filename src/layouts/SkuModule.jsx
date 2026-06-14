@@ -119,10 +119,10 @@ export default function SkuModule({ onNavigate }) {
       };
 
       if (slideOver === 'create') {
-        const { error } = await supabase.from('skus').insert([payload]);
+        const { error } = await supabase.from('skus').insert([sanitizePayload(payload)]);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('skus').update(payload).eq('id', form.id);
+        const { error } = await supabase.from('skus').update(sanitizePayload(payload)).eq('id', form.id);
         if (error) throw error;
       }
 
@@ -227,7 +227,7 @@ export default function SkuModule({ onNavigate }) {
           <div className="flex items-center gap-6">
             <div className="relative">
               <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-muted/50" />
-              <input 
+              <input autoComplete="off" 
                 type="text" 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -342,7 +342,7 @@ export default function SkuModule({ onNavigate }) {
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">Nombre del Item *</label>
-                  <input
+                  <input autoComplete="off"
                     type="text"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -353,7 +353,7 @@ export default function SkuModule({ onNavigate }) {
                 </div>
                 <div>
                   <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">ID Sistema (POS)</label>
-                  <input
+                  <input autoComplete="off"
                     type="text"
                     value={form.system_id}
                     onChange={(e) => setForm({ ...form, system_id: e.target.value })}
@@ -381,7 +381,7 @@ export default function SkuModule({ onNavigate }) {
               <div className="grid grid-cols-1 gap-6">
                 <div>
                   <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">Costo Base ($) *</label>
-                  <input
+                  <input autoComplete="off"
                     type="number"
                     step="0.01"
                     min="0"
@@ -396,7 +396,7 @@ export default function SkuModule({ onNavigate }) {
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">Volumen (ml)</label>
-                  <input
+                  <input autoComplete="off"
                     type="number"
                     min="0"
                     value={form.volume_ml}
@@ -407,7 +407,7 @@ export default function SkuModule({ onNavigate }) {
                 </div>
                 <div>
                   <label className="block text-[9px] font-bold tracking-[0.3em] uppercase text-brand-muted/50 mb-1">Stock Mínimo</label>
-                  <input
+                  <input autoComplete="off"
                     type="number"
                     min="0"
                     value={form.stock_min}

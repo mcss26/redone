@@ -55,6 +55,35 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Auto-verify session in background
+  React.useEffect(() => {
+    if (!user) return;
+    
+    let isMounted = true;
+    const verifySession = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, active')
+          .eq('id', user.id)
+          .maybeSingle();
+          
+        if (error || !data || !data.active) {
+          if (isMounted) {
+            setUser(null);
+            localStorage.removeItem('mc_user');
+            localStorage.removeItem('mc_active_view');
+          }
+        }
+      } catch (err) {
+        // Silently fail on network error, keep current session
+      }
+    };
+    
+    verifySession();
+    return () => { isMounted = false; };
+  }, [user?.id]);
+
   const login = useCallback(async (pin) => {
     setLoading(true);
     setError(null);

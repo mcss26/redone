@@ -300,21 +300,21 @@ export default function AuditoriaBarraModule({ onNavigate }) {
       if (adjustments.length > 0) {
         const { error: insError } = await supabase
           .from('financial_adjustments')
-          .insert(adjustments);
+          .insert(sanitizePayload(adjustments));
         if (insError) throw insError;
       }
       
       if (importData.length > 0) {
         const { error: insImpError } = await supabase
           .from('import_system_consumption')
-          .insert(importData);
+          .insert(sanitizePayload(importData));
         if (insImpError) throw insImpError;
       }
       
       if (nightConsData.length > 0) {
         const { error: insNightError } = await supabase
           .from('night_consumption')
-          .insert(nightConsData);
+          .insert(sanitizePayload(nightConsData));
         if (insNightError) throw insNightError;
       }
 
@@ -359,7 +359,7 @@ export default function AuditoriaBarraModule({ onNavigate }) {
             ))}
           </select>
 
-          <input type="file" accept=".csv" ref={csvRef} onChange={handleCsvUpload} className="hidden" />
+          <input autoComplete="off" type="file" accept=".csv" ref={csvRef} onChange={handleCsvUpload} className="hidden" />
           <button 
             onClick={() => csvRef.current?.click()}
             disabled={!selectedWorkDayId || loading}

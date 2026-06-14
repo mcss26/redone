@@ -61,10 +61,10 @@ export default function StaffRolesModule({ onNavigate }) {
       };
 
       if (slideOver === 'create') {
-        const { error } = await supabase.from('staff_roles').insert(payload);
+        const { error } = await supabase.from('staff_roles').insert(sanitizePayload(payload));
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('staff_roles').update(payload).eq('id', slideOver.id);
+        const { error } = await supabase.from('staff_roles').update(sanitizePayload(payload)).eq('id', slideOver.id);
         if (error) throw error;
       }
 
@@ -135,7 +135,7 @@ export default function StaffRolesModule({ onNavigate }) {
           <div className="flex items-center gap-6">
             <div className="relative">
               <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-muted/50" />
-              <input 
+              <input autoComplete="off" 
                 type="text" 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -217,7 +217,7 @@ export default function StaffRolesModule({ onNavigate }) {
               
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Nombre del Rol *</label>
-                <input
+                <input autoComplete="off"
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -233,7 +233,7 @@ export default function StaffRolesModule({ onNavigate }) {
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Tarifa Base (Por Noche) *</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-muted font-mono">$</span>
-                  <input
+                  <input autoComplete="off"
                     type="number"
                     min="0"
                     step="1000"
@@ -247,7 +247,7 @@ export default function StaffRolesModule({ onNavigate }) {
 
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Plantilla (Auto-Populate)</label>
-                <input
+                <input autoComplete="off"
                   type="number"
                   min="0"
                   step="1"

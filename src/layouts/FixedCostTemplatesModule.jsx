@@ -80,10 +80,10 @@ export default function FixedCostTemplatesModule({ onNavigate }) {
       };
 
       if (slideOver === 'create') {
-        const { error } = await supabase.from('fixed_cost_templates').insert(payload);
+        const { error } = await supabase.from('fixed_cost_templates').insert(sanitizePayload(payload));
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('fixed_cost_templates').update(payload).eq('id', slideOver.id);
+        const { error } = await supabase.from('fixed_cost_templates').update(sanitizePayload(payload)).eq('id', slideOver.id);
         if (error) throw error;
       }
 
@@ -209,7 +209,7 @@ export default function FixedCostTemplatesModule({ onNavigate }) {
               
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Concepto de Estructura *</label>
-                <input
+                <input autoComplete="off"
                   type="text"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
@@ -223,7 +223,7 @@ export default function FixedCostTemplatesModule({ onNavigate }) {
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Costo Fijo Mensual</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-muted font-mono">$</span>
-                  <input
+                  <input autoComplete="off"
                     type="number"
                     min="0"
                     step="100"
@@ -252,7 +252,7 @@ export default function FixedCostTemplatesModule({ onNavigate }) {
 
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Orden de Visualización</label>
-                <input
+                <input autoComplete="off"
                   type="number"
                   value={form.sort_order}
                   onChange={(e) => setForm({ ...form, sort_order: e.target.value })}

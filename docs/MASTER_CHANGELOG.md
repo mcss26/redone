@@ -1,3 +1,14 @@
+# Midnight Club OS - Master Changelog
+
+## 2026-06-14 (Production Ready - Phase 1)
+- **Feature:** Implementado `GlobalErrorBoundary.jsx` estético para prevenir pantallas blancas en crasheos de React, alineado con el Functional Brutalism.
+- **Feature:** Implementado detector Offline en `App.jsx` que inyecta dinámicamente un banner top (`SYS_OFFLINE`) cuando el POS pierde conexión de red.
+- **Security:** Modificado `AuthContext.jsx` para verificar pasivamente si el `id` del usuario en localStorage sigue existiendo y estando `active` en la base de datos de Supabase. Si no es así, fuerza un auto-logout para limpiar la sesión en las tablets.
+- **Data Hardening:** Creado `src/lib/sanitizer.js`. Implementada la inyección de `sanitizePayload(payload)` en 19 módulos para asegurar que ninguna inserción en Supabase reciba strings vacíos `""` (Regla #62).
+- **UX/UI:** Inyección masiva del atributo `autoComplete="off"` a más de 50 inputs a lo largo de todos los Slide-Overs para evitar el auto-relleno del navegador y preservar la estética brutalista.
+- **Kiosk Mode:** Configurado `index.html` con bloqueos de zoom (`user-scalable=no`, `maximum-scale=1.0`) y meta-etiquetas de PWA para permitir instalar la aplicación fullscreen en iOS/Android.
+- **PWA:** Creado `public/manifest.json` para definir la experiencia nativa de la aplicación (ícono, colores `Deep Void` #0A0A0A, nombre `MC OS`).
+
 # Midnight Club - Master Changelog
 
 ## 2026-06-13

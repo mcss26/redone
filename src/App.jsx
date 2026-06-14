@@ -35,6 +35,20 @@ function AppShell() {
     return localStorage.getItem('mc_active_view') || 'index';
   });
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  React.useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // If not logged in, show PIN screen
   if (!user) return <Login />;
@@ -108,16 +122,29 @@ function AppShell() {
   return (
     <div className="flex flex-col h-screen w-full bg-brand-bg overflow-hidden relative">
       
+      {/* OFFLINE BADGE */}
+      {isOffline && (
+        <div className="absolute top-0 left-0 w-full h-1 bg-brand-danger shadow-[0_0_10px_rgba(239,68,68,0.8)] z-[60]" />
+      )}
+
       {/* TOP BAR */}
       <header className="h-14 flex items-center justify-between px-8 bg-brand-bg shrink-0 z-50 border-b border-brand-border/20 relative">
         
         {/* Left: Brand */}
-        <button 
-          onClick={() => handleNavigation('index')}
-          className="text-[11px] font-extrabold text-brand-muted tracking-[0.15em] uppercase hover:text-brand-text transition-colors cursor-pointer shrink-0"
-        >
-          MIDNIGHT CLUB
-        </button>
+        <div className="flex items-center gap-4 shrink-0">
+          <button 
+            onClick={() => handleNavigation('index')}
+            className="text-[11px] font-extrabold text-brand-muted tracking-[0.15em] uppercase hover:text-brand-text transition-colors cursor-pointer"
+          >
+            MIDNIGHT CLUB
+          </button>
+
+          {isOffline && (
+            <span className="hidden sm:inline-block px-2 py-0.5 border border-brand-danger text-brand-danger text-[8px] font-bold tracking-widest uppercase bg-brand-danger/10 shadow-[0_0_8px_rgba(239,68,68,0.2)] animate-pulse">
+              SYS_OFFLINE
+            </span>
+          )}
+        </div>
 
         {/* Center: Operative Sub-Nav (Admin Only) */}
         {user?.role === 'admin' && activeView !== 'index' && ['work_days', 'opening_costs', 'stock_requests', 'staff_plan'].includes(activeView) && (

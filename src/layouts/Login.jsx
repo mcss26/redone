@@ -48,7 +48,7 @@ export default function Login() {
             {/* Input Box */}
             <div className="relative group w-full flex items-center border-b border-brand-border/50 focus-within:border-brand-text transition-colors duration-300 pb-3">
               <Lock size={14} className="text-brand-muted/50 group-focus-within:text-brand-text transition-colors duration-300 mr-4" />
-              <input
+              <input autoComplete="off"
                 type="password"
                 inputMode="numeric"
                 pattern="[0-9]*"

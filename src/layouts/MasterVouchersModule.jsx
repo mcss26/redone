@@ -59,10 +59,10 @@ export default function MasterVouchersModule({ onNavigate }) {
       };
 
       if (selectedVoucher) {
-        const { error } = await supabase.from('voucher_types').update(payload).eq('id', selectedVoucher.id);
+        const { error } = await supabase.from('voucher_types').update(sanitizePayload(payload)).eq('id', selectedVoucher.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('voucher_types').insert(payload);
+        const { error } = await supabase.from('voucher_types').insert(sanitizePayload(payload));
         if (error) throw error;
       }
 
@@ -181,7 +181,7 @@ export default function MasterVouchersModule({ onNavigate }) {
               
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Nombre Público *</label>
-                <input
+                <input autoComplete="off"
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -192,7 +192,7 @@ export default function MasterVouchersModule({ onNavigate }) {
 
               <div>
                 <label className="block text-[10px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">Código Interno (DB) *</label>
-                <input
+                <input autoComplete="off"
                   type="text"
                   value={form.code}
                   onChange={(e) => setForm({ ...form, code: e.target.value })}
@@ -219,7 +219,7 @@ export default function MasterVouchersModule({ onNavigate }) {
                     <div className="text-[9px] text-brand-muted mt-1 tracking-wide">Permitir su uso en nuevos pagos</div>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
-                    <input 
+                    <input autoComplete="off" 
                       type="checkbox" 
                       className="sr-only peer"
                       checked={form.active}
