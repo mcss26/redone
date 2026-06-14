@@ -35,6 +35,7 @@ const MODULE_MAP = [
       { id: 'night_report',   label: 'R. NOCHE' },
       { id: 'monthly_report', label: 'R. MES' },
       { id: 'annual_report',  label: 'REPORTE ANUAL' },
+      { id: 'r_pagos',        label: 'REPORTE DE PAGOS' },
     ]
   },
   {
