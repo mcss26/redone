@@ -29,7 +29,7 @@ const ROLE_ACCESS = {
       // Ejecución
       'payments', 'fixed_costs',
       // Reportes
-      'night_report', 'monthly_report', 'annual_report',
+      'night_report', 'monthly_report', 'annual_report', 'r_pagos',
     ],
     writable: ['payments', 'fixed_costs'],
   },
@@ -38,7 +38,7 @@ const ROLE_ACCESS = {
     writable: ['bar_inventory', 'workday'],
   },
   viewer: {
-    access: ['night_report', 'monthly_report', 'annual_report'],
+    access: ['night_report', 'monthly_report', 'annual_report', 'r_pagos'],
     writable: [],
   },
 };

@@ -8,7 +8,7 @@ export default function PaymentsReportModule() {
   const isMountedRef = useRef(true);
   useEffect(() => () => { isMountedRef.current = false; }, []);
 
-  const { canRead } = useAuth();
+  const { canAccess } = useAuth();
   
   const [viewMode, setViewMode] = useState('month'); // 'month' | 'year'
   const [selectedPeriod, setSelectedPeriod] = useState(dayjs().format('YYYY-MM')); // YYYY-MM or YYYY
@@ -149,7 +149,7 @@ export default function PaymentsReportModule() {
     return new Intl.DateTimeFormat('es-AR', { month: 'long', year: 'numeric' }).format(d).toUpperCase();
   };
 
-  if (!canRead('payments')) {
+  if (!canAccess('r_pagos')) {
     return <div className="p-8 text-brand-error text-xs uppercase tracking-widest">Acceso denegado</div>;
   }
 
