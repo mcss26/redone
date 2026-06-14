@@ -394,7 +394,7 @@ export default function StockRequestsModule({ onNavigate }) {
                     const selectedSku = skus.find(s => s.id === e.target.value);
                     setForm({ ...form, sku_id: e.target.value, supplier_id: selectedSku?.supplier_id || '' });
                   }}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none"
+                  className="w-full bg-transparent border-b border-brand-border/50 px-0 rounded-none focus:border-brand-text py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none"
                   disabled={slideOver !== 'create'}
                 >
                   <option value="">-- Seleccionar SKU --</option>
@@ -409,7 +409,7 @@ export default function StockRequestsModule({ onNavigate }) {
                 <select
                   value={form.supplier_id || ''}
                   onChange={(e) => setForm({ ...form, supplier_id: e.target.value })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none"
+                  className="w-full bg-transparent border-b border-brand-border/50 px-0 rounded-none focus:border-brand-text py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none"
                 >
                   <option value="">-- Heredado del SKU --</option>
                   {suppliers.map(s => (
@@ -426,7 +426,7 @@ export default function StockRequestsModule({ onNavigate }) {
                   step="0.01"
                   value={form.quantity_requested}
                   onChange={(e) => setForm({ ...form, quantity_requested: e.target.value })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
+                  className="w-full bg-transparent border-b border-brand-border/50 px-0 rounded-none focus:border-brand-text py-3 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
                 />
               </div>
 
@@ -436,7 +436,7 @@ export default function StockRequestsModule({ onNavigate }) {
                   type="text"
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
+                  className="w-full bg-transparent border-b border-brand-border/50 px-0 rounded-none focus:border-brand-text py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
                   placeholder="Opcional"
                 />
               </div>
@@ -462,7 +462,7 @@ export default function StockRequestsModule({ onNavigate }) {
                           quantity_approved: s === 'approved' ? (form.quantity_approved === '0' ? form.quantity_requested : form.quantity_approved) : '0'
                         });
                       }}
-                      className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none"
+                      className="w-full bg-transparent border-b border-brand-border/50 px-0 rounded-none focus:border-brand-text py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none"
                     >
                       <option value="draft">Borrador</option>
                       <option value="approved">Aprobado</option>

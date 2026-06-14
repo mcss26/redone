@@ -335,7 +335,7 @@ export default function StaffPlanModule({ onNavigate }) {
                         : '1'
                     });
                   }}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none"
+                  className="w-full bg-transparent border-b border-brand-border/50 px-0 rounded-none focus:border-brand-text py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none"
                   disabled={slideOver !== 'create'}
                 >
                   <option value="" disabled className="bg-brand-bg">-- Seleccionar Rol --</option>
@@ -352,7 +352,7 @@ export default function StaffPlanModule({ onNavigate }) {
                   min="1"
                   value={form.quantity_requested}
                   onChange={(e) => setForm({ ...form, quantity_requested: e.target.value })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
+                  className="w-full bg-transparent border-b border-brand-border/50 px-0 rounded-none focus:border-brand-text py-3 text-sm text-brand-text font-mono focus:outline-none focus:border-brand-muted transition-colors"
                 />
               </div>
 
@@ -374,7 +374,7 @@ export default function StaffPlanModule({ onNavigate }) {
                               quantity_approved: s === 'approved' ? (form.quantity_approved === '0' ? form.quantity_requested : form.quantity_approved) : '0'
                             });
                           }}
-                          className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none"
+                          className="w-full bg-transparent border-b border-brand-border/50 px-0 rounded-none focus:border-brand-text py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none"
                         >
                           <option value="draft" className="bg-brand-bg">BORRADOR</option>
                           <option value="approved" className="bg-brand-bg">APROBADO</option>

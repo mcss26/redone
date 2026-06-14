@@ -274,7 +274,7 @@ export default function WorkDaysModule({ onNavigate }) {
                   type="date"
                   value={form.work_date}
                   onChange={(e) => setForm({ ...form, work_date: e.target.value })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors font-mono"
+                  className="w-full bg-transparent border-b border-brand-border/50 px-0 rounded-none focus:border-brand-text py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors font-mono"
                 />
               </div>
 
@@ -284,7 +284,7 @@ export default function WorkDaysModule({ onNavigate }) {
                   type="text"
                   value={form.event_name}
                   onChange={(e) => setForm({ ...form, event_name: e.target.value })}
-                  className="w-full bg-brand-surface border border-brand-border rounded-xl px-4 py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
+                  className="w-full bg-transparent border-b border-brand-border/50 px-0 rounded-none focus:border-brand-text py-3 text-sm text-brand-text focus:outline-none focus:border-brand-muted transition-colors"
                   placeholder="Nombre"
                 />
               </div>

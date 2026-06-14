@@ -1,5 +1,12 @@
 # Midnight Club - UI/UX Decisions Log
 
+## 2026-06-14: Playwright-Driven Deep Visual Audit Remediation
+**Context:** The UI was audited visually using automated Playwright screenshots across all 22 active views. We identified recurring discrepancies with the Functional Brutalism standards, specifically concerning rounded solid inputs and nested `bg-brand-surface` wrappers in tables and topbars.
+**Decision:** We conducted a mass remediation focusing on three architectural corrections:
+1. **Report Sub-Nav Realignment (`App.jsx`):** Removed the pill-shaped background wrapper from the Report modules sub-navigation. The topbar must strictly employ text-based floating navigation without explicit containers, matching the `Admin` and `Contador` sub-navs.
+2. **Form Field Transparency Enforcement:** Any standard CRUD slide-over input must strictly use `bg-transparent border-b rounded-none px-0`, deliberately breaking the modern "rounded pill" convention to favor raw, terminal-like data entry fields.
+3. **Container Purge in High-Density Tables (`NightOpsModule.jsx`):** Stripped out background opacity scales (`bg-brand-surface/30`, etc.) from nested tables. Hierarchical separation must be achieved exclusively via typography (tracking, size) and raw `border-b` divisions, never via solid background shapes.
+
 ## 2026-06-06: Two-Tier Typographic Navigation (Admin Index)
 **Context:** The `AdminIndex.jsx` previously used a standard dashboard grid with cards, icons, and badges. While standard, it violated the Functional Brutalism directives when rendering ~18 global modules.
 **Decision:** We implemented a "Two-Tier Typographic Navigation" pattern. 

@@ -341,7 +341,7 @@ export default function MonthlyReportModule({ onNavigate }) {
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="bg-brand-surface border border-brand-border rounded-xl px-4 py-2 text-xs font-bold text-brand-text focus:outline-none appearance-none cursor-pointer uppercase tracking-wider min-w-[200px]"
+              className="bg-transparent border-b border-brand-border/50 px-0 rounded-none focus:border-brand-text py-2 text-xs font-bold text-brand-text focus:outline-none appearance-none cursor-pointer uppercase tracking-wider min-w-[200px]"
             >
               {months.length === 0 ? <option value="">SIN DATOS</option> : null}
               {months.map(m => (

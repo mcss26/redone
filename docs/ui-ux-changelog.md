@@ -1,3 +1,12 @@
+## 2026-06-14 (UI/UX Deep Visual Audit)
+### Mass Remediation: Container Purge & Brutalism Form Inputs
+- **Modules:** `App.jsx`, `NightOpsModule.jsx`, `WorkDaysModule.jsx`, `StockRequestsModule.jsx`, `StaffPlanModule.jsx`, `NightReportModule.jsx`, `MonthlyReportModule.jsx`, `AnnualReportModule.jsx`
+- **Action:** 
+  1. Removed `bg-brand-surface p-1 rounded-xl` container from the Reportes sub-nav in `App.jsx` to perfectly align it with the minimalist, floating text pattern of the other menus.
+  2. Executed a "Container Purge" in `NightOpsModule.jsx` to remove all `bg-brand-surface/*` backgrounds from table headers, wrappers, and footers, allowing data to flow over the brand-bg natively.
+  3. Replaced all rounded solid background inputs (`bg-brand-surface border border-brand-border rounded-xl px-4`) inside Slide-Overs with the transparent bottom-border variant (`bg-transparent border-b border-brand-border/50 px-0 rounded-none`).
+- **Reason:** To enforce the strict Functional Brutalism rules based on a Playwright deep visual audit. Form fields must remain transparent with raw bottom borders, and tables/sub-navs must avoid redundant background shapes.
+
 ### Payments & Fixed Costs UI Alignment
 - **Modules:** `PaymentsModule.jsx`, `FixedCostsModule.jsx`
 - **Action:** Replaced the pure brutalist (transparent border-b) form inputs in the slide-overs with the curved surface inputs (`bg-brand-surface rounded-xl border border-brand-border`) to perfectly align with the `OpeningCostsModule` and `StaffPlanModule` standards. Added KPI grids at the bottom of the tables with `text-2xl` values. Standardized the Neon Status Dots so that 'paid' is universally blue (`bg-blue-500` with matching shadow glow) and 'pending'/'approved' is yellow. Added hover highlight to table rows and fixed table cell paddings. Added `rounded-xl` to Slide-Over footer buttons.

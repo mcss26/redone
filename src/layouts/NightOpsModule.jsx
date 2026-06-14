@@ -439,7 +439,7 @@ export default function NightOpsModule({ onNavigate }) {
           </div>
         </div>
         
-        <div className="flex items-center gap-4 bg-brand-surface/30 border border-brand-border/50 p-2 rounded-xl">
+        <div className="flex items-center gap-4 bg-transparent border border-brand-border/50 p-2 rounded-xl">
           <select
             value={selectedWorkDay?.id || ''}
             onChange={(e) => {
@@ -480,7 +480,7 @@ export default function NightOpsModule({ onNavigate }) {
             </div>
 
             <div className="bg-[#0A0A0A] border border-brand-border/50 rounded-2xl overflow-hidden shadow-2xl">
-              <div className="p-4 md:p-6 border-b border-brand-border/50 bg-brand-surface/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="p-4 md:p-6 border-b border-brand-border/50 bg-transparent flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-brand-accent/10 flex items-center justify-center">
                     <TerminalSquare size={20} className="text-brand-accent" />
@@ -516,18 +516,18 @@ export default function NightOpsModule({ onNavigate }) {
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm whitespace-nowrap">
                   <thead>
-                    <tr className="bg-brand-surface/40 border-b border-brand-border/50 text-[10px] font-black uppercase tracking-[0.2em] text-brand-muted">
+                    <tr className="bg-transparent border-b border-brand-border/50 text-[10px] font-black uppercase tracking-[0.2em] text-brand-muted">
                       <th className="px-6 py-4">Terminal</th>
                       <th className="px-6 py-4 text-right">Efectivo Físico (Declarado)</th>
                       <th className="px-6 py-4 text-right">Cupones Digital (Declarado)</th>
-                      <th className="px-6 py-4 text-right bg-brand-surface/30">Sistema (Ef.)</th>
-                      <th className="px-6 py-4 text-right bg-brand-surface/30">Sistema (Dig.)</th>
+                      <th className="px-6 py-4 text-right bg-transparent">Sistema (Ef.)</th>
+                      <th className="px-6 py-4 text-right bg-transparent">Sistema (Dig.)</th>
                       <th className="px-6 py-4 text-right">Diferencia Neta</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-brand-border/30">
                     {terminals.map(t => (
-                      <tr key={t.id} className="hover:bg-brand-surface/20 transition-colors group">
+                      <tr key={t.id} className="hover:bg-transparent transition-colors group">
                         <td className="px-6 py-4">
                           <div className="font-bold text-brand-text uppercase">{t.name}</div>
                           <div className="text-[10px] text-brand-muted tracking-widest uppercase">{t.terminal_id}</div>
@@ -540,7 +540,7 @@ export default function NightOpsModule({ onNavigate }) {
                               value={t.declared_cash === undefined ? '' : t.declared_cash}
                               onChange={(e) => handleDeclaredChange(t.id, 'declared_cash', e.target.value)}
                               onBlur={(e) => handleDeclaredSave(t.id, 'declared_cash', e.target.value)}
-                              className="w-32 bg-brand-surface/50 border border-brand-border/50 focus:border-brand-accent focus:bg-brand-bg rounded-lg px-3 py-2 text-right font-mono text-brand-text text-sm transition-colors"
+                              className="w-32 bg-transparent border-b border-brand-border/50 rounded-none focus:border-brand-accent focus:bg-brand-bg rounded-lg px-3 py-2 text-right font-mono text-brand-text text-sm transition-colors"
                               placeholder="0"
                             />
                           </div>
@@ -553,15 +553,15 @@ export default function NightOpsModule({ onNavigate }) {
                               value={t.declared_digital === undefined ? '' : t.declared_digital}
                               onChange={(e) => handleDeclaredChange(t.id, 'declared_digital', e.target.value)}
                               onBlur={(e) => handleDeclaredSave(t.id, 'declared_digital', e.target.value)}
-                              className="w-32 bg-brand-surface/50 border border-brand-border/50 focus:border-brand-accent focus:bg-brand-bg rounded-lg px-3 py-2 text-right font-mono text-brand-text text-sm transition-colors"
+                              className="w-32 bg-transparent border-b border-brand-border/50 rounded-none focus:border-brand-accent focus:bg-brand-bg rounded-lg px-3 py-2 text-right font-mono text-brand-text text-sm transition-colors"
                               placeholder="0"
                             />
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-right bg-brand-surface/10 font-mono text-brand-muted">
+                        <td className="px-6 py-4 text-right bg-transparent font-mono text-brand-muted">
                           {formatCurrency(t.system_cash)}
                         </td>
-                        <td className="px-6 py-4 text-right bg-brand-surface/10 font-mono text-brand-muted">
+                        <td className="px-6 py-4 text-right bg-transparent font-mono text-brand-muted">
                           {formatCurrency(t.system_digital)}
                         </td>
                         <td className="px-6 py-4 text-right font-mono">
@@ -621,7 +621,7 @@ export default function NightOpsModule({ onNavigate }) {
               
               {/* MEMBERS */}
               <div className="bg-[#0A0A0A] border border-brand-border/50 rounded-2xl overflow-hidden shadow-2xl">
-                <div className="p-4 md:p-6 border-b border-brand-border/50 bg-brand-surface/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="p-4 md:p-6 border-b border-brand-border/50 bg-transparent flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
                       <Users size={20} className="text-purple-400" />
@@ -648,7 +648,7 @@ export default function NightOpsModule({ onNavigate }) {
                   {membersData ? (
                     <div className="flex flex-col gap-4">
                       <div className="grid grid-cols-3 gap-4">
-                        <div className="bg-brand-surface/30 p-4 rounded-xl border border-brand-border/50">
+                        <div className="bg-transparent p-4 rounded-xl border border-brand-border/50">
                           <div className="text-[10px] uppercase text-brand-muted tracking-widest mb-1">Total Emitidos</div>
                           <div className="text-2xl font-mono text-brand-text">{membersData.total}</div>
                         </div>
@@ -670,7 +670,7 @@ export default function NightOpsModule({ onNavigate }) {
 
               {/* GENERAL */}
               <div className="bg-[#0A0A0A] border border-brand-border/50 rounded-2xl overflow-hidden shadow-2xl">
-                <div className="p-4 md:p-6 border-b border-brand-border/50 bg-brand-surface/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="p-4 md:p-6 border-b border-brand-border/50 bg-transparent flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
                       <Ticket size={20} className="text-blue-400" />
@@ -696,7 +696,7 @@ export default function NightOpsModule({ onNavigate }) {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm whitespace-nowrap">
                     <thead>
-                      <tr className="bg-brand-surface/40 border-b border-brand-border/50 text-[10px] font-black uppercase tracking-[0.2em] text-brand-muted">
+                      <tr className="bg-transparent border-b border-brand-border/50 text-[10px] font-black uppercase tracking-[0.2em] text-brand-muted">
                         <th className="px-6 py-4">Tipo de Ticket</th>
                         <th className="px-6 py-4 text-right">Comprados</th>
                         <th className="px-6 py-4 text-right">Validados</th>
@@ -705,7 +705,7 @@ export default function NightOpsModule({ onNavigate }) {
                     </thead>
                     <tbody className="divide-y divide-brand-border/30">
                       {generalData ? generalData.map((g, i) => (
-                        <tr key={i} className="hover:bg-brand-surface/20 transition-colors">
+                        <tr key={i} className="hover:bg-transparent transition-colors">
                           <td className="px-6 py-4 font-bold text-brand-text uppercase text-xs">{g.tipo}</td>
                           <td className="px-6 py-4 text-right font-mono text-brand-muted">{g.comprados}</td>
                           <td className="px-6 py-4 text-right font-mono text-brand-success">{g.validados}</td>

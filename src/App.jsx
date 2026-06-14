@@ -233,18 +233,23 @@ function AppShell() {
 
         {/* Center: Reportes Sub-Nav */}
         {activeView !== 'index' && ['night_report', 'monthly_report', 'annual_report', 'r_pagos'].includes(activeView) && (
-          <div className="flex-1 flex items-center justify-start md:justify-center gap-2 overflow-x-auto no-scrollbar animate-fade-in px-4">
-            <div className="flex bg-brand-surface p-1 rounded-xl">
-              {['night_report', 'monthly_report', 'annual_report', 'r_pagos'].map(r => (
-                <button
-                  key={r}
-                  onClick={() => handleNavigation(r)}
-                  className={`px-4 py-2 text-[10px] uppercase font-bold tracking-widest rounded-lg transition-colors ${activeView === r ? 'bg-brand-text text-brand-bg' : 'text-brand-muted hover:text-brand-text'}`}
-                >
-                  {r === 'night_report' ? 'R. JORNADA' : r === 'monthly_report' ? 'R. MENSUAL' : r === 'annual_report' ? 'R. ANUAL' : 'R. PAGOS'}
-                </button>
-              ))}
-            </div>
+          <div className="flex-1 flex items-center justify-start md:justify-center gap-4 md:gap-8 overflow-x-auto no-scrollbar animate-fade-in px-4">
+            {[
+              { id: 'night_report', label: 'R. JORNADA' },
+              { id: 'monthly_report', label: 'R. MENSUAL' },
+              { id: 'annual_report', label: 'R. ANUAL' },
+              { id: 'r_pagos', label: 'R. PAGOS' },
+            ].map(mod => (
+              <button
+                key={mod.id}
+                onClick={() => handleNavigation(mod.id)}
+                className={`text-[9px] font-bold tracking-[0.2em] uppercase transition-colors cursor-pointer ${
+                  activeView === mod.id ? 'text-brand-text' : 'text-brand-muted hover:text-brand-text'
+                }`}
+              >
+                {mod.label}
+              </button>
+            ))}
           </div>
         )}
 
