@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Loader2, Upload, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import dayjs from 'dayjs';
+import { sanitizePayload } from '../lib/sanitizer';
 
 const parseCsvLine = (line, separator) => {
   const result = [];

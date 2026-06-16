@@ -1,6 +1,7 @@
 import React, { useRef,  useState, useEffect, useCallback  } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Plus, X, Save, Pencil, DollarSign, Search, Trash2, Loader2 } from 'lucide-react';
+import { sanitizePayload } from '../lib/sanitizer';
 
 
 export default function StaffRolesModule({ onNavigate }) {

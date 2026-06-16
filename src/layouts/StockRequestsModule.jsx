@@ -3,11 +3,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { Plus, X, Save, Pencil, Package, CheckCircle2, Trash2, Loader2 } from 'lucide-react';
 import dayjs from 'dayjs';
+import { sanitizePayload } from '../lib/sanitizer';
 
 export default function StockRequestsModule({ onNavigate }) {
   const isMountedRef = useRef(true);
   useEffect(() => () => { isMountedRef.current = false; }, []);
-
   const { user } = useAuth();
   const [workDays, setWorkDays] = useState([]);
   const [selectedWorkDayId, setSelectedWorkDayId] = useState('');

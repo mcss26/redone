@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { Plus, X, Save, Pencil, DollarSign, CheckCircle2, AlertCircle, Trash2, Loader2 } from 'lucide-react';
 import dayjs from 'dayjs';
+import { sanitizePayload } from '../lib/sanitizer';
 
 export default function OpeningCostsModule({ onNavigate }) {
   const isMountedRef = useRef(true);

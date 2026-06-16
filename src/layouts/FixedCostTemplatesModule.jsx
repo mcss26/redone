@@ -1,11 +1,11 @@
 import React, { useRef,  useState, useEffect, useCallback  } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Plus, X, Save, Pencil, ClipboardList } from 'lucide-react';
+import { sanitizePayload } from '../lib/sanitizer';
 
 export default function FixedCostTemplatesModule({ onNavigate }) {
   const isMountedRef = useRef(true);
   useEffect(() => () => { isMountedRef.current = false; }, []);
-
   const [templates, setTemplates] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);

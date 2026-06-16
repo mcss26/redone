@@ -1,5 +1,11 @@
 # Midnight Club OS - Master Changelog
 
+## 2026-06-16 (Critical Hotfix - sanitizePayload Import)
+- **Hotfix / Critical:** Corregido `ReferenceError: sanitizePayload is not defined` en 14 módulos CRUD. La inyección masiva del 14/06 agregó llamadas a `sanitizePayload()` en 19 módulos pero el `import` solo fue incluido en `ProfilesModule.jsx`. Se agregó `import { sanitizePayload } from '../lib/sanitizer'` a los 14 módulos faltantes: `WorkDaysModule`, `OpeningCostsModule`, `StockRequestsModule`, `StaffPlanModule`, `FixedCostsModule`, `AuditoriaBarraModule`, `CostTemplatesModule`, `FixedCostTemplatesModule`, `SuppliersModule`, `StaffRolesModule`, `SkuModule`, `PosTerminalsModule`, `PaymentsModule`, `MasterVouchersModule`.
+- **Impacto:** Todas las operaciones de escritura (insert/update) estaban rotas silenciosamente en estos módulos. El error era capturado por los bloques `catch` y mostrado como toast genérico, pero la operación no se completaba. La auto-población de `opening_costs` y `staff_plan` al crear jornadas era la más crítica.
+- **Data Recovery:** Eliminada jornada 20/06 (`e3face21-b170-4c6f-aa6b-4febb1c16e58`, evento "SABADO") que fue creada sin auto-poblado de costos ni staff. Confirmado 0 registros huérfanos en `opening_costs`, `staff_plan`, `stock_requests`. El usuario debe recrearla desde la UI para que se ejecute la auto-población correctamente.
+- **Validación:** Build exitoso (`npm run build`, 0 errores, 525ms). Grep verificó 15/15 imports presentes en todos los módulos que usan `sanitizePayload`.
+
 ## 2026-06-14 (Production Ready - Phase 1)
 - **System / Database:** Implementada la función `update_sku_stock_min` y el trigger `trg_update_stock_min` en Supabase para calcular y mantener actualizado automáticamente el `stock_min` de cada SKU. El cálculo promedia dinámicamente el consumo real de las últimas 10 fechas activas (`CEIL(consumo_total / fechas)`).
 - **UI:** Modificado el módulo `SkuModule.jsx` para convertir el campo `stock_min` en solo-lectura (`readOnly`) reflejando su nueva naturaleza autogestionada por el backend, incluyendo badges visuales ("Auto").

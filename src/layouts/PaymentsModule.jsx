@@ -3,11 +3,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { Plus, X, Save, DollarSign, Wallet, FileText, CheckCircle2, Loader2 } from 'lucide-react';
 import dayjs from 'dayjs';
+import { sanitizePayload } from '../lib/sanitizer';
 
 export default function PaymentsModule() {
   const isMountedRef = useRef(true);
   useEffect(() => () => { isMountedRef.current = false; }, []);
-
   const { canMutate } = useAuth();
   const hasMutateAccess = canMutate('payments');
 

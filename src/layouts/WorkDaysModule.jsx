@@ -2,6 +2,7 @@ import React, { useRef,  useState, useEffect, useCallback  } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Plus, X, Save, Pencil, ChevronRight, CalendarDays, Trash2, Loader2, Search } from 'lucide-react';
 import dayjs from 'dayjs';
+import { sanitizePayload } from '../lib/sanitizer';
 
 export default function WorkDaysModule({ onNavigate }) {
   const isMountedRef = useRef(true);

@@ -1,6 +1,7 @@
 import React, { useRef,  useState, useEffect, useCallback  } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Plus, X, Save, Receipt, Trash2, Loader2, CheckCircle2 } from 'lucide-react';
+import { sanitizePayload } from '../lib/sanitizer';
 
 export default function MasterVouchersModule({ onNavigate }) {
   const isMountedRef = useRef(true);

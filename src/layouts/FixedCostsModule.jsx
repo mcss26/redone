@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { Plus, X, Save, Pencil, Calendar, CheckCircle2, Trash2, Loader2 } from 'lucide-react';
 import dayjs from 'dayjs';
+import { sanitizePayload } from '../lib/sanitizer';
 
 export default function FixedCostsModule() {
   const isMountedRef = useRef(true);

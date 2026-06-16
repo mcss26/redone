@@ -1,6 +1,7 @@
 import React, { useRef,  useState, useEffect  } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Search, X, Save, Pencil, Trash2, Loader2, Package } from 'lucide-react';
+import { sanitizePayload } from '../lib/sanitizer';
 
 const UNITS = ['botella', 'caja', 'pack', 'kg', 'litro', 'unidad'];
 

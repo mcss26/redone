@@ -1,6 +1,7 @@
 import React, { useRef,  useState, useEffect, useCallback  } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Plus, X, Save, Pencil, Truck, Search, Loader2, Building2, User, CreditCard, FileText, Trash2 } from 'lucide-react';
+import { sanitizePayload } from '../lib/sanitizer';
 
 const CATEGORIES = ['bar', 'limpieza', 'servicios', 'estructura', 'otros'];
 
