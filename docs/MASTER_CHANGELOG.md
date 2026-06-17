@@ -1,5 +1,10 @@
 # Midnight Club OS - Master Changelog
 
+## 2026-06-17 (Permisos: Auditoría Consumo → Contador)
+- **Permisos:** Agregado `auditoria_barra` al array `access` del rol `contador` en `AuthContext.jsx`. El módulo es **read-only** (no se añadió a `writable`), permitiendo al contador visualizar las auditorías consolidadas.
+- **UI:** Agregado enlace `AUDITORIA CONSUMO` al menú desplegable de `REPORTES` en `ContadorIndex.jsx`.
+- **Validación:** Build exitoso (`npm run build`, 0 errores).
+
 ## 2026-06-16 (Critical Hotfix - sanitizePayload Import)
 - **Hotfix / Critical:** Corregido `ReferenceError: sanitizePayload is not defined` en 14 módulos CRUD. La inyección masiva del 14/06 agregó llamadas a `sanitizePayload()` en 19 módulos pero el `import` solo fue incluido en `ProfilesModule.jsx`. Se agregó `import { sanitizePayload } from '../lib/sanitizer'` a los 14 módulos faltantes: `WorkDaysModule`, `OpeningCostsModule`, `StockRequestsModule`, `StaffPlanModule`, `FixedCostsModule`, `AuditoriaBarraModule`, `CostTemplatesModule`, `FixedCostTemplatesModule`, `SuppliersModule`, `StaffRolesModule`, `SkuModule`, `PosTerminalsModule`, `PaymentsModule`, `MasterVouchersModule`.
 - **Impacto:** Todas las operaciones de escritura (insert/update) estaban rotas silenciosamente en estos módulos. El error era capturado por los bloques `catch` y mostrado como toast genérico, pero la operación no se completaba. La auto-población de `opening_costs` y `staff_plan` al crear jornadas era la más crítica.

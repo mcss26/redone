@@ -56,6 +56,7 @@ export default function ContadorIndex({ onNavigate }) {
   ];
 
   const REPORT_MODULES = [
+    { id: 'auditoria_barra', label: 'AUDITORIA CONSUMO' },
     { id: 'night_report',   label: 'R. NOCHE' },
     { id: 'monthly_report', label: 'R. MES' },
     { id: 'annual_report',  label: 'REPORTE ANUAL' },

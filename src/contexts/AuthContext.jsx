@@ -28,6 +28,8 @@ const ROLE_ACCESS = {
       'profiles', 'suppliers', 'sku', 'staff_roles', 'cost_templates', 'pos_terminals', 'master_vouchers',
       // Ejecución
       'payments', 'fixed_costs',
+      // Auditoría (read-only)
+      'auditoria_barra',
       // Reportes
       'night_report', 'monthly_report', 'annual_report', 'r_pagos',
     ],
