@@ -32,7 +32,7 @@ export default function OpeningCostsModule({ onNavigate }) {
     const fetchInit = async () => {
       try {
         const [wdRes, supRes] = await Promise.all([
-          supabase.from('work_days').select('*').eq('status', 'open').order('work_date', { ascending: false }),
+          supabase.from('work_days').select('*').in('status', ['open', 'closed']).order('work_date', { ascending: false }).limit(30),
           supabase.from('suppliers').select('id, name').eq('active', true).order('name')
         ]);
         
@@ -176,7 +176,9 @@ export default function OpeningCostsModule({ onNavigate }) {
   const formatCurrency = (val) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(val);
 
   const totalAmount = costs.reduce((sum, c) => sum + Number(c.amount), 0);
-  const isClosed = selectedWorkDayId ? workDays.find(wd => wd.id === selectedWorkDayId)?.status === 'closed' : true;
+  const activeWd = workDays.find(wd => wd.id === selectedWorkDayId);
+  const isClosed = activeWd ? activeWd.status === 'closed' : true;
+  const isLocked = isClosed && user?.role !== 'admin';
 
   return (
     <div className="h-full flex relative">
@@ -208,7 +210,7 @@ export default function OpeningCostsModule({ onNavigate }) {
             {user?.role === 'admin' && (
               <button
                 onClick={handleApproveAll}
-                disabled={!selectedWorkDayId || isClosed || costs.filter(c => c.status === 'draft').length === 0}
+                disabled={!selectedWorkDayId || isLocked || costs.filter(c => c.status === 'draft').length === 0}
                 className="text-brand-success/70 hover:text-brand-success transition-colors cursor-pointer flex items-center justify-end gap-2 text-[10px] font-bold tracking-[0.2em] uppercase disabled:opacity-30"
                 title="Aprobar todos los costos pendientes"
               >
@@ -218,7 +220,7 @@ export default function OpeningCostsModule({ onNavigate }) {
 
             <button
               onClick={openCreate}
-              disabled={!selectedWorkDayId || isClosed}
+              disabled={!selectedWorkDayId || isLocked}
               className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer flex items-center justify-end gap-2 text-[10px] font-bold tracking-[0.2em] uppercase disabled:opacity-30"
             >
               + AD-HOC
@@ -278,7 +280,7 @@ export default function OpeningCostsModule({ onNavigate }) {
                     </div>
                   </td>
                   <td className="px-5 py-3.5 text-right flex justify-end gap-2">
-                    {!isClosed && (
+                    {!isLocked && (
                       <>
                         {c.status === 'draft' && user?.role === 'admin' && (
                           <button onClick={() => handleApprove(c.id)} className="text-brand-success/70 hover:text-brand-success transition-colors cursor-pointer w-11 h-11 flex items-center justify-center shrink-0" title="Aprobar Costo">

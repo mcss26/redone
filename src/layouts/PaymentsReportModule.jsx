@@ -8,7 +8,8 @@ export default function PaymentsReportModule() {
   const isMountedRef = useRef(true);
   useEffect(() => () => { isMountedRef.current = false; }, []);
 
-  const { canAccess } = useAuth();
+  const { canAccess, user } = useAuth();
+  const showFiscal = ['admin', 'contador'].includes(user?.role);
   
   const [viewMode, setViewMode] = useState('month'); // 'month' | 'year'
   const [selectedPeriod, setSelectedPeriod] = useState(dayjs().format('YYYY-MM')); // YYYY-MM or YYYY
@@ -18,6 +19,7 @@ export default function PaymentsReportModule() {
   const [reportData, setReportData] = useState([]); // aggregated rows
   const [kpiData, setKpiData] = useState({}); // voucher_type -> sum
   const [voucherTypes, setVoucherTypes] = useState([]);
+  const [fiscalData, setFiscalData] = useState({ bruto: 0, neto: 0, iva: 0 });
 
   // Generate periods
   const periods = React.useMemo(() => {
@@ -89,6 +91,7 @@ export default function PaymentsReportModule() {
       const rowsMap = {}; // key: YYYY-MM-DD or YYYY-MM -> sums by voucher
       const kpis = {};
       const uniqueVouchers = new Set();
+      let fiscalBrutoA = 0;
 
       combined.forEach(item => {
         const vt = item.voucher_type ? item.voucher_type.replace('_', ' ').toUpperCase() : 'SIN DETALLE';
@@ -106,7 +109,14 @@ export default function PaymentsReportModule() {
 
         if (!kpis[vt]) kpis[vt] = 0;
         kpis[vt] += Number(item.amount);
+        
+        if (vt === 'FACTURA A' || vt === 'FACTURA M') {
+          fiscalBrutoA += Number(item.amount);
+        }
       });
+
+      const netoEstimado = fiscalBrutoA / 1.21;
+      const ivaEstimado = fiscalBrutoA - netoEstimado;
 
       const aggregatedRows = Object.values(rowsMap).sort((a, b) => b.date.localeCompare(a.date));
       const sortedVouchers = Array.from(uniqueVouchers).sort();
@@ -115,6 +125,7 @@ export default function PaymentsReportModule() {
         setReportData(aggregatedRows);
         setKpiData(kpis);
         setVoucherTypes(sortedVouchers);
+        setFiscalData({ bruto: fiscalBrutoA, neto: netoEstimado, iva: ivaEstimado });
       }
 
     } catch (err) {
@@ -214,6 +225,42 @@ export default function PaymentsReportModule() {
             </div>
           ))}
         </div>
+
+        {/* Análisis Fiscal KPI (Protected) */}
+        {showFiscal && fiscalData.bruto > 0 && (
+          <div className="mb-12 p-4 md:p-6 border border-brand-border/50 bg-brand-bg/50 relative overflow-hidden group">
+            {/* Subtle highlight accent on hover */}
+            <div className="absolute top-0 left-0 w-1 h-full bg-brand-success opacity-50 group-hover:opacity-100 transition-opacity"></div>
+            
+            <h3 className="text-[10px] font-bold tracking-[0.3em] uppercase text-brand-muted mb-6 flex items-center gap-2">
+              <FileText size={10} className="text-brand-success" />
+              ANÁLISIS FISCAL ESTIMADO (FACTURAS A / M)
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="flex flex-col pl-4 md:pl-2">
+                <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">PAGADO (BRUTO)</span>
+                <span className="text-2xl font-mono font-bold text-brand-text/40">
+                  {formatCurrency(fiscalData.bruto)}
+                </span>
+              </div>
+              <div className="flex flex-col border-l border-brand-border/50 pl-4 md:pl-6">
+                <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-brand-muted mb-2">COSTO REAL (NETO)</span>
+                <span className="text-2xl font-mono font-bold text-brand-text">
+                  {formatCurrency(fiscalData.neto)}
+                </span>
+              </div>
+              <div className="flex flex-col border-l border-brand-success/30 pl-4 md:pl-6">
+                <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-brand-success mb-2">CRÉDITO FISCAL (IVA)</span>
+                <span className="text-3xl font-mono font-black text-brand-success drop-shadow-[0_0_15px_rgba(var(--brand-success-rgb),0.2)]">
+                  {formatCurrency(fiscalData.iva)}
+                </span>
+              </div>
+            </div>
+            <div className="mt-5 pt-3 border-t border-brand-border/30 text-[8px] text-brand-muted/40 tracking-wider uppercase">
+              * Calculado asumiendo alícuota estándar del 21% sobre el total bruto pagado. Los montos reales de la liquidación pueden variar por percepciones o conceptos exentos.
+            </div>
+          </div>
+        )}
 
         {/* Total KPI */}
         {totalPagado > 0 && (

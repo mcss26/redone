@@ -117,3 +117,11 @@
 - 2026-06-14 - Mantenimiento: Limpieza de archivos temporales y scripts de pruebas en la ra铆z del proyecto para cumplir con los est谩ndares de higiene del repositorio.
 - 2026-06-14 - Hotfix: Resoluci贸n de errores de sintaxis masivos provocados por migraci贸n de window.confirm. A帽adidos los par茅ntesis de cierre en condicionales as铆ncronos en 13 m贸dulos. Vite ahora compila exitosamente.
 - 2026-06-14 - UX Architecture: Refactorizaci贸n masiva de 19 m贸dulos para erradicar las recargas destructivas de tablas. Se reemplaz贸 setLoading(true) por isFetchingBackground(true) en todas las recargas as铆ncronas para eliminar los Layout Shifts y generar una percepci贸n de red instant谩nea.
+
+### 2026-06-28: Admin Access to Closed Workdays
+- **System**: Se modificaron `OpeningCostsModule.jsx`, `StaffPlanModule.jsx`, y `StockRequestsModule.jsx` para extender la consulta a supabase permitiendo extraer jornadas en estado `closed` (limitado a 30 recientes).
+- **Security**: Se reemplaz贸 la validaci贸n estricta `isClosed` por `isLocked` que ahora discrimina por rol (`user?.role === 'admin'`). 
+- **UX**: Esto permite exclusivamente a los usuarios administradores visualizar, editar y eliminar registros (costos, planes de staff, insumos) de fechas pasadas ya consolidadas.
+### [2026-06-28] Implementaci髇 de KPI Fiscal en Reporte de Pagos
+- Agregado desglose del Cr閐ito Fiscal IVA (Bruto, Neto, IVA Estimado) exclusivo para roles Admin y Contador en PaymentsReportModule.jsx.
+- La estimaci髇 utiliza la al韈uota est醤dar del 21% bas醤dose en el tipo de comprobante sin requerir modificaciones en la base de datos.

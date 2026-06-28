@@ -30,7 +30,7 @@ export default function StaffPlanModule({ onNavigate }) {
     const fetchInit = async () => {
       try {
         const [wdRes, rolesRes] = await Promise.all([
-          supabase.from('work_days').select('*').eq('status', 'open').order('work_date', { ascending: false }),
+          supabase.from('work_days').select('*').in('status', ['open', 'closed']).order('work_date', { ascending: false }).limit(30),
           supabase.from('staff_roles').select('id, name, base_rate, default_quantity').eq('active', true).order('name')
         ]);
         
@@ -177,7 +177,9 @@ export default function StaffPlanModule({ onNavigate }) {
     return sum + (qty * rate);
   }, 0);
 
-  const isClosed = selectedWorkDayId ? workDays.find(wd => wd.id === selectedWorkDayId)?.status === 'closed' : true;
+  const activeWd = workDays.find(wd => wd.id === selectedWorkDayId);
+  const isClosed = activeWd ? activeWd.status === 'closed' : true;
+  const isLocked = isClosed && user?.role !== 'admin';
 
   return (
     <div className="h-full flex relative">
@@ -208,7 +210,7 @@ export default function StaffPlanModule({ onNavigate }) {
             {user?.role === 'admin' && (
               <button
                 onClick={handleApproveAll}
-                disabled={!selectedWorkDayId || isClosed || staffPlans.filter(p => p.status === 'draft').length === 0}
+                disabled={!selectedWorkDayId || isLocked || staffPlans.filter(p => p.status === 'draft').length === 0}
                 className="text-brand-success/70 hover:text-brand-success transition-colors cursor-pointer flex items-center justify-end gap-2 text-[10px] font-bold tracking-[0.2em] uppercase disabled:opacity-30"
                 title="Aprobar todo"
               >
@@ -218,7 +220,7 @@ export default function StaffPlanModule({ onNavigate }) {
 
             <button
               onClick={openCreate}
-              disabled={!selectedWorkDayId || isClosed}
+              disabled={!selectedWorkDayId || isLocked}
               className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer flex items-center justify-end gap-2 text-[10px] font-bold tracking-[0.2em] uppercase disabled:opacity-30"
             >
               + SOLICITAR
@@ -275,7 +277,7 @@ export default function StaffPlanModule({ onNavigate }) {
                     </div>
                   </td>
                   <td className="px-5 py-3.5 text-right flex justify-end gap-2 items-center">
-                    {!isClosed && (
+                    {!isLocked && (
                       <>
                         <button onClick={() => openEdit(p)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer w-11 h-11 flex items-center justify-center shrink-0">
                           <Pencil size={13} />

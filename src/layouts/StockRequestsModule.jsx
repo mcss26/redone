@@ -31,7 +31,7 @@ export default function StockRequestsModule({ onNavigate }) {
     const fetchInit = async () => {
       try {
         const [wdRes, skusRes, supRes] = await Promise.all([
-          supabase.from('work_days').select('*').eq('status', 'open').order('work_date', { ascending: false }),
+          supabase.from('work_days').select('*').in('status', ['open', 'closed']).order('work_date', { ascending: false }).limit(30),
           supabase.from('skus').select('id, name, unit, category, cost, supplier_id').eq('active', true).order('name'),
           supabase.from('suppliers').select('id, name').eq('active', true).order('name')
         ]);
@@ -224,7 +224,9 @@ export default function StockRequestsModule({ onNavigate }) {
   }, 0);
 
   const allApproved = stockRequests.length > 0 && stockRequests.every(r => r.status === 'approved');
-  const isClosed = selectedWorkDayId ? workDays.find(wd => wd.id === selectedWorkDayId)?.status === 'closed' : true;
+  const activeWd = workDays.find(wd => wd.id === selectedWorkDayId);
+  const isClosed = activeWd ? activeWd.status === 'closed' : true;
+  const isLocked = isClosed && user?.role !== 'admin';
 
   return (
     <div className="h-full flex relative">
@@ -256,7 +258,7 @@ export default function StockRequestsModule({ onNavigate }) {
             {user?.role === 'admin' && (
               <button
                 onClick={approveAll}
-                disabled={stockRequests.length === 0 || allApproved || isClosed}
+                disabled={stockRequests.length === 0 || allApproved || isLocked}
                 className={`transition-colors cursor-pointer flex items-center justify-end gap-2 text-[10px] font-bold tracking-[0.2em] uppercase disabled:opacity-30 ${
                   allApproved ? 'text-brand-success' : 'text-brand-success/70 hover:text-brand-success'
                 }`}
@@ -268,7 +270,7 @@ export default function StockRequestsModule({ onNavigate }) {
 
             <button
               onClick={openCreate}
-              disabled={!selectedWorkDayId || isClosed}
+              disabled={!selectedWorkDayId || isLocked}
               className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer flex items-center justify-end gap-2 text-[10px] font-bold tracking-[0.2em] uppercase disabled:opacity-30"
             >
               + SOLICITAR SKU
@@ -338,7 +340,7 @@ export default function StockRequestsModule({ onNavigate }) {
                     </div>
                   </td>
                   <td className="px-5 py-3.5 text-right flex justify-end gap-2 items-center h-full">
-                    {!isClosed && r.status !== 'approved' && (
+                    {!isLocked && r.status !== 'approved' && (
                       <>
                         <button onClick={() => openEdit(r)} className="text-brand-muted hover:text-brand-text transition-colors cursor-pointer w-11 h-11 flex items-center justify-center shrink-0">
                           <Pencil size={13} />
