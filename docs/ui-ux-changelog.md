@@ -120,3 +120,10 @@
 ### Remediación Integral de Auditoría UX/UI: Eliminado window.confirm, implementado GlobalUI, remediado Container Purge y dependencias huérfanas en módulos CRUD. Añadido isMountedRef en useEffects para seguridad asíncrona.
 - 2026-06-14 - Hotfix: Resolución de errores de sintaxis masivos provocados por migración de window.confirm. Añadidos los paréntesis de cierre en condicionales asíncronos en 13 módulos. Vite ahora compila exitosamente.
 - 2026-06-14 - UX Architecture: Refactorización masiva de 19 módulos para erradicar las recargas destructivas de tablas. Se reemplazó setLoading(true) por isFetchingBackground(true) en todas las recargas asíncronas para eliminar los Layout Shifts y generar una percepción de red instantánea.
+
+## 2026-06-28
+### Refactor Visual de Proyección de Impuestos (`r.mes` y `r.anual`)
+- **Container-Driven UI:** Se modificó la "ZONA A" (KPIs Estratégicos) de `MonthlyReportModule.jsx` y `AnnualReportModule.jsx` para pasar de una grilla de 3 columnas (`lg:grid-cols-3`) a una de 4 columnas (`lg:grid-cols-4`).
+- **Wayfinding & Contrast:** El nuevo componente "IMPUESTOS PROYECTADOS" utiliza la paleta `brand-warning` (borde sutil y color de fuente) para aislar visualmente el aspecto fiscal del resto de la operación.
+- **Reducción de Carga Cognitiva:** Se eliminó la línea de "Impuestos Proyectados" de la tabla anidada de "Egresos Totales" para no ensuciar la información puramente operativa, cumpliendo la directiva de evitar información redundante.
+- **Consistencia Responsiva:** Se añadió `whitespace-nowrap` a la nueva columna de "Impuestos N." en la tabla histórica inferior de `r.anual`, garantizando que no haya saltos de línea incontrolados en móviles (se habilita scroll horizontal limpio).

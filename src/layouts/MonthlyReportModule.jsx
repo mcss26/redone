@@ -23,7 +23,8 @@ export default function MonthlyReportModule({ onNavigate }) {
     workDaysCount: 0,
     openDaysCount: 0,
     inflows: { total: 0, cash: 0, digital: 0, surplus: 0 },
-    outflows: { total: 0, weeklyCosts: 0, monthlyCosts: 0, taxes: 0, stockDiscrepancies: 0, tillDiscrepancies: 0 },
+    outflows: { total: 0, weeklyCosts: 0, monthlyCosts: 0, stockDiscrepancies: 0, tillDiscrepancies: 0 },
+    taxesData: { gross: 0, fiscalCredit: 0, net: 0 },
     netProfit: 0,
     margin: 0,
     expenseDistribution: { staff: 0, supply: 0, recurrent: 0, adHoc: 0, fixed: 0 },
@@ -86,7 +87,7 @@ export default function MonthlyReportModule({ onNavigate }) {
       // Fetch fixed costs for the month
       const { data: fixedCostsData, error: fixedError } = await supabase
         .from('monthly_fixed_costs')
-        .select('amount, status')
+        .select('amount, status, voucher_type')
         .eq('billing_month', selectedMonth);
         
       if (fixedError) throw fixedError;
@@ -94,11 +95,24 @@ export default function MonthlyReportModule({ onNavigate }) {
       const totalFixedCosts = (fixedCostsData || []).reduce((acc, curr) => acc + Number(curr.amount), 0);
 
       if (wds.length === 0) {
+        // Compute fiscal credit for fixed costs even if no work_days
+        let fallbackFiscalCredit = 0;
+        (fixedCostsData || []).forEach(fc => {
+          if (fc.status === 'paid') {
+            const vt = fc.voucher_type ? fc.voucher_type.replace('_', ' ').toUpperCase() : '';
+            if (vt === 'FACTURA A' || vt === 'FACTURA M') {
+              fallbackFiscalCredit += Number(fc.amount) - (Number(fc.amount) / 1.21);
+            }
+          }
+        });
+        const fallbackNetTaxes = 0 - fallbackFiscalCredit; // gross is 0, credit is subtracted
+        
         setMonthData({
           workDaysCount: 0, openDaysCount: 0,
           inflows: { total: 0, cash: 0, digital: 0, surplus: 0 },
-          outflows: { total: totalFixedCosts, weeklyCosts: 0, monthlyCosts: totalFixedCosts, taxes: 0, stockDiscrepancies: 0, tillDiscrepancies: 0 },
-          netProfit: -totalFixedCosts, margin: 0,
+          outflows: { total: totalFixedCosts, weeklyCosts: 0, monthlyCosts: totalFixedCosts, stockDiscrepancies: 0, tillDiscrepancies: 0 },
+          taxesData: { gross: 0, fiscalCredit: fallbackFiscalCredit, net: fallbackNetTaxes },
+          netProfit: -(totalFixedCosts + fallbackNetTaxes), margin: 0,
           expenseDistribution: { staff: 0, supply: 0, recurrent: 0, adHoc: 0, fixed: totalFixedCosts }, breakdowns: []
         });
         return;
@@ -110,7 +124,7 @@ export default function MonthlyReportModule({ onNavigate }) {
       const [closingRes, passlineRes, costsRes, staffRes, adjRes, posRes] = await Promise.all([
         fetchAll(supabase.from('night_cash_closing').select('work_day_id, terminal_id, system_cash, system_digital, diff_cash, diff_digital').in('work_day_id', wdIds)),
         fetchAll(supabase.from('stg_passline_tickets').select('operational_date, total_raw, tipo_ticket').in('operational_date', wdDates)),
-        fetchAll(supabase.from('opening_costs').select('work_day_id, amount, status, template_id, title').in('status', ['paid', 'approved']).in('work_day_id', wdIds)),
+        fetchAll(supabase.from('opening_costs').select('work_day_id, amount, status, template_id, title, voucher_type').in('status', ['paid', 'approved']).in('work_day_id', wdIds)),
         fetchAll(supabase.from('staff_plan').select('work_day_id, quantity_approved, staff_roles(base_rate)').in('work_day_id', wdIds)),
         fetchAll(supabase.from('financial_adjustments').select('work_day_id, amount, type, category, description').in('work_day_id', wdIds)),
         supabase.from('pos_terminals').select('id, name')
@@ -124,7 +138,8 @@ export default function MonthlyReportModule({ onNavigate }) {
       if (posRes.error) throw posRes.error;
 
       let grandInflows = { total: 0, cash: 0, digital: 0, surplus: 0 };
-      let grandOutflows = { total: 0, weeklyCosts: 0, monthlyCosts: totalFixedCosts, taxes: 0, stockDiscrepancies: 0, tillDiscrepancies: 0 };
+      let grandOutflows = { total: 0, weeklyCosts: 0, monthlyCosts: totalFixedCosts, stockDiscrepancies: 0, tillDiscrepancies: 0 };
+      let grandTaxes = { gross: 0, fiscalCredit: 0, net: 0 };
       let grandNet = 0;
       let distStaff = 0, distSupply = 0, distRecurrent = 0, distAdHoc = 0;
       let openCount = 0;
@@ -169,6 +184,7 @@ export default function MonthlyReportModule({ onNavigate }) {
         const wdCosts = (costsRes.data || []).filter(x => x.work_day_id === wd.id);
         let daySupply = 0, dayRecurrent = 0, dayAdHoc = 0;
         
+        let dayFiscalCredit = 0;
         wdCosts.forEach(cost => {
           const amt = Number(cost.amount);
           if (cost.title && cost.title.includes('Pedido de Insumos')) {
@@ -177,6 +193,11 @@ export default function MonthlyReportModule({ onNavigate }) {
             dayRecurrent += amt;
           } else {
             dayAdHoc += amt;
+          }
+          
+          const vt = cost.voucher_type ? cost.voucher_type.replace('_', ' ').toUpperCase() : '';
+          if (vt === 'FACTURA A' || vt === 'FACTURA M') {
+            dayFiscalCredit += amt - (amt / 1.21);
           }
         });
 
@@ -189,14 +210,16 @@ export default function MonthlyReportModule({ onNavigate }) {
         }
 
         const dayWeeklyCosts = daySupply + dayRecurrent + dayAdHoc + payroll + manualExpense;
-        const dayOpCosts = dayWeeklyCosts + dayTax + barraFaltante + arqueoFaltante;
+        const dayOpCosts = dayWeeklyCosts + barraFaltante + arqueoFaltante;
+        
+        const dayNetTaxes = dayTax - dayFiscalCredit;
 
         const revCash = posCash;
         const revDigital = posDigital + passline;
         const revSurplus = barraSobrante + arqueoSobrante + manualIncome;
         const revTotal = revCash + revDigital + revSurplus;
 
-        const net = revTotal - dayOpCosts;
+        const net = revTotal - dayOpCosts - dayNetTaxes;
 
         grandInflows.cash += revCash;
         grandInflows.digital += revDigital;
@@ -204,10 +227,13 @@ export default function MonthlyReportModule({ onNavigate }) {
         grandInflows.total += revTotal;
 
         grandOutflows.weeklyCosts += dayWeeklyCosts;
-        grandOutflows.taxes += dayTax;
         grandOutflows.stockDiscrepancies += barraFaltante;
         grandOutflows.tillDiscrepancies += arqueoFaltante;
         grandOutflows.total += dayOpCosts;
+        
+        grandTaxes.gross += dayTax;
+        grandTaxes.fiscalCredit += dayFiscalCredit;
+        grandTaxes.net += dayNetTaxes;
         
         grandNet += net;
 
@@ -222,13 +248,28 @@ export default function MonthlyReportModule({ onNavigate }) {
           name: wd.event_name || 'SIN NOMBRE',
           status: wd.status,
           revenue: revTotal,
-          costs: dayOpCosts,
+          costs: dayOpCosts + dayNetTaxes,
           net: net
         });
       });
 
+      // Extract Fiscal Credit from fixed costs
+      let fixedCostsFiscalCredit = 0;
+      (fixedCostsData || []).forEach(fc => {
+        if (fc.status === 'paid') {
+          const vt = fc.voucher_type ? fc.voucher_type.replace('_', ' ').toUpperCase() : '';
+          if (vt === 'FACTURA A' || vt === 'FACTURA M') {
+            fixedCostsFiscalCredit += Number(fc.amount) - (Number(fc.amount) / 1.21);
+          }
+        }
+      });
+      
+      grandTaxes.fiscalCredit += fixedCostsFiscalCredit;
+      grandTaxes.net = grandTaxes.gross - grandTaxes.fiscalCredit;
+
       grandOutflows.total += totalFixedCosts;
-      grandNet -= totalFixedCosts;
+      grandNet = grandInflows.total - grandOutflows.total - grandTaxes.net;
+      
       const margin = grandInflows.total > 0 ? (grandNet / grandInflows.total) * 100 : 0;
 
       const posMap = {};
@@ -264,6 +305,7 @@ export default function MonthlyReportModule({ onNavigate }) {
         openDaysCount: openCount,
         inflows: grandInflows,
         outflows: grandOutflows,
+        taxesData: grandTaxes,
         netProfit: grandNet,
         margin: margin,
         expenseDistribution: { staff: distStaff, supply: distSupply, recurrent: distRecurrent, adHoc: distAdHoc, fixed: totalFixedCosts },
@@ -364,23 +406,22 @@ export default function MonthlyReportModule({ onNavigate }) {
           <div className="max-w-6xl mx-auto space-y-6">
             
             {/* ZONA A: KPIs ESTRATÉGICOS */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               
               {/* COL 1: EGRESOS */}
               <div className="flex flex-col gap-4">
-                <div className="border border-brand-border p-6 relative">
+                <div className="border border-brand-border p-6 flex flex-col justify-between h-[116px]">
                   <div className="text-[10px] font-extrabold tracking-widest uppercase text-brand-muted mb-2">TOTAL EGRESOS</div>
-                  <div className="text-4xl font-mono text-brand-text">
+                  <div className="text-3xl lg:text-2xl xl:text-3xl font-mono tracking-tighter text-brand-text">
                     -{formatCurrency(monthData.outflows.total)}
                   </div>
                 </div>
                 
-                <div className="border-t border-brand-border/50 pt-4 mt-4">
+                <div className="pt-4">
                   <table className="w-full text-xs font-mono">
                     <tbody className="divide-y divide-brand-border/30">
                       <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Costos Semana (Inc. RRHH)</td><td className="py-3 text-right">-{formatCurrency(monthData.outflows.weeklyCosts)}</td></tr>
                       <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Costos Mes (Fijos)</td><td className="py-3 text-right">-{formatCurrency(monthData.outflows.monthlyCosts)}</td></tr>
-                      <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Impuestos Proyectados</td><td className="py-3 text-right text-brand-warning">-{formatCurrency(monthData.outflows.taxes)}</td></tr>
                       {monthData.outflows.stockDiscrepancies > 0 && (
                         <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Mermas de Barra</td><td className="py-3 text-right text-brand-error">-{formatCurrency(monthData.outflows.stockDiscrepancies)}</td></tr>
                       )}
@@ -394,14 +435,14 @@ export default function MonthlyReportModule({ onNavigate }) {
 
               {/* COL 2: INGRESOS */}
               <div className="flex flex-col gap-4">
-                <div className="border border-brand-border p-6 relative">
+                <div className="border border-brand-border p-6 flex flex-col justify-between h-[116px]">
                   <div className="text-[10px] font-extrabold tracking-widest uppercase text-brand-muted mb-2">TOTAL INGRESOS</div>
-                  <div className="text-4xl font-mono text-brand-success">
+                  <div className="text-3xl lg:text-2xl xl:text-3xl font-mono tracking-tighter text-brand-success">
                     {formatCurrency(monthData.inflows.total)}
                   </div>
                 </div>
                 
-                <div className="border-t border-brand-border/50 pt-4 mt-4">
+                <div className="pt-4">
                   <table className="w-full text-xs font-mono">
                     <tbody className="divide-y divide-brand-border/30">
                       <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Efectivo (POS)</td><td className="py-3 text-right">{formatCurrency(monthData.inflows.cash)}</td></tr>
@@ -414,28 +455,47 @@ export default function MonthlyReportModule({ onNavigate }) {
                 </div>
               </div>
 
-              {/* COL 3: MARGEN NETO */}
+              {/* COL 3: IMPUESTOS PROYECTADOS */}
               <div className="flex flex-col gap-4">
-                <div className={`border rounded-2xl p-6 flex flex-col justify-between h-[116px] ${
+                <div className="border border-brand-warning/30 bg-brand-warning/5 p-6 flex flex-col justify-between h-[116px]">
+                  <div className="text-[10px] font-extrabold tracking-widest uppercase text-brand-warning mb-2">IMPUESTOS PROYECTADOS</div>
+                  <div className="text-3xl lg:text-2xl xl:text-3xl font-mono tracking-tighter text-brand-warning">
+                    -{formatCurrency(monthData.taxesData.net)}
+                  </div>
+                </div>
+                
+                <div className="pt-4">
+                  <table className="w-full text-xs font-mono">
+                    <tbody className="divide-y divide-brand-border/30">
+                      <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Impuesto Bruto (Est.)</td><td className="py-3 text-right text-brand-muted">-{formatCurrency(monthData.taxesData.gross)}</td></tr>
+                      <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Crédito Fiscal (IVA)</td><td className="py-3 text-right text-brand-success">+{formatCurrency(monthData.taxesData.fiscalCredit)}</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* COL 4: MARGEN NETO */}
+              <div className="flex flex-col gap-4">
+                <div className={`border p-6 flex flex-col justify-between h-[116px] ${
                   monthData.netProfit >= 0 ? 'bg-brand-success/5 border-brand-success/30' : 'bg-brand-error/5 border-brand-error/30'
                 }`}>
                   <div className="flex justify-between items-start">
                     <div className="text-[10px] font-extrabold tracking-widest uppercase text-brand-muted mb-2">MARGEN NETO</div>
-                    <div className={`text-xs font-bold px-2 py-1 rounded bg-[#111111] font-mono tracking-widest ${monthData.margin >= 0 ? 'text-brand-success' : 'text-brand-error'}`}>
+                    <div className={`text-xs font-bold px-2 py-1 bg-[#111111] font-mono tracking-widest ${monthData.margin >= 0 ? 'text-brand-success' : 'text-brand-error'}`}>
                       {monthData.margin > 0 ? '+' : ''}{monthData.margin.toFixed(1)}% MRG
                     </div>
                   </div>
-                  <div className={`text-4xl font-mono tracking-tight ${monthData.netProfit >= 0 ? 'text-brand-success' : 'text-brand-error'}`}>
+                  <div className={`text-3xl lg:text-2xl xl:text-3xl font-mono tracking-tighter ${monthData.netProfit >= 0 ? 'text-brand-success' : 'text-brand-error'}`}>
                     {formatCurrency(monthData.netProfit)}
                   </div>
                 </div>
 
-                <div className="border-t border-brand-border/50 pt-4 mt-4">
+                <div className="pt-4">
                   <table className="w-full text-xs font-mono">
                     <tbody className="divide-y divide-brand-border/30">
                       <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Ingresos Totales</td><td className="py-3 text-right text-brand-success">{formatCurrency(monthData.inflows.total)}</td></tr>
                       <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Egresos Totales</td><td className="py-3 text-right text-brand-error">-{formatCurrency(monthData.outflows.total)}</td></tr>
-                      <tr className="bg-brand-surface/50"><td className="py-3 px-2 text-brand-text font-sans font-bold uppercase tracking-wider text-[10px]">Beneficio Operativo</td><td className={`py-3 px-2 text-right font-bold ${monthData.netProfit >= 0 ? 'text-brand-success' : 'text-brand-error'}`}>{formatCurrency(monthData.netProfit)}</td></tr>
+                      <tr><td className="py-3 text-brand-muted font-sans font-bold uppercase tracking-wider text-[10px]">Impuestos Netos</td><td className="py-3 text-right text-brand-warning">-{formatCurrency(monthData.taxesData.net)}</td></tr>
                     </tbody>
                   </table>
                 </div>
