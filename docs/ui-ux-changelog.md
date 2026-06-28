@@ -127,3 +127,8 @@
 - **Wayfinding & Contrast:** El nuevo componente "IMPUESTOS PROYECTADOS" utiliza la paleta `brand-warning` (borde sutil y color de fuente) para aislar visualmente el aspecto fiscal del resto de la operación.
 - **Reducción de Carga Cognitiva:** Se eliminó la línea de "Impuestos Proyectados" de la tabla anidada de "Egresos Totales" para no ensuciar la información puramente operativa, cumpliendo la directiva de evitar información redundante.
 - **Consistencia Responsiva:** Se añadió `whitespace-nowrap` a la nueva columna de "Impuestos N." en la tabla histórica inferior de `r.anual`, garantizando que no haya saltos de línea incontrolados en móviles (se habilita scroll horizontal limpio).
+### 2026-06-28: Mass UI Safe Remediation (Risk 0)
+- Replaced hardcoded hex colors with brand tokens (bg-[#0A0A0A] to bg-brand-bg, bg-[#111111] to bg-brand-surface).
+- Improved text contrast in muted labels (text-brand-muted/40 to /70).
+- Reduced codex-defect border-radius (rounded-2xl/xl to rounded-lg).
+- Affected 14 modules.

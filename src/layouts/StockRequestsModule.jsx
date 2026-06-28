@@ -481,7 +481,7 @@ export default function StockRequestsModule({ onNavigate }) {
                         step="0.01"
                         value={form.quantity_approved}
                         onChange={(e) => setForm({ ...form, quantity_approved: e.target.value })}
-                        className="w-full bg-brand-surface border border-brand-success/30 rounded-xl px-4 py-3 text-sm text-brand-success font-mono focus:outline-none focus:border-brand-success transition-colors"
+                        className="w-full bg-brand-surface border border-brand-success/30 rounded-lg px-4 py-3 text-sm text-brand-success font-mono focus:outline-none focus:border-brand-success transition-colors"
                       />
                     </div>
                   )}
@@ -494,7 +494,7 @@ export default function StockRequestsModule({ onNavigate }) {
               <button
                 onClick={handleSave}
                 disabled={saving || !form.sku_id}
-                className="w-full flex items-center justify-center gap-2 bg-brand-text text-brand-bg rounded-xl py-3 text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 bg-brand-text text-brand-bg rounded-lg py-3 text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
               >
                 {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
                 {saving ? 'GUARDANDO...' : 'GUARDAR STOCK'}

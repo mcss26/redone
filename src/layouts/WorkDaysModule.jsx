@@ -300,7 +300,7 @@ export default function WorkDaysModule({ onNavigate }) {
                 <button
                   onClick={handleDelete}
                   disabled={saving}
-                  className="flex items-center justify-center bg-brand-surface border border-brand-error/30 text-brand-error rounded-xl px-4 py-3 hover:bg-brand-error hover:text-white transition-colors disabled:opacity-30 cursor-pointer"
+                  className="flex items-center justify-center bg-brand-surface border border-brand-error/30 text-brand-error rounded-lg px-4 py-3 hover:bg-brand-error hover:text-white transition-colors disabled:opacity-30 cursor-pointer"
                   title="Eliminar Jornada"
                 >
                   <Trash2 size={16} />
@@ -309,7 +309,7 @@ export default function WorkDaysModule({ onNavigate }) {
               <button
                 onClick={handleSave}
                 disabled={saving || !form.work_date}
-                className="flex-1 flex items-center justify-center gap-2 bg-brand-text text-brand-bg rounded-xl py-3 text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 bg-brand-text text-brand-bg rounded-lg py-3 text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-30 cursor-pointer"
               >
                 {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
                 {saving ? 'GUARDANDO...' : (selectedDay ? 'ACTUALIZAR' : 'CREAR JORNADA')}

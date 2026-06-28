@@ -493,7 +493,7 @@ export default function AnnualReportModule({ onNavigate }) {
                 }`}>
                   <div className="flex justify-between items-start">
                     <div className="text-[10px] font-extrabold tracking-widest uppercase text-brand-muted mb-2">MARGEN NETO</div>
-                    <div className={`text-xs font-bold px-2 py-1 bg-[#111111] font-mono tracking-widest ${yearData.margin >= 0 ? 'text-brand-success' : 'text-brand-error'}`}>
+                    <div className={`text-xs font-bold px-2 py-1 bg-brand-surface font-mono tracking-widest ${yearData.margin >= 0 ? 'text-brand-success' : 'text-brand-error'}`}>
                       {yearData.margin > 0 ? '+' : ''}{yearData.margin.toFixed(1)}% MRG
                     </div>
                   </div>
@@ -518,7 +518,7 @@ export default function AnnualReportModule({ onNavigate }) {
             {/* ZONA B: GRÁFICOS */}
             
             {/* Tendencia Historica Mes */}
-            <div className="bg-brand-surface/30 border border-brand-border rounded-xl p-6 flex flex-col justify-between min-h-[220px]">
+            <div className="bg-brand-surface/30 border border-brand-border rounded-lg p-6 flex flex-col justify-between min-h-[220px]">
               <div className="text-[10px] font-bold tracking-widest uppercase text-brand-muted mb-6">TENDENCIA</div>
               <div className="flex-1 w-full flex items-end justify-center relative">
                 {yearData.breakdowns.length >= 2 ? renderTrendLine() : (
@@ -532,7 +532,7 @@ export default function AnnualReportModule({ onNavigate }) {
             </div>
 
             {/* ZONA C: TABLA VIVA SIMPLIFICADA */}
-            <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden mt-8">
+            <div className="bg-brand-surface border border-brand-border rounded-lg overflow-hidden mt-8">
               <div className="px-6 py-5 border-b border-brand-border flex justify-between items-center bg-brand-bg/50">
                 <h3 className="text-[10px] font-bold tracking-[0.2em] uppercase text-brand-text">CONSOLIDADO</h3>
                 <div className="text-[10px] text-brand-muted tracking-widest uppercase font-bold">
@@ -600,7 +600,7 @@ export default function AnnualReportModule({ onNavigate }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
               
               {/* RENDIMIENTO CAJAS */}
-              <div className="bg-[#0A0A0A] border border-brand-border/50 rounded-2xl overflow-hidden shadow-2xl flex flex-col">
+              <div className="bg-brand-bg border border-brand-border/50 rounded-lg overflow-hidden shadow-2xl flex flex-col">
                 <div className="p-4 md:p-6 border-b border-brand-border/50 bg-brand-surface/20">
                   <h3 className="text-base font-black text-brand-text uppercase tracking-widest flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-brand-accent"></span>
@@ -640,7 +640,7 @@ export default function AnnualReportModule({ onNavigate }) {
               </div>
 
               {/* DETALLE MERMAS */}
-              <div className="bg-[#0A0A0A] border border-brand-border/50 rounded-2xl overflow-hidden shadow-2xl flex flex-col">
+              <div className="bg-brand-bg border border-brand-border/50 rounded-lg overflow-hidden shadow-2xl flex flex-col">
                 <div className="p-4 md:p-6 border-b border-brand-border/50 bg-brand-surface/20">
                   <h3 className="text-base font-black text-brand-text uppercase tracking-widest flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-brand-warning"></span>

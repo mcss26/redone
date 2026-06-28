@@ -35,7 +35,7 @@ export default function GlobalUI({ children }) {
       
       {/* Toast */}
       {toast && (
-        <div className={`fixed bottom-6 right-6 z-[100] px-6 py-4 rounded-xl border flex items-center gap-3 animate-slide-in shadow-2xl ${toast.type === 'danger' ? 'bg-[#0A0A0A] border-brand-danger/50 text-brand-danger' : 'bg-[#0A0A0A] border-brand-success/50 text-brand-success'}`}>
+        <div className={`fixed bottom-6 right-6 z-[100] px-6 py-4 rounded-lg border flex items-center gap-3 animate-slide-in shadow-2xl ${toast.type === 'danger' ? 'bg-brand-bg border-brand-danger/50 text-brand-danger' : 'bg-brand-bg border-brand-success/50 text-brand-success'}`}>
           {toast.type === 'danger' ? <AlertTriangle size={16} /> : <CheckCircle2 size={16} />}
           <span className="text-xs font-bold uppercase tracking-widest">{toast.msg}</span>
         </div>
@@ -48,7 +48,7 @@ export default function GlobalUI({ children }) {
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={confirmState.onCancel} />
           
           {/* Modal */}
-          <div className="relative bg-[#0A0A0A] border border-brand-border/50 w-full max-w-sm overflow-hidden animate-fade-in shadow-2xl">
+          <div className="relative bg-brand-bg border border-brand-border/50 w-full max-w-sm overflow-hidden animate-fade-in shadow-2xl">
             {/* Ambient Glow */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-brand-danger shadow-[0_0_15px_rgba(239,68,68,0.5)]" />
             

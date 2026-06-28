@@ -256,7 +256,7 @@ export default function PaymentsReportModule() {
                 </span>
               </div>
             </div>
-            <div className="mt-5 pt-3 border-t border-brand-border/30 text-[8px] text-brand-muted/40 tracking-wider uppercase">
+            <div className="mt-5 pt-3 border-t border-brand-border/30 text-[8px] text-brand-muted/70 tracking-wider uppercase">
               * Calculado asumiendo alícuota estándar del 21% sobre el total bruto pagado. Los montos reales de la liquidación pueden variar por percepciones o conceptos exentos.
             </div>
           </div>

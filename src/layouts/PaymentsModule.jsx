@@ -365,7 +365,7 @@ export default function PaymentsModule() {
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => setForm({ ...form, payment_method: 'digital' })}
-                    className={`flex items-center justify-center gap-2 rounded-xl py-3 border text-[10px] font-bold uppercase tracking-[0.2em] transition-colors ${
+                    className={`flex items-center justify-center gap-2 rounded-lg py-3 border text-[10px] font-bold uppercase tracking-[0.2em] transition-colors ${
                       form.payment_method === 'digital' 
                         ? 'bg-brand-surface border-brand-text text-brand-text' 
                         : 'bg-transparent border-brand-border/50 text-brand-muted hover:border-brand-muted'
@@ -375,7 +375,7 @@ export default function PaymentsModule() {
                   </button>
                   <button
                     onClick={() => setForm({ ...form, payment_method: 'efectivo' })}
-                    className={`flex items-center justify-center gap-2 rounded-xl py-3 border text-[10px] font-bold uppercase tracking-[0.2em] transition-colors ${
+                    className={`flex items-center justify-center gap-2 rounded-lg py-3 border text-[10px] font-bold uppercase tracking-[0.2em] transition-colors ${
                       form.payment_method === 'efectivo' 
                         ? 'bg-brand-surface border-brand-text text-brand-text' 
                         : 'bg-transparent border-brand-border/50 text-brand-muted hover:border-brand-muted'

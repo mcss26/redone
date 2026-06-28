@@ -340,7 +340,7 @@ export default function AuditoriaBarraModule({ onNavigate }) {
     <div className="h-full flex flex-col relative bg-brand-bg overflow-hidden">
       {flashColor && <div className={`absolute inset-0 z-50 pointer-events-none opacity-10 transition-opacity duration-150 ${flashColor}`}></div>}
 
-      <div className="shrink-0 p-6 border-b border-brand-border/30 bg-[#0A0A0A] z-10 flex justify-between items-center">
+      <div className="shrink-0 p-6 border-b border-brand-border/30 bg-brand-bg z-10 flex justify-between items-center">
         <div className="flex items-center gap-4">
           <div>
             <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">AUDITORIA CONSUMO</h2>
@@ -357,7 +357,7 @@ export default function AuditoriaBarraModule({ onNavigate }) {
           >
             {workDays.length === 0 && <option value="">SIN JORNADAS</option>}
             {workDays.map((wd) => (
-              <option key={wd.id} value={wd.id} className="bg-[#0A0A0A] text-brand-text">
+              <option key={wd.id} value={wd.id} className="bg-brand-bg text-brand-text">
                 {dayjs(wd.work_date).format('DD/MM/YYYY')} — {wd.event_name || 'SIN EVENTO'}
               </option>
             ))}
@@ -430,7 +430,7 @@ export default function AuditoriaBarraModule({ onNavigate }) {
                 </thead>
                 <tbody className="divide-y divide-brand-border/20">
                   {comparisonResults.map((row, idx) => (
-                    <tr key={idx} className="hover:bg-[#0A0A0A] transition-colors group">
+                    <tr key={idx} className="hover:bg-brand-bg transition-colors group">
                       <td className="py-4 pr-6">
                         <div className="flex items-center gap-3">
                           {!row.skuFound && <AlertTriangle size={12} className="text-brand-warning opacity-50" title="No mapeado" />}

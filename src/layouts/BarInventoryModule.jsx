@@ -198,7 +198,7 @@ export default function BarInventoryModule({ onNavigate }) {
           <select
             value={selectedWorkDayId}
             onChange={(e) => setSelectedWorkDayId(e.target.value)}
-            className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3.5 text-sm font-bold text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none"
+            className="w-full bg-brand-bg border border-brand-border rounded-lg px-4 py-3.5 text-sm font-bold text-brand-text focus:outline-none focus:border-brand-muted transition-colors appearance-none"
           >
             {workDays.length === 0 && <option value="">Sin jornadas activas</option>}
             {workDays.map((wd) => (
@@ -210,7 +210,7 @@ export default function BarInventoryModule({ onNavigate }) {
         </div>
 
         {/* Mode Toggle */}
-        <div className="flex bg-brand-bg rounded-xl p-1 border border-brand-border/50">
+        <div className="flex bg-brand-bg rounded-lg p-1 border border-brand-border/50">
           <button 
             onClick={() => setMode('open')}
             className={`flex-1 flex justify-center items-center gap-2 py-3 text-xs font-bold uppercase tracking-widest rounded-lg transition-all ${mode === 'open' ? 'bg-brand-surface border border-brand-border text-brand-text shadow-sm' : 'text-brand-muted/50 hover:text-brand-muted'}`}
@@ -241,7 +241,7 @@ export default function BarInventoryModule({ onNavigate }) {
             
             {/* Lock Warning Banner */}
             {isModeLocked && (
-              <div className="bg-brand-warning/10 border border-brand-warning/20 rounded-xl p-4 flex items-start gap-3">
+              <div className="bg-brand-warning/10 border border-brand-warning/20 rounded-lg p-4 flex items-start gap-3">
                 <Lock size={16} className="text-brand-warning shrink-0 mt-0.5" />
                 <div>
                   <div className="text-xs font-bold text-brand-warning uppercase tracking-widest">Stock Bloqueado</div>
@@ -265,7 +265,7 @@ export default function BarInventoryModule({ onNavigate }) {
                     const value = mode === 'open' ? item.stock_open : item.stock_close;
                     
                     return (
-                      <div key={sku.id} className={`bg-brand-surface border border-brand-border rounded-2xl p-4 flex items-center justify-between transition-opacity ${isModeLocked ? 'opacity-60' : ''}`}>
+                      <div key={sku.id} className={`bg-brand-surface border border-brand-border rounded-lg p-4 flex items-center justify-between transition-opacity ${isModeLocked ? 'opacity-60' : ''}`}>
                         <div className="flex-1 pr-4">
                           <div className="text-sm font-bold text-brand-text truncate">{sku.name}</div>
                           <div className="text-[10px] text-brand-muted mt-1 tracking-widest uppercase">
@@ -277,7 +277,7 @@ export default function BarInventoryModule({ onNavigate }) {
                           <button 
                             onClick={() => updateStock(sku.id, -1)}
                             disabled={isModeLocked}
-                            className="w-12 h-12 flex items-center justify-center bg-brand-bg border border-brand-border rounded-xl text-brand-text active:bg-brand-border disabled:opacity-30 cursor-pointer"
+                            className="w-12 h-12 flex items-center justify-center bg-brand-bg border border-brand-border rounded-lg text-brand-text active:bg-brand-border disabled:opacity-30 cursor-pointer"
                           >
                             <span className="text-xl font-mono">-</span>
                           </button>
@@ -293,13 +293,13 @@ export default function BarInventoryModule({ onNavigate }) {
                               updateStock(sku.id, 0, e.target.value);
                             }}
                             disabled={isModeLocked}
-                            className="w-16 h-12 bg-transparent text-center font-mono font-bold text-xl text-brand-text focus:outline-none focus:bg-brand-bg rounded-xl transition-colors disabled:opacity-100"
+                            className="w-16 h-12 bg-transparent text-center font-mono font-bold text-xl text-brand-text focus:outline-none focus:bg-brand-bg rounded-lg transition-colors disabled:opacity-100"
                           />
                           
                           <button 
                             onClick={() => updateStock(sku.id, 1)}
                             disabled={isModeLocked}
-                            className="w-12 h-12 flex items-center justify-center bg-brand-bg border border-brand-border rounded-xl text-brand-text active:bg-brand-border disabled:opacity-30 cursor-pointer"
+                            className="w-12 h-12 flex items-center justify-center bg-brand-bg border border-brand-border rounded-lg text-brand-text active:bg-brand-border disabled:opacity-30 cursor-pointer"
                           >
                             <span className="text-xl font-mono">+</span>
                           </button>
@@ -319,7 +319,7 @@ export default function BarInventoryModule({ onNavigate }) {
         <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-brand-bg/90 backdrop-blur-md border-t border-brand-border z-20 flex justify-center">
           <div className="w-full max-w-3xl">
             {isModeLocked ? (
-              <div className="w-full flex items-center justify-center gap-2 bg-brand-surface border border-brand-border text-brand-muted rounded-xl py-4 text-xs font-bold uppercase tracking-widest opacity-50 cursor-not-allowed">
+              <div className="w-full flex items-center justify-center gap-2 bg-brand-surface border border-brand-border text-brand-muted rounded-lg py-4 text-xs font-bold uppercase tracking-widest opacity-50 cursor-not-allowed">
                 <Lock size={14} />
                 {mode === 'open' ? 'INVENTARIO DE APERTURA' : 'INVENTARIO DE CIERRE'} (CERRADO)
               </div>
@@ -327,7 +327,7 @@ export default function BarInventoryModule({ onNavigate }) {
               <button
                 onClick={handleSaveAndLock}
                 disabled={saving}
-                className="w-full flex items-center justify-center gap-2 bg-brand-text text-brand-bg rounded-xl py-4 text-xs font-bold uppercase tracking-widest hover:bg-white active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer shadow-lg"
+                className="w-full flex items-center justify-center gap-2 bg-brand-text text-brand-bg rounded-lg py-4 text-xs font-bold uppercase tracking-widest hover:bg-white active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer shadow-lg"
               >
                 {saving ? (
                   <Loader2 size={16} className="animate-spin" />

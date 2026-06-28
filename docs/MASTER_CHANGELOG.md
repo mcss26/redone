@@ -130,3 +130,6 @@
 - **Architecture/Logic:** Se extrajo el cálculo de "Proyección de Impuestos" (`dayTax`) del acumulador de Egresos Operativos en `MonthlyReportModule.jsx` y `AnnualReportModule.jsx`.
 - **Logic:** Implementado cálculo dinámico de "Crédito IVA" en los reportes base, deduciendo el 21% de los egresos formales (Factura A/M) tanto de costos variables como de fijos.
 - **System:** Actualizada la fórmula de Margen Neto a su representación contable estricta: `Ingresos + Egresos - Proyección de Impuestos Neta`.
+
+### 2026-06-28: Agent Orchestration Update
+- Installed new skills: pbakaus/impeccable and ercel-labs/agent-skills@web-design-guidelines to strengthen the Module Audit Framework.

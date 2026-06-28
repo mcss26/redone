@@ -411,12 +411,12 @@ export default function NightReportModule({ onNavigate }) {
 
               {/* COL 3: BREAK EVEN */}
               <div className="flex flex-col gap-4">
-                <div className={`border rounded-2xl p-6 flex flex-col justify-between h-[116px] ${
+                <div className={`border rounded-lg p-6 flex flex-col justify-between h-[116px] ${
                   reportData.netProfit >= 0 ? 'bg-brand-success/5 border-brand-success/30' : 'bg-brand-error/5 border-brand-error/30'
                 }`}>
                   <div className="flex justify-between items-start">
                     <div className="text-[10px] font-extrabold tracking-widest uppercase text-brand-muted mb-2">RESULTADO NETO</div>
-                    <div className={`text-xs font-bold px-2 py-1 rounded bg-[#111111] font-mono tracking-widest ${reportData.margin >= 0 ? 'text-brand-success' : 'text-brand-error'}`}>
+                    <div className={`text-xs font-bold px-2 py-1 rounded bg-brand-surface font-mono tracking-widest ${reportData.margin >= 0 ? 'text-brand-success' : 'text-brand-error'}`}>
                       {reportData.margin.toFixed(1)}% MRG
                     </div>
                   </div>
@@ -438,7 +438,7 @@ export default function NightReportModule({ onNavigate }) {
                     <button
                       onClick={handleCloseDay}
                       disabled={closing}
-                      className={`w-full mt-4 px-6 py-4 font-black uppercase tracking-widest text-xs rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(229,229,229,0.3)] disabled:opacity-50 ${closeConfirm ? 'bg-brand-error text-white shadow-brand-error/20' : 'bg-brand-text text-[#0A0A0A] hover:opacity-90'}`}
+                      className={`w-full mt-4 px-6 py-4 font-black uppercase tracking-widest text-xs rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(229,229,229,0.3)] disabled:opacity-50 ${closeConfirm ? 'bg-brand-error text-white shadow-brand-error/20' : 'bg-brand-text text-[#0A0A0A] hover:opacity-90'}`}
                     >
                       {closing ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                       {closeConfirm ? 'CONFIRMAR CIERRE' : 'CONSOLIDAR Y CERRAR'}
@@ -485,7 +485,7 @@ export default function NightReportModule({ onNavigate }) {
                 value={adjDesc}
                 onChange={(e) => setAdjDesc(e.target.value)}
                 placeholder="Ej. Devolución de mercadería"
-                className="w-full bg-[#0A0A0A] border border-brand-border rounded-xl px-4 py-3 text-xs text-brand-text focus:outline-none focus:border-brand-text transition-colors"
+                className="w-full bg-brand-bg border border-brand-border rounded-lg px-4 py-3 text-xs text-brand-text focus:outline-none focus:border-brand-text transition-colors"
               />
             </div>
             <div>
@@ -495,16 +495,16 @@ export default function NightReportModule({ onNavigate }) {
                 value={adjAmount}
                 onChange={(e) => setAdjAmount(e.target.value)}
                 placeholder="0"
-                className="w-full bg-[#0A0A0A] border border-brand-border rounded-xl px-4 py-3 text-xs font-mono text-brand-text focus:outline-none focus:border-brand-text transition-colors"
+                className="w-full bg-brand-bg border border-brand-border rounded-lg px-4 py-3 text-xs font-mono text-brand-text focus:outline-none focus:border-brand-text transition-colors"
               />
             </div>
           </div>
           
-          <div className="p-6 border-t border-brand-border bg-[#0A0A0A]">
+          <div className="p-6 border-t border-brand-border bg-brand-bg">
             <button
               onClick={saveAdjustment}
               disabled={savingAdj || !adjDesc || !adjAmount}
-              className={`w-full py-4 text-xs font-black uppercase tracking-widest rounded-xl text-[#0A0A0A] shadow-[0_0_15px_rgba(229,229,229,0.3)] transition-all flex justify-center items-center gap-2 disabled:opacity-50 cursor-pointer ${adjType === 'income' ? 'bg-brand-success' : 'bg-brand-error text-white shadow-brand-error/20'}`}
+              className={`w-full py-4 text-xs font-black uppercase tracking-widest rounded-lg text-[#0A0A0A] shadow-[0_0_15px_rgba(229,229,229,0.3)] transition-all flex justify-center items-center gap-2 disabled:opacity-50 cursor-pointer ${adjType === 'income' ? 'bg-brand-success' : 'bg-brand-error text-white shadow-brand-error/20'}`}
             >
               {savingAdj ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
               GUARDAR {adjType === 'income' ? 'INGRESO' : 'EGRESO'}

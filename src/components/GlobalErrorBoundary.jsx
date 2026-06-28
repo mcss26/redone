@@ -23,7 +23,7 @@ export default class GlobalErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen w-full bg-[#0A0A0A] flex flex-col items-center justify-center p-6 md:p-12 selection:bg-red-500/30">
+        <div className="min-h-screen w-full bg-brand-bg flex flex-col items-center justify-center p-6 md:p-12 selection:bg-red-500/30">
           <div className="w-full max-w-2xl border border-red-500/20 p-8 md:p-12 relative overflow-hidden bg-brand-surface">
             {/* Ambient Glow */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200%] h-32 bg-red-500/5 blur-[100px] pointer-events-none" />

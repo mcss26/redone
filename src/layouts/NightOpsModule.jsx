@@ -432,14 +432,14 @@ export default function NightOpsModule({ onNavigate }) {
     <div className="h-full flex flex-col relative overflow-hidden bg-brand-bg">
       {flashColor && <div className={`absolute inset-0 z-50 pointer-events-none opacity-10 transition-opacity duration-150 ${flashColor}`}></div>}
 
-      <div className="shrink-0 bg-[#0A0A0A] border-b border-brand-border/50 px-8 py-6 z-10 flex justify-between items-center">
+      <div className="shrink-0 bg-brand-bg border-b border-brand-border/50 px-8 py-6 z-10 flex justify-between items-center">
         <div className="flex items-center gap-4">
           <div>
             <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">NIGHT CHIEF</h2>
           </div>
         </div>
         
-        <div className="flex items-center gap-4 bg-transparent border border-brand-border/50 p-2 rounded-xl">
+        <div className="flex items-center gap-4 bg-transparent border border-brand-border/50 p-2 rounded-lg">
           <select
             value={selectedWorkDay?.id || ''}
             onChange={(e) => {
@@ -462,7 +462,7 @@ export default function NightOpsModule({ onNavigate }) {
       <div className={`flex-1 overflow-y-auto p-6 md:p-8 space-y-8 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
         {selectedWorkDay && (
           <>
-            <div className={`p-4 rounded-xl border flex items-center justify-between ${
+            <div className={`p-4 rounded-lg border flex items-center justify-between ${
               selectedWorkDay.status.toLowerCase() === 'open' 
                 ? 'bg-brand-accent/10 border-brand-accent/30 text-brand-accent' 
                 : 'bg-brand-success/10 border-brand-success/30 text-brand-success'
@@ -479,10 +479,10 @@ export default function NightOpsModule({ onNavigate }) {
 
             </div>
 
-            <div className="bg-[#0A0A0A] border border-brand-border/50 rounded-2xl overflow-hidden shadow-2xl">
+            <div className="bg-brand-bg border border-brand-border/50 rounded-lg overflow-hidden shadow-2xl">
               <div className="p-4 md:p-6 border-b border-brand-border/50 bg-transparent flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-brand-accent/10 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg bg-brand-accent/10 flex items-center justify-center">
                     <TerminalSquare size={20} className="text-brand-accent" />
                   </div>
                   <div>
@@ -495,7 +495,7 @@ export default function NightOpsModule({ onNavigate }) {
                     <button
                       onClick={handleReplicateSystem}
                       disabled={saving || syncingGbol}
-                      className="flex items-center gap-2 bg-brand-surface border border-brand-border hover:border-brand-text px-4 py-2 rounded-xl text-[10px] font-bold text-brand-text tracking-widest uppercase transition-all cursor-pointer disabled:opacity-50"
+                      className="flex items-center gap-2 bg-brand-surface border border-brand-border hover:border-brand-text px-4 py-2 rounded-lg text-[10px] font-bold text-brand-text tracking-widest uppercase transition-all cursor-pointer disabled:opacity-50"
                     >
                       {saving ? <Loader2 size={14} className="animate-spin" /> : <Copy size={14} />}
                       IGUALAR SISTEMA
@@ -504,7 +504,7 @@ export default function NightOpsModule({ onNavigate }) {
                     <button 
                       onClick={() => gbolCsvRef.current?.click()}
                       disabled={syncingGbol || saving}
-                      className="flex items-center gap-2 bg-brand-surface border border-brand-border hover:border-brand-accent/50 px-4 py-2 rounded-xl text-[10px] font-bold text-brand-text tracking-widest uppercase transition-all cursor-pointer disabled:opacity-50"
+                      className="flex items-center gap-2 bg-brand-surface border border-brand-border hover:border-brand-accent/50 px-4 py-2 rounded-lg text-[10px] font-bold text-brand-text tracking-widest uppercase transition-all cursor-pointer disabled:opacity-50"
                     >
                       {syncingGbol ? <Loader2 size={14} className="animate-spin text-brand-accent" /> : <Upload size={14} className="text-brand-accent" />}
                       {syncingGbol ? 'IMPORTANDO...' : 'IMPORTAR CSV GBOL'}
@@ -620,10 +620,10 @@ export default function NightOpsModule({ onNavigate }) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               
               {/* MEMBERS */}
-              <div className="bg-[#0A0A0A] border border-brand-border/50 rounded-2xl overflow-hidden shadow-2xl">
+              <div className="bg-brand-bg border border-brand-border/50 rounded-lg overflow-hidden shadow-2xl">
                 <div className="p-4 md:p-6 border-b border-brand-border/50 bg-transparent flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
                       <Users size={20} className="text-purple-400" />
                     </div>
                     <div>
@@ -636,7 +636,7 @@ export default function NightOpsModule({ onNavigate }) {
                       <button 
                         onClick={() => membersCsvRef.current?.click()}
                         disabled={saving}
-                        className="flex items-center gap-2 bg-brand-surface border border-brand-border hover:border-purple-400/50 px-4 py-2 rounded-xl text-[10px] font-bold text-brand-text tracking-widest uppercase transition-all cursor-pointer disabled:opacity-50"
+                        className="flex items-center gap-2 bg-brand-surface border border-brand-border hover:border-purple-400/50 px-4 py-2 rounded-lg text-[10px] font-bold text-brand-text tracking-widest uppercase transition-all cursor-pointer disabled:opacity-50"
                       >
                         {saving ? <Loader2 size={14} className="animate-spin text-purple-400" /> : <Upload size={14} className="text-purple-400" />}
                         SUBIR CSV MEMBERS
@@ -648,15 +648,15 @@ export default function NightOpsModule({ onNavigate }) {
                   {membersData ? (
                     <div className="flex flex-col gap-4">
                       <div className="grid grid-cols-3 gap-4">
-                        <div className="bg-transparent p-4 rounded-xl border border-brand-border/50">
+                        <div className="bg-transparent p-4 rounded-lg border border-brand-border/50">
                           <div className="text-[10px] uppercase text-brand-muted tracking-widest mb-1">Total Emitidos</div>
                           <div className="text-2xl font-mono text-brand-text">{membersData.total}</div>
                         </div>
-                        <div className="bg-brand-success/10 p-4 rounded-xl border border-brand-success/30">
+                        <div className="bg-brand-success/10 p-4 rounded-lg border border-brand-success/30">
                           <div className="text-[10px] uppercase text-brand-success tracking-widest mb-1">Validados</div>
                           <div className="text-2xl font-mono text-brand-success">{membersData.validated}</div>
                         </div>
-                        <div className="bg-brand-warning/10 p-4 rounded-xl border border-brand-warning/30">
+                        <div className="bg-brand-warning/10 p-4 rounded-lg border border-brand-warning/30">
                           <div className="text-[10px] uppercase text-brand-warning tracking-widest mb-1">No Show</div>
                           <div className="text-2xl font-mono text-brand-warning">{membersData.notValidated}</div>
                         </div>
@@ -669,10 +669,10 @@ export default function NightOpsModule({ onNavigate }) {
               </div>
 
               {/* GENERAL */}
-              <div className="bg-[#0A0A0A] border border-brand-border/50 rounded-2xl overflow-hidden shadow-2xl">
+              <div className="bg-brand-bg border border-brand-border/50 rounded-lg overflow-hidden shadow-2xl">
                 <div className="p-4 md:p-6 border-b border-brand-border/50 bg-transparent flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
                       <Ticket size={20} className="text-blue-400" />
                     </div>
                     <div>
@@ -685,7 +685,7 @@ export default function NightOpsModule({ onNavigate }) {
                       <button 
                         onClick={() => generalCsvRef.current?.click()}
                         disabled={saving}
-                        className="flex items-center gap-2 bg-brand-surface border border-brand-border hover:border-blue-400/50 px-4 py-2 rounded-xl text-[10px] font-bold text-brand-text tracking-widest uppercase transition-all cursor-pointer disabled:opacity-50"
+                        className="flex items-center gap-2 bg-brand-surface border border-brand-border hover:border-blue-400/50 px-4 py-2 rounded-lg text-[10px] font-bold text-brand-text tracking-widest uppercase transition-all cursor-pointer disabled:opacity-50"
                       >
                         {saving ? <Loader2 size={14} className="animate-spin text-blue-400" /> : <Upload size={14} className="text-blue-400" />}
                         SUBIR CSV GENERAL
