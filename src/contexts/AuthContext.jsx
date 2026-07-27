@@ -19,8 +19,10 @@ const ROLE_ACCESS = {
       'work_days', 'opening_costs', 'staff_plan', 'stock_requests',
       // La Noche
       'bar_inventory', 'workday',
+      // Pagos
+      'fixed_costs',
     ],
-    writable: ['work_days', 'opening_costs', 'staff_plan', 'stock_requests', 'bar_inventory', 'workday', 'sku'],
+    writable: ['work_days', 'opening_costs', 'staff_plan', 'stock_requests', 'bar_inventory', 'workday', 'sku', 'fixed_costs'],
   },
   contador: {
     access: [

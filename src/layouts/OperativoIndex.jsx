@@ -56,6 +56,7 @@ export default function OperativoIndex({ onNavigate }) {
     { id: 'stock_requests', label: 'PEDIDOS DE STOCK' },
     { id: 'staff_plan',     label: 'PLAN DE STAFF' },
     { id: 'sku',            label: 'CATÁLOGO SKU' },
+    { id: 'fixed_costs',    label: 'PAGOS MES' },
   ];
 
   return (

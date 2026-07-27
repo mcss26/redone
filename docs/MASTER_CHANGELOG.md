@@ -1,5 +1,10 @@
 # Midnight Club OS - Master Changelog
 
+## 2026-07-27 (Permisos: Pagos Mes → Operativo)
+- **Permisos:** Agregado `fixed_costs` al array `access` y `writable` del rol `operativo` en `AuthContext.jsx`.
+- **UI:** Agregado el módulo `PAGOS MES` al menú principal en `OperativoIndex.jsx`.
+- **Security:** Bloqueada la función de aprobar pagos (botón de "Marcar como pagado") para el rol `operativo` en `FixedCostsModule.jsx`, permitiéndole únicamente crear, editar o eliminar registros de gastos estructurales.
+
 ## 2026-06-17 (Permisos: AuditorÃ­a Consumo â†’ Contador)
 - **Permisos:** Agregado `auditoria_barra` al array `access` del rol `contador` en `AuthContext.jsx`. El mÃ³dulo es **read-only** (no se aÃ±adiÃ³ a `writable`), permitiendo al contador visualizar las auditorÃ­as consolidadas.
 - **UI:** Agregado enlace `AUDITORIA CONSUMO` al menÃº desplegable de `REPORTES` en `ContadorIndex.jsx`.

@@ -9,8 +9,9 @@ export default function FixedCostsModule() {
   const isMountedRef = useRef(true);
   useEffect(() => () => { isMountedRef.current = false; }, []);
 
-  const { canMutate } = useAuth();
+  const { canMutate, user } = useAuth();
   const hasMutateAccess = canMutate('fixed_costs');
+  const canPay = hasMutateAccess && user?.role !== 'operativo';
 
   const [months, setMonths] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState('');
@@ -339,7 +340,7 @@ export default function FixedCostsModule() {
                   {hasMutateAccess && (
                     <td className="px-5 py-2 text-right">
                       <div className="flex items-center justify-end">
-                        {c.status === 'pending' && (
+                        {c.status === 'pending' && canPay && (
                           <button onClick={() => handleMarkPaid(c)} className="text-brand-success/70 hover:text-brand-success transition-colors cursor-pointer p-3 min-w-[44px] min-h-[44px] flex items-center justify-center" title="Marcar como Pagado">
                             <CheckCircle2 size={14} />
                           </button>
