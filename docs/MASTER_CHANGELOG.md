@@ -158,3 +158,8 @@ Se corrigió la lógica de consulta para ignorar jornadas abiertas. El sistema a
 - **Sistema:** Se modificó \AuthContext.jsx\ para conceder permisos de acceso de solo lectura al módulo \uditoria_barra\ para el rol \operativo\.
 - **UI/UX:** Se insertó el módulo en la interfaz de \OperativoIndex.jsx\ bajo el nombre de \REQUERIMIENTO (90D)\.
 - **Seguridad (UI Gating):** Al ingresar al módulo, si el sistema detecta el rol \operativo\, fuerza la renderización inicial a la pestaña logística y elimina del DOM el botón de la pestaña \CONCILIACIÓN ACTUAL\, impidiendo el acceso a los datos financieros de las auditorías consolidadas.
+
+
+## 6. Hotfix: Renderizado Condicional Asíncrono (Requerimientos 90D)
+- **Bug:** La tabla logística arrojaba \No hay datos históricos suficientes\ para el rol Operativo porque la petición de los Requerimientos se disparaba inmediatamente en el montaje del componente (al estar la pestaña activa por defecto), antes de que el servidor respondiera con la resolución del maestro de artículos (\skus\). El admin no presentaba el error porque iniciaba en la pestaña Conciliación y los \skus\ cargaban en segundo plano antes de cambiar de tab.
+- **Fix:** Añadida una compuerta de validación estricta (\if (skus.length === 0) return;\) en el \useEffect\ de \etchReqs\. Ahora la lógica logística respeta estrictamente el ciclo de vida asíncrono y aguarda hasta que el catálogo maestro esté completamente inyectado en memoria antes de evaluar el mapeo de stock de los 90 días.

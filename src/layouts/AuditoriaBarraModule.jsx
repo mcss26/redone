@@ -141,6 +141,7 @@ export default function AuditoriaBarraModule({ onNavigate }) {
   // Fetch Requirements Data (90 days historical)
   useEffect(() => {
     if (activeTab !== 'requirements' || reqsFetched) return;
+    if (skus.length === 0) return; // Prevent premature fetch before skus are loaded
     
     const fetchReqs = async () => {
       try {
