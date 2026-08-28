@@ -55,6 +55,7 @@ export default function OperativoIndex({ onNavigate }) {
     { id: 'opening_costs',  label: 'COST. APERTURA' },
     { id: 'stock_requests', label: 'PEDIDOS DE STOCK' },
     { id: 'staff_plan',     label: 'PLAN DE STAFF' },
+    { id: 'auditoria_barra',label: 'REQUERIMIENTO (90D)' },
     { id: 'sku',            label: 'CATÁLOGO SKU' },
     { id: 'fixed_costs',    label: 'PAGOS MES' },
   ];

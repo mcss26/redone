@@ -18,7 +18,7 @@ const ROLE_ACCESS = {
       // Planificación (full)
       'work_days', 'opening_costs', 'staff_plan', 'stock_requests',
       // La Noche
-      'bar_inventory', 'workday',
+      'bar_inventory', 'workday', 'auditoria_barra',
       // Pagos
       'fixed_costs',
     ],

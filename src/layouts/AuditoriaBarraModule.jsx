@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Loader2, Upload, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Loader2, Upload, AlertTriangle, CheckCircle2, Download } from 'lucide-react';
 import dayjs from 'dayjs';
 import { sanitizePayload } from '../lib/sanitizer';
+import { useAuth } from '../contexts/AuthContext';
 
 const parseCsvLine = (line, separator) => {
   const result = [];
@@ -18,8 +19,14 @@ const parseCsvLine = (line, separator) => {
 };
 
 export default function AuditoriaBarraModule({ onNavigate }) {
+  const { user } = useAuth();
   const isMountedRef = useRef(true);
   useEffect(() => () => { isMountedRef.current = false; }, []);
+
+  const [activeTab, setActiveTab] = useState(user?.role === 'operativo' ? 'requirements' : 'current');
+  const [requirementsData, setRequirementsData] = useState([]);
+  const [loadingReqs, setLoadingReqs] = useState(false);
+  const [reqsFetched, setReqsFetched] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [isFetchingBackground, setIsFetchingBackground] = useState(false);
@@ -130,6 +137,88 @@ export default function AuditoriaBarraModule({ onNavigate }) {
   useEffect(() => {
     fetchInventoryAndAudit();
   }, [fetchInventoryAndAudit]);
+
+  // Fetch Requirements Data (90 days historical)
+  useEffect(() => {
+    if (activeTab !== 'requirements' || reqsFetched) return;
+    
+    const fetchReqs = async () => {
+      try {
+        setLoadingReqs(true);
+        const ninetyDaysAgo = dayjs().subtract(90, 'days').format('YYYY-MM-DD');
+        
+        const { data: wdData, error: wdErr } = await supabase
+          .from('work_days')
+          .select('id, work_date')
+          .gte('work_date', ninetyDaysAgo)
+          .eq('status', 'closed')
+          .order('work_date', { ascending: false });
+          
+        if (wdErr) throw wdErr;
+        
+        if (!wdData || wdData.length === 0) {
+          setRequirementsData([]);
+          return;
+        }
+
+        const wdIds = wdData.map(w => w.id);
+        const latestWdId = wdData[0].id;
+        
+        const { data: invData, error: invErr } = await supabase
+          .from('bar_inventory')
+          .select('sku_id, work_day_id, stock_open, stock_close')
+          .in('work_day_id', wdIds);
+          
+        if (invErr) throw invErr;
+        
+        const skuMap = {};
+        invData.forEach(row => {
+          if (!skuMap[row.sku_id]) {
+            skuMap[row.sku_id] = { totalRealCons: 0, count: 0, latestStockClose: 0, foundInLatest: false };
+          }
+          const open = Number(row.stock_open) || 0;
+          const close = Number(row.stock_close) || 0;
+          const cons = open - close;
+          
+          skuMap[row.sku_id].totalRealCons += cons;
+          skuMap[row.sku_id].count += 1;
+          
+          if (row.work_day_id === latestWdId) {
+            skuMap[row.sku_id].latestStockClose = close;
+            skuMap[row.sku_id].foundInLatest = true;
+          }
+        });
+        
+        const reqs = skus.map(sku => {
+          const stats = skuMap[sku.id];
+          if (!stats) return null;
+          
+          const promReal = stats.totalRealCons / stats.count;
+          const stockActual = stats.foundInLatest ? stats.latestStockClose : 0;
+          const requerido = promReal - stockActual;
+          
+          return {
+            sku_id: sku.id,
+            sku_name: sku.name,
+            promReal,
+            stockActual,
+            requerido
+          };
+        }).filter(Boolean).sort((a, b) => b.requerido - a.requerido);
+        
+        if (isMountedRef.current) {
+          setRequirementsData(reqs);
+          setReqsFetched(true);
+        }
+      } catch (err) {
+        window.UI?.toast?.(err.message, 'danger');
+      } finally {
+        if (isMountedRef.current) setLoadingReqs(false);
+      }
+    };
+    
+    fetchReqs();
+  }, [activeTab, reqsFetched, skus]);
 
   // Compare CSV against Inventory
   useEffect(() => {
@@ -247,6 +336,53 @@ export default function AuditoriaBarraModule({ onNavigate }) {
     reader.readAsText(file, 'UTF-8');
   };
 
+  const handleDownloadCsv = () => {
+    if (!comparisonResults || comparisonResults.length === 0) return;
+
+    const headers = [
+      'ID_SISTEMA',
+      'ARTICULO',
+      'CONSUMO_SISTEMA',
+      'CONSUMO_REAL',
+      'DIFERENCIA_UNIDADES',
+      'COSTO_UNITARIO',
+      'IMPACTO_MONETIZADO',
+      'STOCK_APERTURA',
+      'STOCK_CIERRE'
+    ];
+
+    const rows = comparisonResults.map(r => [
+      r.system_id,
+      `"${(r.skuFound ? r.skuName : r.detail).replace(/"/g, '""')}"`,
+      r.systemConsumption.toFixed(2),
+      r.skuFound ? r.realConsumption.toFixed(2) : '',
+      r.skuFound ? r.diff_units.toFixed(2) : '',
+      r.skuFound ? r.cost : '',
+      r.skuFound ? r.monetized_diff : '',
+      r.skuFound ? r.stock_open : '',
+      r.skuFound ? r.stock_close : ''
+    ]);
+
+    // BOM para Excel y delimitador de punto y coma
+    const csvContent = '\uFEFF' + [
+      headers.join(';'),
+      ...rows.map(row => row.join(';'))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    const activeWd = workDays.find(wd => wd.id === selectedWorkDayId);
+    const dateStr = activeWd ? dayjs(activeWd.work_date).format('YYYY-MM-DD') : 'unknown_date';
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `auditoria_consumo_${dateStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const formatCurrency = (val) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(val);
 
   const handleSaveAuditoria = async () => {
@@ -340,139 +476,214 @@ export default function AuditoriaBarraModule({ onNavigate }) {
     <div className="h-full flex flex-col relative bg-brand-bg overflow-hidden">
       {flashColor && <div className={`absolute inset-0 z-50 pointer-events-none opacity-10 transition-opacity duration-150 ${flashColor}`}></div>}
 
-      <div className="shrink-0 p-6 border-b border-brand-border/30 bg-brand-bg z-10 flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <div>
-            <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">AUDITORIA CONSUMO</h2>
+      <div className="shrink-0 p-6 border-b border-brand-border/30 bg-brand-bg z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex flex-col gap-4">
+          <h2 className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-muted/50">AUDITORIA CONSUMO</h2>
+          <div className="flex items-center gap-6">
+            {user?.role !== 'operativo' && (
+              <button
+                onClick={() => setActiveTab('current')}
+                className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors pb-1 border-b-2 ${activeTab === 'current' ? 'border-brand-text text-brand-text' : 'border-transparent text-brand-muted hover:text-brand-text'}`}
+              >
+                CONCILIACIÓN ACTUAL
+              </button>
+            )}
+            <button
+              onClick={() => setActiveTab('requirements')}
+              className={`text-[10px] font-bold tracking-[0.2em] uppercase transition-colors pb-1 border-b-2 ${activeTab === 'requirements' ? 'border-brand-text text-brand-text' : 'border-transparent text-brand-muted hover:text-brand-text'}`}
+            >
+              REQUERIMIENTO (90D)
+            </button>
           </div>
         </div>
 
-        <div className="flex gap-4 items-center">
-          <select
-            value={selectedWorkDayId}
-            onChange={(e) => {
-              setSelectedWorkDayId(e.target.value);
-            }}
-            className="bg-transparent border-b border-brand-border/50 pb-1 text-[10px] font-bold text-brand-text focus:outline-none focus:border-brand-text appearance-none cursor-pointer uppercase tracking-widest min-w-[200px]"
-          >
-            {workDays.length === 0 && <option value="">SIN JORNADAS</option>}
-            {workDays.map((wd) => (
-              <option key={wd.id} value={wd.id} className="bg-brand-bg text-brand-text">
-                {dayjs(wd.work_date).format('DD/MM/YYYY')} — {wd.event_name || 'SIN EVENTO'}
-              </option>
-            ))}
-          </select>
+        {activeTab === 'current' && (
+          <div className="flex gap-4 items-center">
+            <select
+              value={selectedWorkDayId}
+              onChange={(e) => {
+                setSelectedWorkDayId(e.target.value);
+              }}
+              className="bg-transparent border-b border-brand-border/50 pb-1 text-[10px] font-bold text-brand-text focus:outline-none focus:border-brand-text appearance-none cursor-pointer uppercase tracking-widest min-w-[200px]"
+            >
+              {workDays.length === 0 && <option value="">SIN JORNADAS</option>}
+              {workDays.map((wd) => (
+                <option key={wd.id} value={wd.id} className="bg-brand-bg text-brand-text">
+                  {dayjs(wd.work_date).format('DD/MM/YYYY')} — {wd.event_name || 'SIN EVENTO'}
+                </option>
+              ))}
+            </select>
 
-          <input autoComplete="off" type="file" accept=".csv" ref={csvRef} onChange={handleCsvUpload} className="hidden" />
-          <button 
-            onClick={() => csvRef.current?.click()}
-            disabled={!selectedWorkDayId || loading}
-            className={`flex items-center gap-2 border-b pb-1 text-[9px] font-extrabold tracking-[0.3em] uppercase transition-all cursor-pointer disabled:opacity-50 hover:opacity-80 ${isConsolidated ? 'border-brand-warning text-brand-warning' : 'border-brand-accent text-brand-accent'}`}
-          >
-            <Upload size={12} />
-            {isConsolidated ? 'RESUBIR CSV' : 'SUBIR CSV'}
-          </button>
-        </div>
+            <input autoComplete="off" type="file" accept=".csv" ref={csvRef} onChange={handleCsvUpload} className="hidden" />
+            
+            {comparisonResults.length > 0 && (
+              <button 
+                onClick={handleDownloadCsv}
+                className="flex items-center gap-2 border-b border-brand-text pb-1 text-[9px] font-extrabold tracking-[0.3em] uppercase transition-all cursor-pointer hover:opacity-80 text-brand-text"
+              >
+                <Download size={12} />
+                DESCARGAR CSV
+              </button>
+            )}
+
+            <button 
+              onClick={() => csvRef.current?.click()}
+              disabled={!selectedWorkDayId || loading}
+              className={`flex items-center gap-2 border-b pb-1 text-[9px] font-extrabold tracking-[0.3em] uppercase transition-all cursor-pointer disabled:opacity-50 hover:opacity-80 ${isConsolidated ? 'border-brand-warning text-brand-warning' : 'border-brand-accent text-brand-accent'}`}
+            >
+              <Upload size={12} />
+              {isConsolidated ? 'RESUBIR CSV' : 'SUBIR CSV'}
+            </button>
+          </div>
+        )}
       </div>
 
-      <div className={`flex-1 overflow-y-auto p-4 md:p-6 pb-32 ${isFetchingBackground ? 'opacity-50 pointer-events-none' : ''}`}>
-        {loading ? (
+      <div className={`flex-1 overflow-y-auto p-4 md:p-6 pb-32 ${(isFetchingBackground || loadingReqs) ? 'opacity-50 pointer-events-none' : ''}`}>
+        {loading || (activeTab === 'requirements' && loadingReqs) ? (
           <div className="flex justify-center items-center h-full text-brand-muted">
             <Loader2 className="animate-spin" size={24} />
           </div>
-        ) : comparisonResults.length === 0 ? (
-          <div className="text-center py-12 text-brand-muted/50 text-xs italic">
-            {csvData.length === 0 
-              ? "Sube el archivo CSV de consumo para iniciar la conciliación." 
-              : "Calculando diferencias..."}
-          </div>
-        ) : (
-          <div className="w-full">
-            {/* Totals Summary Card - Raw Data Flow */}
-            <div className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end border-b border-brand-border/30 pb-6">
-              <div>
-                <div className="text-[8px] uppercase font-bold text-brand-muted tracking-[0.3em] mb-2">IMPACTO EN CAJA (FALTANTES/SOBRANTES)</div>
-                <div className={`text-4xl md:text-5xl font-black font-mono tracking-tighter ${totalMonetizedDiff < 0 ? 'text-brand-error' : totalMonetizedDiff > 0 ? 'text-brand-success' : 'text-brand-text'}`}>
-                  {totalMonetizedDiff > 0 ? '+' : ''}{formatCurrency(totalMonetizedDiff)}
+        ) : activeTab === 'current' ? (
+          comparisonResults.length === 0 ? (
+            <div className="text-center py-12 text-brand-muted/50 text-xs italic">
+              {csvData.length === 0 
+                ? "Sube el archivo CSV de consumo para iniciar la conciliación." 
+                : "Calculando diferencias..."}
+            </div>
+          ) : (
+            <div className="w-full">
+              {/* Totals Summary Card - Raw Data Flow */}
+              <div className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end border-b border-brand-border/30 pb-6">
+                <div>
+                  <div className="text-[8px] uppercase font-bold text-brand-muted tracking-[0.3em] mb-2">IMPACTO EN CAJA (FALTANTES/SOBRANTES)</div>
+                  <div className={`text-4xl md:text-5xl font-black font-mono tracking-tighter ${totalMonetizedDiff < 0 ? 'text-brand-error' : totalMonetizedDiff > 0 ? 'text-brand-success' : 'text-brand-text'}`}>
+                    {totalMonetizedDiff > 0 ? '+' : ''}{formatCurrency(totalMonetizedDiff)}
+                  </div>
+                  <div className="text-[9px] uppercase tracking-widest text-brand-muted/70 mt-2">
+                    FALTANTE / SOBRANTE
+                  </div>
                 </div>
-                <div className="text-[9px] uppercase tracking-widest text-brand-muted/70 mt-2">
-                  FALTANTE / SOBRANTE
+                <div className="mt-6 md:mt-0 flex flex-col items-end gap-3">
+                  {isConsolidated && (
+                    <div className="text-[10px] font-bold text-brand-warning tracking-widest uppercase border border-brand-warning/30 px-3 py-1 rounded bg-brand-warning/10">
+                      AUDITORÍA CONSOLIDADA
+                    </div>
+                  )}
+                  <button
+                    onClick={handleSaveAuditoria}
+                    disabled={saving || comparisonResults.length === 0}
+                    className="bg-transparent border-b-2 border-brand-text text-brand-text hover:opacity-70 pb-1 text-[10px] font-extrabold tracking-[0.3em] uppercase transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                  >
+                    {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                    {isConsolidated ? 'RE-CONSOLIDAR' : 'CONSOLIDAR AUDITORÍA'}
+                  </button>
                 </div>
               </div>
-              <div className="mt-6 md:mt-0 flex flex-col items-end gap-3">
-                {isConsolidated && (
-                  <div className="text-[10px] font-bold text-brand-warning tracking-widest uppercase border border-brand-warning/30 px-3 py-1 rounded bg-brand-warning/10">
-                    AUDITORÍA CONSOLIDADA
-                  </div>
-                )}
-                <button
-                  onClick={handleSaveAuditoria}
-                  disabled={saving || comparisonResults.length === 0}
-                  className="bg-transparent border-b-2 border-brand-text text-brand-text hover:opacity-70 pb-1 text-[10px] font-extrabold tracking-[0.3em] uppercase transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
-                >
-                  {saving ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
-                  {isConsolidated ? 'RE-CONSOLIDAR' : 'CONSOLIDAR AUDITORÍA'}
-                </button>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs whitespace-nowrap">
+                  <thead>
+                    <tr className="border-b border-brand-border/50 text-[8px] font-bold uppercase tracking-[0.3em] text-brand-muted">
+                      <th className="py-4 pr-6">ARTÍCULO</th>
+                      <th className="px-6 py-4 text-right">SISTEMA</th>
+                      <th className="px-6 py-4 text-right">REAL</th>
+                      <th className="px-6 py-4 text-right">DIFERENCIA</th>
+                      <th className="px-6 py-4 text-right">COSTO</th>
+                      <th className="py-4 pl-6 text-right">MONETIZADO</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-brand-border/20">
+                    {comparisonResults.map((row, idx) => (
+                      <tr key={idx} className="hover:bg-brand-bg transition-colors group">
+                        <td className="py-4 pr-6">
+                          <div className="flex items-center gap-3">
+                            {!row.skuFound && <AlertTriangle size={12} className="text-brand-warning opacity-50" title="No mapeado" />}
+                            <div>
+                              <div className="font-bold text-brand-text truncate w-48 text-[10px] tracking-widest uppercase">{row.skuFound ? row.skuName : row.detail}</div>
+                              <div className="text-[8px] text-brand-muted/50 tracking-[0.3em] uppercase font-mono mt-0.5">ID: {row.system_id}</div>
+                            </div>
+                          </div>
+                        </td>
+                          <td className="px-6 py-4 text-right font-mono text-brand-muted">
+                            {row.systemConsumption.toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 text-right font-mono text-brand-text">
+                            {row.skuFound ? (
+                              <div className="flex flex-col items-end">
+                                <span>{row.realConsumption.toFixed(2)}</span>
+                                <span className="text-[8px] text-brand-muted/30 tracking-widest uppercase mt-0.5">({row.stock_open} - {row.stock_close})</span>
+                              </div>
+                            ) : '-'}
+                          </td>
+                          <td className="px-6 py-4 text-right font-mono">
+                            {row.skuFound ? (
+                              <span className={row.diff_units < 0 ? 'text-brand-error' : row.diff_units > 0 ? 'text-brand-success' : 'text-brand-muted/50'}>
+                                {row.diff_units > 0 ? '+' : ''}{row.diff_units.toFixed(2)}
+                              </span>
+                            ) : '-'}
+                          </td>
+                          <td className="px-6 py-4 text-right font-mono text-brand-muted/50">
+                            {row.skuFound ? formatCurrency(row.cost) : '-'}
+                          </td>
+                          <td className="py-4 pl-6 text-right font-mono font-bold text-sm">
+                            {row.skuFound ? (
+                              <span className={row.monetized_diff < 0 ? 'text-brand-error' : row.monetized_diff > 0 ? 'text-brand-success' : 'text-brand-text'}>
+                                {row.monetized_diff > 0 ? '+' : ''}{formatCurrency(row.monetized_diff)}
+                              </span>
+                            ) : '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
               </div>
             </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs whitespace-nowrap">
-                <thead>
-                  <tr className="border-b border-brand-border/50 text-[8px] font-bold uppercase tracking-[0.3em] text-brand-muted">
-                    <th className="py-4 pr-6">ARTÍCULO</th>
-                    <th className="px-6 py-4 text-right">SISTEMA</th>
-                    <th className="px-6 py-4 text-right">REAL</th>
-                    <th className="px-6 py-4 text-right">DIFERENCIA</th>
-                    <th className="px-6 py-4 text-right">COSTO</th>
-                    <th className="py-4 pl-6 text-right">MONETIZADO</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-brand-border/20">
-                  {comparisonResults.map((row, idx) => (
-                    <tr key={idx} className="hover:bg-brand-bg transition-colors group">
-                      <td className="py-4 pr-6">
-                        <div className="flex items-center gap-3">
-                          {!row.skuFound && <AlertTriangle size={12} className="text-brand-warning opacity-50" title="No mapeado" />}
-                          <div>
-                            <div className="font-bold text-brand-text truncate w-48 text-[10px] tracking-widest uppercase">{row.skuFound ? row.skuName : row.detail}</div>
-                            <div className="text-[8px] text-brand-muted/50 tracking-[0.3em] uppercase font-mono mt-0.5">ID: {row.system_id}</div>
-                          </div>
-                        </div>
-                      </td>
+          )
+        ) : (
+          <div className="w-full">
+            <div className="mb-8 border-b border-brand-border/30 pb-4">
+              <h3 className="text-xs font-bold text-brand-text tracking-[0.2em] uppercase">Proyección de Re-Stock</h3>
+              <p className="text-[10px] text-brand-muted mt-1 uppercase tracking-widest">Basado en el consumo promedio de las últimas 90 noches con registro físico.</p>
+            </div>
+            
+            {requirementsData.length === 0 ? (
+              <div className="text-center py-12 text-brand-muted/50 text-xs italic">
+                No hay datos históricos suficientes en los últimos 90 días.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs whitespace-nowrap">
+                  <thead>
+                    <tr className="border-b border-brand-border/50 text-[8px] font-bold uppercase tracking-[0.3em] text-brand-muted">
+                      <th className="py-4 pr-6">ARTÍCULO</th>
+                      <th className="px-6 py-4 text-right">PROM. REAL</th>
+                      <th className="px-6 py-4 text-right">STOCK ACTUAL</th>
+                      <th className="py-4 pl-6 text-right">REQUERIDO</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-brand-border/20">
+                    {requirementsData.map((row, idx) => (
+                      <tr key={idx} className="hover:bg-brand-bg transition-colors group">
+                        <td className="py-4 pr-6">
+                          <div className="font-bold text-brand-text truncate w-48 text-[10px] tracking-widest uppercase">{row.sku_name}</div>
+                        </td>
                         <td className="px-6 py-4 text-right font-mono text-brand-muted">
-                          {row.systemConsumption.toFixed(2)}
+                          {row.promReal.toFixed(2)}
                         </td>
-                        <td className="px-6 py-4 text-right font-mono text-brand-text">
-                          {row.skuFound ? (
-                            <div className="flex flex-col items-end">
-                              <span>{row.realConsumption.toFixed(2)}</span>
-                              <span className="text-[8px] text-brand-muted/30 tracking-widest uppercase mt-0.5">({row.stock_open} - {row.stock_close})</span>
-                            </div>
-                          ) : '-'}
-                        </td>
-                        <td className="px-6 py-4 text-right font-mono">
-                          {row.skuFound ? (
-                            <span className={row.diff_units < 0 ? 'text-brand-error' : row.diff_units > 0 ? 'text-brand-success' : 'text-brand-muted/50'}>
-                              {row.diff_units > 0 ? '+' : ''}{row.diff_units.toFixed(2)}
-                            </span>
-                          ) : '-'}
-                        </td>
-                        <td className="px-6 py-4 text-right font-mono text-brand-muted/50">
-                          {row.skuFound ? formatCurrency(row.cost) : '-'}
+                        <td className="px-6 py-4 text-right font-mono text-brand-muted">
+                          {row.stockActual.toFixed(2)}
                         </td>
                         <td className="py-4 pl-6 text-right font-mono font-bold text-sm">
-                          {row.skuFound ? (
-                            <span className={row.monetized_diff < 0 ? 'text-brand-error' : row.monetized_diff > 0 ? 'text-brand-success' : 'text-brand-text'}>
-                              {row.monetized_diff > 0 ? '+' : ''}{formatCurrency(row.monetized_diff)}
-                            </span>
-                          ) : '-'}
+                          <span className={row.requerido > 0 ? 'text-brand-error' : 'text-brand-muted/50'}>
+                            {row.requerido > 0 ? '+' : ''}{row.requerido.toFixed(2)}
+                          </span>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-            </div>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -138,3 +138,23 @@
 
 ### 2026-06-28: Agent Orchestration Update
 - Installed new skills: pbakaus/impeccable and ercel-labs/agent-skills@web-design-guidelines to strengthen the Module Audit Framework.
+
+### [2026-08-28] Feature: Exportar Auditor�a Consumo a CSV
+- **UI/UX:** Se agreg� el bot�n 'DESCARGAR CSV' en la cabecera del m�dulo de Auditor�a Consumo (\AuditoriaBarraModule.jsx\), condicionado a que existan datos procesados.
+- **Feature:** Implementada la funci�n \handleDownloadCsv\ que genera din�micamente un archivo \.csv\ codificado en UTF-8 con BOM (para compatibilidad de caracteres especiales en Excel) y usa \;\ como separador, asegurando que las comas en los n�meros o decimales no rompan la estructura. El CSV consolida los datos de ID, Art�culo, Consumo Sistema, Consumo Real, Diferencia de Unidades, Costo Unitario e Impacto Monetizado.
+
+
+### [2026-08-28] Feature: Requerimientos 90D en Auditoría Consumo
+- **UI/UX:** Se implementó una nueva arquitectura de pestañas (Tabs) en la cabecera de \AuditoriaBarraModule.jsx\ que permite alternar sin recargas entre \CONCILIACIÓN ACTUAL\ y \REQUERIMIENTO (90D)\.
+- **Feature:** Añadida funcionalidad de proyección logística. El sistema ahora calcula automáticamente el Promedio Real de los últimos 90 días usando \ar_inventory\ y \work_days\ y lo contrasta con el stock real de la última noche auditada.
+- **System:** Se implementó una tabla viva de alta densidad de datos (Swiss Brutalism) pre-ordenada por urgencia de reposición de stock (Stock Requerido > 0).
+
+
+## 4. Hotfix: Ingesta de Cierre Consolidado
+Se corrigió la lógica de consulta para ignorar jornadas abiertas. El sistema ahora filtra estrictamente por jornadas \closed\. Esto garantiza que el **Stock Actual** se extraiga siempre del último cierre de stock consolidado, y no de una jornada operativa en curso que aún no tiene cierres registrados.
+
+
+## 5. Accesibilidad Logística (Operativo)
+- **Sistema:** Se modificó \AuthContext.jsx\ para conceder permisos de acceso de solo lectura al módulo \uditoria_barra\ para el rol \operativo\.
+- **UI/UX:** Se insertó el módulo en la interfaz de \OperativoIndex.jsx\ bajo el nombre de \REQUERIMIENTO (90D)\.
+- **Seguridad (UI Gating):** Al ingresar al módulo, si el sistema detecta el rol \operativo\, fuerza la renderización inicial a la pestaña logística y elimina del DOM el botón de la pestaña \CONCILIACIÓN ACTUAL\, impidiendo el acceso a los datos financieros de las auditorías consolidadas.
